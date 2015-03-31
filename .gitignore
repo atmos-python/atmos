@@ -1,0 +1,2 @@
+# Ignore cython-generated c source
+_*.c
