@@ -20,6 +20,13 @@ This temporary script file is located here:
 #
 # How do we handle latent heat of condensation for water? Constant? Poly fit?
 #
+# Users may make use of the same computation repeatedly. Should we cache how
+# to calculate an output quantity from a set of inputs and methods?
+# Precomputing every possible option is probably too memory-intensive because
+# of the large number of options, but caching could be viable.
+#
+# Vertical ordering... What are the consequences, and how to handle it?
+#
 
 # To implement:
 #
@@ -31,7 +38,6 @@ This temporary script file is located here:
 # Equivalent potential temperature... What even.
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
-
 from util import ddx
 import numpy as np
 import re
@@ -75,14 +81,28 @@ def dpdz_from_rho_hydrostatic(rho):
 def DSE_from_T_z(T, z):
     '''
     Calculates dry static energy (J) from temperature (K) and height (m).
+
+    DSE = Cp*T + g*z
     '''
     return Cp*T + g*z
+
+
+def DSE_from_T_Phi(T, Phi):
+    '''
+    Calculates dry static energy (J) from temperature (K) and geopotential
+    height (m^2/s^2).
+
+    DSE = Cp*T + Phi
+    '''
+    return Cp*T + Phi
 
 
 def MSE_from_DSE_q(DSE, q):
     '''
     Calculates moist static energy (J) from dry static energy (J) and specific
-    humidity (kg/kg).
+    humidity (kg/kg) assuming constant latent heat of vaporization of water.
+
+    MSE = DSE + Lv*q
     '''
     return DSE + Lv*q
 
@@ -168,6 +188,16 @@ def f_from_lat(lat):
     return 2.*Omega*np.sin(np.pi/180.*lat)
 
 
+def omega_from_w_rho_hydrostatic(w, rho):
+    '''
+    Calculates pressure tendency (Pa/s) from vertical velocity (m/s) and
+    density (kg/m^3) using the hydrostatic assumption.
+
+    omega = -rho*g*w
+    '''
+    return -rho*g*w
+
+
 def p_ideal_gas(rho, Tv):
     '''
     Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K).
@@ -175,6 +205,35 @@ def p_ideal_gas(rho, Tv):
     p = rho*Rd*Tv
     '''
     return rho*Rd*Tv
+
+
+def plcl_from_p_T_Td(p, T, Td):
+    '''
+    Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K), and
+    dew point temperature (K).
+
+    Calculates the pressure of the lifting condensation level computed by an
+    iterative procedure described by equations 8-12 (pp 13-14) of:
+
+    Stipanuk, G.S., (1973) original version.
+    "Algorithms for generating a skew-t, log p diagram and computing selected
+    meteorological quantities."
+
+    Atmospheric sciences laboratory
+    U.S. Army Electronics Command
+    White Sands Missile Range, New Mexico 88002
+    '''
+    raise NotImplementedError()
+
+
+def Phi_from_z(z):
+    '''
+    Calculates geopotential height (m^2/s^2) from height (m) assuming constant
+    g.
+
+    Phi = g*z
+    '''
+    return g*z
 
 
 def q_from_AH_rho(AH, rho):
@@ -604,6 +663,16 @@ def thetaae_from_p_Tae_wvap(p, Tae, wvap):
     return Tae*(1e5/p)**(Rd/Cp)
 
 
+def w_from_omega_rho_hydrostatic(omega, rho):
+    '''
+    Calculates vertical velocity (m/s) from vertical pressure tendency (Pa/s)
+    and density (kg/m^3) using the hydrostatic assumption.
+
+    w = -omega/(rho*g)
+    '''
+    return -omega/(rho*g)
+
+
 def wvap_from_q(q):
     '''
     Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
@@ -631,6 +700,16 @@ def wvaps_from_qs(qs):
     wvap = q/(1-q)
     '''
     return qs/(1-qs)
+
+
+def z_from_Phi(Phi):
+    '''
+    Calculates height (m) from geopotential height (m^2/s^2) assuming constant
+    g.
+
+    z = Phi/g
+    '''
+    return Phi/g
 
 
 class _BaseDeriver(object):
