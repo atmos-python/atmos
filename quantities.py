@@ -737,11 +737,44 @@ class _BaseDeriver(object):
                             'subclass.')
         return object.__new__(cls, *args, **kwargs)
 
-    def __init__(self, methods=(), axis_coords=None, override_coord_axes=None,
+    def __init__(self, methods=(), derivative=None,
+                 axis_coords=None, override_coord_axes=None,
                  coords_own_axis=None, **kwargs):
         '''
         Initializes with the given methods enabled, and variables passed as
         keyword arguments stored.
+
+        Parameters
+        ----------
+        methods : tuple, optional
+            Strings specifying which methods to enable.
+        derivative : str, optional
+            Which spatial derivative calculation to use. Set to 'centered' for
+            second-order centered finite difference with first-order
+            forward and backward differencing at boundaries, or None to disable
+            derivatives.
+        axis_coords : iterable, optional
+            Defines the default coordinate to assume for each axis. Should
+            contain 't' to denote a time-like coordinate, 'z' to denote a
+            vertical-like coordinate, 'y' to denote a meridional-like
+            component, and 'x' to denote a zonal-like component.
+            Only required for calculations that require this knowledge.
+        override_coord_axes : mapping, optional
+            A mapping of quantity strings to tuples defining the axes of those
+            quantities, overriding the default of axis_coords.
+        coords_own_axis : mapping, optional
+            A mapping of quantity strings for coordinate-like quantities to
+            their index which corresponds to their own axis. For example, if
+            lon is given as an array in [lat, lon], its value would be 1,
+            whereas if it is a 1-D array its value would be 0. This is assumed
+            to be 0 by default.
+
+        Notes
+        -----
+        y and x defined in axis_coords need not be meridional and longitudinal,
+        so long as it is understood that any zonal or meridional quantities
+        calculated by this object (such as u and v) were done so under this
+        assumption.
         '''
         if any([coord not in self.coord_types.keys()
                 for coord in axis_coords]):
@@ -762,6 +795,9 @@ class _BaseDeriver(object):
         self.coords_own_axis = {'t': 0, 'z': 0, 'y': 0, 'x': 0}
         if coords_own_axis is not None:
             self.coords_own_axis.update(coords_own_axis)
+        if derivative not in ('centered', None):
+            raise ValueError('invalid value given for derivative')
+        self._derivative = derivative
 
     def calculate(self, quantity_out):
         '''
@@ -935,6 +971,9 @@ class _BaseDeriver(object):
             A tuple of strings denoting the variables that are output by
             each function in funcs
         '''
+        # Check if derivatives are disabled
+        if self.derivative is None:
+            return None
         match = self.derivative_prog.match(out_name)
         if match is None:
             raise ValueError('out_name is not in the form of a derivative')
@@ -994,14 +1033,14 @@ class _BaseDeriver(object):
             An iterable of strings corresponding to the variables that must be
             passed as arguments to the function returned by this function
         '''
-        self.coord_axes
-        self.override_coord_axes
-        self.coords_own_axis
-        self.coord_types
         axis = self.coord_axes[self.coord_types[coordname]]
-        func = lambda data, coord: \
-            ddx(data, axis, x=coord,
-                axis_x=self.coords_own_axis[self.coord_types[coordname]])
+        if self._derivative == 'centered':
+            func = lambda data, coord: \
+                ddx(data, axis, x=coord,
+                    axis_x=self.coords_own_axis[self.coord_types[coordname]])
+        else:
+            raise ValueError('invalid derivative type used to construct '
+                             'Deriver')
         return (func, (varname, coordname))
 
     def _get_methods(self, method_options):
@@ -1129,7 +1168,8 @@ class FluidDeriver(_BaseDeriver):
         return super(FluidDeriver, self).calculate(quantity_out, **kwargs)
 
 
-def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
+def calculate(output, methods=(), derivative=None,
+              axis_coords=None, override_coord_axes=None,
               coords_own_axis=None, **kwargs):
     '''
     Calculates and returns a requested quantity from quantities passed in as
@@ -1142,6 +1182,28 @@ def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
         which are names of quantities to be calculated.
     methods : tuple, optional
         Names of methods that can be used for calculation, as strings.
+    derivative : str, optional
+        Which spatial derivative calculation to use. Set to 'centered' for
+        second-order centered finite difference, or None to disable
+        derivatives.
+    periodic : bool, optional
+        Whether the domain is periodic in space. Used when calculating
+        spatial derivatives.
+    axis_coords : iterable, optional
+        Defines the default coordinate to assume for each axis. Should
+        contain 't' to denote a time-like coordinate, 'z' to denote a
+        vertical-like coordinate, 'y' to denote a meridional-like
+        component, and 'x' to denote a zonal-like component.
+        Only required for calculations that require this knowledge.
+    override_coord_axes : mapping, optional
+        A mapping of quantity strings to tuples defining the axes of those
+        quantities, overriding the default of axis_coords.
+    coords_own_axis : mapping, optional
+        A mapping of quantity strings for coordinate-like quantities to
+        their index which corresponds to their own axis. For example, if
+        lon is given as an array in [lat, lon], its value would be 1,
+        whereas if it is a 1-D array its value would be 0. This is assumed
+        to be 0 by default.
 
     Quantity Parameters
     -------------------
@@ -1173,12 +1235,17 @@ def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
 
     Notes
     -----
+    y and x defined in axis_coords need not be meridional and longitudinal,
+    so long as it is understood that any zonal or meridional quantities
+    calculated by this object (such as u and v) were done so under this
+    assumption.
 
     Examples
     --------
     >>>
     '''
-    deriver = FluidDeriver(methods, axis_coords, override_coord_axes,
+    deriver = FluidDeriver(methods, derivative,
+                           axis_coords, override_coord_axes,
                            coords_own_axis, **kwargs)
     try:
         result = [deriver.calculate(var) for var in output]
