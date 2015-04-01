@@ -42,6 +42,28 @@ import numpy as np
 from constants import g0, stefan, r_earth, Omega, Rd, Rv, Cpd, Gammad, Lv0
 
 
+# Define some decorators for our equations
+def _assumes(*args):
+    '''Stores a function's assumptions as an attribute.'''
+    args = tuple(args)
+
+    def decorator(func):
+        func.assumptions = args
+        return func
+    return decorator
+
+
+def _inputs(*args):
+    '''Stores a function's input quantities as an attribute.'''
+    args = tuple(args)
+
+    def decorator(func):
+        func.inputs = args
+        return func
+    return decorator
+
+
+@_assumes()
 def AH_from_q_rho(q, rho):
     '''
     Calculates absolute humidity (kg/m^3) from specific humidity (kg/kg) and
@@ -52,6 +74,7 @@ def AH_from_q_rho(q, rho):
     return q*rho
 
 
+@_assumes('hydrostatic')
 def dpdz_from_rho_hydrostatic(rho):
     '''
     Calculates vertical derivative of pressure (Pa/m) from density (kg/m^3) and
@@ -62,6 +85,7 @@ def dpdz_from_rho_hydrostatic(rho):
     return -rho*g0
 
 
+@_assumes('constant g')
 def DSE_from_T_z(T, z):
     '''
     Calculates dry static energy (J) from temperature (K) and height (m).
@@ -71,6 +95,7 @@ def DSE_from_T_z(T, z):
     return Cpd*T + g0*z
 
 
+@_assumes()
 def DSE_from_T_Phi(T, Phi):
     '''
     Calculates dry static energy (J) from temperature (K) and geopotential
@@ -81,6 +106,7 @@ def DSE_from_T_Phi(T, Phi):
     return Cpd*T + Phi
 
 
+@_assumes()
 def e_from_p_q(p, q):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa) and
@@ -89,6 +115,7 @@ def e_from_p_q(p, q):
     return p*q/(0.622+q)
 
 
+@_assumes('goff-gratch')
 def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa),
@@ -108,6 +135,7 @@ def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
     return es_from_T_Goff_Gratch(Tw) - 0.799e-3*p*(T-Tw)
 
 
+@_assumes('bolton')
 def e_from_p_T_Tw_Bolton(p, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa),
@@ -129,6 +157,7 @@ def e_from_p_T_Tw_Bolton(p, T, Tw):
     return es_from_T_Bolton(Tw) - 0.799e-3*p*(T-Tw)
 
 
+@_assumes('goff-gratch')
 def e_from_Td_Goff_Gratch(Td):
     '''
     Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
@@ -139,6 +168,7 @@ def e_from_Td_Goff_Gratch(Td):
     return es_from_T_Goff_Gratch(Td)
 
 
+@_assumes('bolton')
 def e_from_Td_Bolton(Td):
     '''
     Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
@@ -150,6 +180,7 @@ def e_from_Td_Bolton(Td):
     return es_from_T_Bolton(Td)
 
 
+@_assumes('unfrozen bulb')
 def e_from_p_es_T_Tw(p, es, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
@@ -166,6 +197,7 @@ def e_from_p_es_T_Tw(p, es, T, Tw):
     return es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p
 
 
+@_assumes('frozen bulb')
 def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
@@ -182,6 +214,7 @@ def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
     return es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p
 
 
+@_assumes('goff-gratch')
 def es_from_T_Goff_Gratch(T):
     '''
     Calculate the equilibrium water vapor pressure over a plane surface
@@ -235,6 +268,7 @@ def es_from_T_Goff_Gratch(T):
                          + 8.1328e-3*(10.**(-3.49149*(ratio-1.))-1.)))
 
 
+@_assumes('bolton')
 def es_from_T_Bolton(T):
     '''
     Calculates saturation vapor pressure using Bolton's fit to Wexler's
@@ -254,6 +288,7 @@ def es_from_T_Bolton(T):
     return 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
 
 
+@_assumes()
 def f_from_lat(lat):
     '''
     Calculates the Coriolis parameter (Rad/s) from latitude (degrees N).
@@ -263,6 +298,7 @@ def f_from_lat(lat):
     return 2.*Omega*np.sin(np.pi/180.*lat)
 
 
+@_assumes('constant g', 'constant Lv')
 def Gammam_from_wvaps_T(wvaps, T):
     '''
     Calculates saturation adiabatic lapse rate (K/m) from pressure (Pa) and
@@ -278,6 +314,7 @@ def Gammam_from_wvaps_T(wvaps, T):
     return g0*(1+(Lv0*wvaps)/(Rd*T))/(Cpd+(Lv0**2*wvaps)/(Rv*T**2))
 
 
+@_assumes('constant Lv')
 def MSE_from_DSE_q(DSE, q):
     '''
     Calculates moist static energy (J) from dry static energy (J) and specific
@@ -288,6 +325,7 @@ def MSE_from_DSE_q(DSE, q):
     return DSE + Lv0*q
 
 
+@_assumes('hydrostatic')
 def omega_from_w_rho_hydrostatic(w, rho):
     '''
     Calculates pressure tendency (Pa/s) from vertical velocity (m/s) and
@@ -298,6 +336,7 @@ def omega_from_w_rho_hydrostatic(w, rho):
     return -rho*g0*w
 
 
+@_assumes('ideal gas')
 def p_from_rho_Tv_ideal_gas(rho, Tv):
     '''
     Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K).
@@ -307,6 +346,7 @@ def p_from_rho_Tv_ideal_gas(rho, Tv):
     return rho*Rd*Tv
 
 
+@_assumes('stipanuk')
 def plcl_from_p_T_Td(p, T, Td):
     '''
     Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K), and
@@ -326,6 +366,7 @@ def plcl_from_p_T_Td(p, T, Td):
     raise NotImplementedError()
 
 
+@_assumes('constant g')
 def Phi_from_z(z):
     '''
     Calculates geopotential height (m^2/s^2) from height (m) assuming constant
@@ -336,6 +377,7 @@ def Phi_from_z(z):
     return g0*z
 
 
+@_assumes()
 def q_from_AH_rho(AH, rho):
     '''
     Calculates specific humidity (kg/kg) from absolute humidity (kg/m^3) and
@@ -346,6 +388,7 @@ def q_from_AH_rho(AH, rho):
     return AH/rho
 
 
+@_assumes()
 def q_from_wvap(wvap):
     '''
     Calculates specific humidity (kg/kg) from water vapor mixing ratio (kg/kg).
@@ -355,6 +398,7 @@ def q_from_wvap(wvap):
     return wvap/(1+wvap)
 
 
+@_assumes()
 def q_from_p_e(p, e):
     '''
     Calculates specific humidity (kg/kg) from air pressure (Pa) and water vapor
@@ -363,6 +407,7 @@ def q_from_p_e(p, e):
     return 0.622*e/(p-e)
 
 
+@_assumes()
 def qs_from_wvaps(wvaps):
     '''
     Calculates saturation specific humidity (kg/kg) from saturated water vapor
@@ -373,6 +418,7 @@ def qs_from_wvaps(wvaps):
     return wvaps/(1+wvaps)
 
 
+@_assumes()
 def RH_from_q_qs(q, qs):
     '''
     Calculates relative humidity (%) from specific humidity (kg/kg) and
@@ -383,6 +429,7 @@ def RH_from_q_qs(q, qs):
     return q/qs*100.
 
 
+@_assumes()
 def RH_from_wvap_wvaps(wvap, wvaps):
     '''
     Calculates relative humidity (%) from mixing ratio (kg/kg) and
@@ -393,6 +440,7 @@ def RH_from_wvap_wvaps(wvap, wvaps):
     return wvap/wvaps*100.
 
 
+@_assumes()
 def rho_from_q_AH(q, AH):
     '''
     Calculates density (kg/m^3) from specific humidity (kg/kg) and absolute
@@ -403,6 +451,7 @@ def rho_from_q_AH(q, AH):
     return AH/q
 
 
+@_assumes('hydrostatic')
 def rho_from_dpdz_hydrostatic(dpdz):
     '''
     Calculates density (kg/m^3) from vertical derivative of pressure (Pa/m) and
@@ -413,7 +462,8 @@ def rho_from_dpdz_hydrostatic(dpdz):
     return -dpdz/g0
 
 
-def rho_ideal_gas(p, Tv):
+@_assumes('ideal gas')
+def rho_from_p_Tv_ideal_gas(p, Tv):
     '''
     Calculates density (kg/m^3) from pressure (Pa) and virtual temperature (K).
 
@@ -422,6 +472,7 @@ def rho_ideal_gas(p, Tv):
     return p/(Rd*Tv)
 
 
+@_assumes('bolton')
 def T_from_es_Bolton(es):
     '''
     Calculates temperature (K) from saturation water vapor pressure (Pa) using
@@ -441,6 +492,7 @@ def T_from_es_Bolton(es):
     return (29.65*np.log(es)-4880.16)/(np.log(es)-19.48)
 
 
+@_assumes('bolton')
 def TL_from_T_RH(T, RH):
     '''
     Calculates temperature at LCL (K) from temperature (K) and relative
@@ -457,6 +509,7 @@ def TL_from_T_RH(T, RH):
     return 1./((1./(T-55.))-(np.log(RH/100.)/2840.)) + 55.
 
 
+@_assumes('bolton')
 def TL_from_T_Td(T, Td):
     '''
     Calculates temperature at LCL (K) from temperature (K) and dewpoint
@@ -473,6 +526,7 @@ def TL_from_T_Td(T, Td):
     return 1./((1./(Td-56.))-(np.log(T/Td)/800.)) + 56.
 
 
+@_assumes('bolton')
 def TL_from_T_e(T, e):
     '''
     Calculates temperature at LCL (K) from temperature (K) and water vapor
@@ -489,6 +543,7 @@ def TL_from_T_e(T, e):
     return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
 
 
+@_assumes('constant Lv')
 def Tae_from_T_wvap(T, wvap):
     '''
     Calculates adiabatic equivalent temperature (aka pseudoequivalent
@@ -503,6 +558,7 @@ def Tae_from_T_wvap(T, wvap):
     return T*np.exp(Lv0*wvap/(Cpd*T))
 
 
+@_assumes('constant Lv')
 def Tie_from_T_wvap(T, wvap):
     '''
     Calculates isobaric equivalent temperature (K) from temperature (K) and
@@ -517,6 +573,7 @@ def Tie_from_T_wvap(T, wvap):
     return T*(1.+Lv0*wvap/(Cpd*T))
 
 
+@_assumes()
 def Tv_from_T_p_q(T, q):
     '''
     Calculates virtual temperature from temperature (K) and specific
@@ -525,6 +582,7 @@ def Tv_from_T_p_q(T, q):
     raise NotImplementedError()
 
 
+@_assumes('dry')
 def Tv_from_T_assuming_dry(T):
     '''
     Calculates virtual temperature from temperature assuming no moisture.
@@ -538,6 +596,7 @@ def Tv_from_T_assuming_dry(T):
     return 1.*T
 
 
+@_assumes('ideal gas')
 def Tv_ideal_gas(p, rho):
     '''
     Calculates virtual temperature (K) from density (kg/m^3) and pressure (Pa).
@@ -547,6 +606,7 @@ def Tv_ideal_gas(p, rho):
     return p/(rho*Rd)
 
 
+@_assumes('stull')
 def Tw_from_T_RH_Stull(T, RH):
     '''
     Calculates wet bulb temperature (K) from temperature (K) and relative
@@ -563,6 +623,7 @@ def Tw_from_T_RH_Stull(T, RH):
             + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
 
 
+@_assumes('dry')
 def T_from_Tv_assuming_dry(Tv):
     '''
     Calculates temperature from virtual temperature assuming no moisture.
@@ -576,6 +637,7 @@ def T_from_Tv_assuming_dry(Tv):
     return 1.*Tv
 
 
+@_assumes('constant Cp')
 def theta_from_p_T(p, T):
     '''
     Calculates potential temperature (K) from pressure (Pa) and temperature
@@ -586,6 +648,7 @@ def theta_from_p_T(p, T):
     return T*(1e5/p)**(Rd/Cpd)
 
 
+@_assumes('bolton', 'constant Cp')
 def thetae_from_theta_TL_wvap_Bolton(theta, TL, wvap):
     '''
     Calculates equivalent potential temperature (K) from potential
@@ -608,6 +671,7 @@ def thetae_from_theta_TL_wvap_Bolton(theta, TL, wvap):
     return theta*np.exp((3.376/TL-0.00254)*wvap*1e3*(1+0.81*wvap))
 
 
+@_assumes('constant Lv')
 def thetaie_from_T_theta_wvap(T, theta, wvap):
     '''
     Calculates isobaric equivalent potential temperature (K) from temperature
@@ -623,6 +687,7 @@ def thetaie_from_T_theta_wvap(T, theta, wvap):
     return theta*(1+Lv0*wvap/(Cpd*T))
 
 
+@_assumes('constant Cp')
 def thetaie_from_p_Tie_wvap(p, Tie, wvap):
     '''
     Calculates isobaric equivalent potential temperature (K) from isobaric
@@ -638,6 +703,7 @@ def thetaie_from_p_Tie_wvap(p, Tie, wvap):
     return Tie*(1e5/p)**(Rd/Cpd)
 
 
+@_assumes('constant Cp')
 def thetaae_from_p_Tae_wvap(p, Tae, wvap):
     '''
     Calculates adiabatic equivalent potential temperature (K) from adiabatic
@@ -648,6 +714,7 @@ def thetaae_from_p_Tae_wvap(p, Tae, wvap):
     return Tae*(1e5/p)**(Rd/Cpd)
 
 
+@_assumes('constant g')
 def w_from_omega_rho_hydrostatic(omega, rho):
     '''
     Calculates vertical velocity (m/s) from vertical pressure tendency (Pa/s)
@@ -658,6 +725,7 @@ def w_from_omega_rho_hydrostatic(omega, rho):
     return -omega/(rho*g0)
 
 
+@_assumes()
 def wvap_from_q(q):
     '''
     Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
@@ -667,6 +735,7 @@ def wvap_from_q(q):
     return q/(1-q)
 
 
+@_assumes()
 def wvaps_from_p_es(p, es):
     '''
     Calculates saturation mixing ratio from pressure (Pa) and saturation
@@ -677,6 +746,7 @@ def wvaps_from_p_es(p, es):
     return Rd/Rv*es/(p-es)
 
 
+@_assumes()
 def wvaps_from_qs(qs):
     '''
     Calculates saturation water vapor mixing ratio (kg/kg) from saturation
@@ -687,6 +757,7 @@ def wvaps_from_qs(qs):
     return qs/(1-qs)
 
 
+@_assumes('constant g')
 def z_from_Phi(Phi):
     '''
     Calculates height (m) from geopotential height (m^2/s^2) assuming constant

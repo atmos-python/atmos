@@ -6,14 +6,49 @@ Created on Wed Apr  1 14:31:40 2015
 """
 from util import ddx
 import re
+import inspect
+import equations
+
+default_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv')
+all_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
+               'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
+               'stipanuk', 'dry')
+
+
+def _get_methods(module):
+    '''
+    Returns a methods dictionary corresponding to the equations in the given
+    module.
+    '''
+    # Set up the methods dict we will eventually return
+    methods = {}
+    # Get functions and their outputs from our equation module
+    funcs = []
+    outputs = []
+    for item in inspect.getmembers(equations):
+        if (item[0][0] != '_' and '_from_' in item[0]):
+            funcs.append(item[1])
+            outputs.append(item[0][:item[0].find('_from_')])
+    # Store our funcs in methods
+    for i in range(len(funcs)):
+        if outputs[i] not in methods.keys():
+            methods[outputs[i]] = []
+        args = tuple(inspect.getargspec(funcs[i]).args)
+        try:
+            assumptions = tuple(funcs[i].assumptions)
+        except AttributeError:
+            raise NotImplementedError('function {} in equations module as no '
+                                      'assumption '
+                                      'definition'.format(funcs[i].__name__))
+        methods[outputs[i]].append((args, assumptions, funcs[i]))
+    return methods
 
 
 class _BaseSolver(object):
     '''
     '''
 
-    default_methods = {}
-    optional_methods = {}
+    _methods = {}
     derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
     coord_types = {
         'x': 'x',
@@ -72,8 +107,9 @@ class _BaseSolver(object):
         calculated by this object (such as u and v) were done so under this
         assumption.
         '''
-        if any([coord not in self.coord_types.keys()
-                for coord in axis_coords]):
+        if axis_coords is not None and any([coord not in
+                                            self.coord_types.keys()
+                                            for coord in axis_coords]):
             raise ValueError('Invalid value given in axis_coords')
         self.methods = self._get_methods(methods)
         self.vars = kwargs
@@ -148,8 +184,6 @@ class _BaseSolver(object):
             value = func(*[self.vars[varname] for varname in func_args[i]])
             # Add it to our dictionary of quantities for successive functions
             self.vars[extra_values[i]] = value
-        # The last quantity calculated will be the one for this function call
-        assert extra_values[-1] == quantity_out
         return self.vars[quantity_out]
 
     def _calculate(self, out_name, methods, exclude, funcs, func_args,
@@ -268,7 +302,7 @@ class _BaseSolver(object):
             each function in funcs
         '''
         # Check if derivatives are disabled
-        if self.derivative is None:
+        if self._derivative is None:
             return None
         match = self.derivative_prog.match(out_name)
         if match is None:
@@ -358,31 +392,31 @@ class _BaseSolver(object):
             If multiple optional methods are selected which calculate the same
                 output quantity from the same input quantities
         '''
+        for m in method_options:
+            if m not in all_methods:
+                raise ValueError('method {} matches no equations'.format(m))
         methods = {}
-        for methodname in method_options:
-            # Check that this is actually a valid method
-            if methodname not in self.optional_methods.keys():
-                raise ValueError('method {} is not defined'.format(methodname))
-            # Iterate through each quantity this method lets you calculate
-            for varname in self.optional_methods[methodname].keys():
-                # Make sure we have a dictionary defined for this quantity
-                if varname not in methods.keys():
-                    methods[varname] = {}
-                equations = self.optional_methods[methodname][varname]
-                # Make sure another method is not already selected that does
-                # this same calculation
-                for vars_input in equations.keys():
-                    if vars_input in methods[varname].keys():
-                        raise ValueError(('Multiple methods for {} --> {} chos'
-                                          'en').format(', '.join(vars_input),
-                                                       varname))
-                methods[varname].update(equations)
-        output_methods = self.default_methods.copy()
-        output_methods.update(methods)
-        return output_methods
+        # Go through each output variable
+        for output, L in self._methods.items():
+            # Go through each potential equation
+            for args, assumptions, func in L:
+                # See if we're using the equation's assumptions
+                if all(item in method_options for item in assumptions):
+                    # At this point, we want to add the equation
+                    # Make sure we have a dict to add it to
+                    if output not in methods.keys():
+                        methods[output] = {}
+                    # Check if this is a duplicate equation
+                    if args in methods[output].keys():
+                        raise ValueError('methods given define duplicate '
+                                         'equations')
+                    methods[output][args] = func
+        return methods
 
 
 class FluidSolver(_BaseSolver):
+
+    _methods = _get_methods(equations)
 
     def calculate(self, quantity_out, **kwargs):
         '''
@@ -434,18 +468,15 @@ class FluidSolver(_BaseSolver):
         return super(FluidSolver, self).calculate(quantity_out, **kwargs)
 
 
-def calculate(output, methods=(), derivative=None,
-              axis_coords=None, override_coord_axes=None,
-              coords_own_axis=None, **kwargs):
+def calculate(*args, **kwargs):
     '''
     Calculates and returns a requested quantity from quantities passed in as
     keyword arguments.
 
     Parameters
     ----------
-    output : string or iterable
-        Name of quantity to be calculated. If iterable, should contain strings
-        which are names of quantities to be calculated.
+    args : string
+        Names of quantities to be calculated.
     methods : tuple, optional
         Names of methods that can be used for calculation, as strings.
     derivative : str, optional
@@ -510,13 +541,24 @@ def calculate(output, methods=(), derivative=None,
     --------
     >>>
     '''
-    deriver = FluidSolver(methods, derivative,
-                          axis_coords, override_coord_axes,
-                          coords_own_axis, **kwargs)
+    def get_arg(name, kwargs):
+        try:
+            arg = kwargs.pop(name)
+        except:
+            arg = None
+        return arg
     try:
-        result = [deriver.calculate(var) for var in output]
-    except TypeError:  # raised if output is not iterable
-        result = deriver.calculate(output)
+        methods = kwargs.pop('methods')
+    except KeyError:
+        methods = default_methods
+    derivative = get_arg('derivative', kwargs)
+    axis_coords = get_arg('axis_coords', kwargs)
+    override_coord_axes = get_arg('override_coord_axes', kwargs)
+    coords_own_axis = get_arg('coords_own_axis', kwargs)
+    solver = FluidSolver(methods, derivative,
+                         axis_coords, override_coord_axes,
+                         coords_own_axis, **kwargs)
+    result = [solver.calculate(var) for var in args]
     if len(result) == 1:
         return result[0]
     else:

@@ -8,6 +8,7 @@ import unittest
 import nose
 import numpy as np
 from nose.tools import raises
+from constants import Rd
 from solve import *
 from solve import _BaseSolver
 
@@ -64,13 +65,13 @@ class FluidSolverTests(unittest.TestCase):
         FluidSolver(methods=('dry',), **self.vars1)
 
     def test_simple_calculation(self):
-        deriver = FluidSolver(**self.vars1)
+        deriver = FluidSolver(methods=default_methods, **self.vars1)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        deriver = FluidSolver(methods=('dry',), **self.vars2)
+        deriver = FluidSolver(methods=default_methods + ('dry',), **self.vars2)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
@@ -96,13 +97,15 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        rho = calculate('rho', methods=('dry',), **self.vars2)
+        rho = calculate('rho', methods=default_methods + ('dry',),
+                        **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_double_calculation(self):
-        Tv, rho = calculate('Tv', 'rho', methods=('dry',), **self.vars2)
+        Tv, rho = calculate('Tv', 'rho', methods=default_methods + ('dry',),
+                            **self.vars2)
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
@@ -110,7 +113,8 @@ class calculateTests(unittest.TestCase):
         assert isinstance(Tv, np.ndarray)
 
     def test_double_reverse_calculation(self):
-        rho, Tv = calculate('rho', 'Tv', methods=('dry',), **self.vars2)
+        rho, Tv = calculate('rho', 'Tv', methods=default_methods + ('dry',),
+                            **self.vars2)
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
         assert isinstance(Tv, np.ndarray)
