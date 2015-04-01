@@ -8,18 +8,18 @@ import unittest
 import nose
 import numpy as np
 from nose.tools import raises
-from quantities import *
-from quantities import _BaseDeriver
+from solve import *
+from solve import _BaseSolver
 
 
-class BaseDeriverTests(unittest.TestCase):
+class BaseSolverTests(unittest.TestCase):
 
     @raises(TypeError)
     def test_cannot_instantiate(self):
-        _BaseDeriver()
+        _BaseSolver()
 
 
-class FluidDeriverTests(unittest.TestCase):
+class FluidSolverTests(unittest.TestCase):
 
     def setUp(self):
         shape = (3, 4, 2, 2)
@@ -33,44 +33,44 @@ class FluidDeriverTests(unittest.TestCase):
         self.vars2 = None
 
     def test_creation_no_arguments(self):
-        FluidDeriver()
+        FluidSolver()
 
     def test_is_instance_of_BaseDeriver(self):
-        deriv = FluidDeriver()
-        assert isinstance(deriv, _BaseDeriver)
+        deriv = FluidSolver()
+        assert isinstance(deriv, _BaseSolver)
 
     def test_creation_one_method(self):
-        FluidDeriver(methods=('hydrostatic',))
+        FluidSolver(methods=('hydrostatic',))
 
     def test_creation_compatible_methods(self):
-        FluidDeriver(methods=('hydrostatic', 'dry',))
+        FluidSolver(methods=('hydrostatic', 'dry',))
 
     @raises(ValueError)
     def test_creation_incompatible_methods(self):
-        FluidDeriver(methods=('Goff-Gratch', 'Wexler',))
+        FluidSolver(methods=('Goff-Gratch', 'Wexler',))
 
     @raises(ValueError)
     def test_creation_undefined_method(self):
-        FluidDeriver(methods=('moocow',))
+        FluidSolver(methods=('moocow',))
 
     @raises(ValueError)
     def test_creation_undefined_method_with_defined_method(self):
-        FluidDeriver(methods=('hydrostatic', 'moocow',))
+        FluidSolver(methods=('hydrostatic', 'moocow',))
 
     def test_creation_with_vars(self):
-        FluidDeriver(**self.vars1)
+        FluidSolver(**self.vars1)
 
     def test_creation_with_vars_and_method(self):
-        FluidDeriver(methods=('dry',), **self.vars1)
+        FluidSolver(methods=('dry',), **self.vars1)
 
     def test_simple_calculation(self):
-        deriver = FluidDeriver(**self.vars1)
+        deriver = FluidSolver(**self.vars1)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        deriver = FluidDeriver(methods=('dry',), **self.vars2)
+        deriver = FluidSolver(methods=('dry',), **self.vars2)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
