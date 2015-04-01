@@ -1,0 +1,4 @@
+# Ignore cython-generated c source
+_*.c
+_*_float32.pyx
+_*_float64.pyx

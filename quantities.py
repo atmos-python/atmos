@@ -20,6 +20,13 @@ This temporary script file is located here:
 #
 # How do we handle latent heat of condensation for water? Constant? Poly fit?
 #
+# Users may make use of the same computation repeatedly. Should we cache how
+# to calculate an output quantity from a set of inputs and methods?
+# Precomputing every possible option is probably too memory-intensive because
+# of the large number of options, but caching could be viable.
+#
+# Vertical ordering... What are the consequences, and how to handle it?
+#
 
 # To implement:
 #
@@ -31,7 +38,6 @@ This temporary script file is located here:
 # Equivalent potential temperature... What even.
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
-
 from util import ddx
 import numpy as np
 import re
@@ -75,14 +81,28 @@ def dpdz_from_rho_hydrostatic(rho):
 def DSE_from_T_z(T, z):
     '''
     Calculates dry static energy (J) from temperature (K) and height (m).
+
+    DSE = Cp*T + g*z
     '''
     return Cp*T + g*z
+
+
+def DSE_from_T_Phi(T, Phi):
+    '''
+    Calculates dry static energy (J) from temperature (K) and geopotential
+    height (m^2/s^2).
+
+    DSE = Cp*T + Phi
+    '''
+    return Cp*T + Phi
 
 
 def MSE_from_DSE_q(DSE, q):
     '''
     Calculates moist static energy (J) from dry static energy (J) and specific
-    humidity (kg/kg).
+    humidity (kg/kg) assuming constant latent heat of vaporization of water.
+
+    MSE = DSE + Lv*q
     '''
     return DSE + Lv*q
 
@@ -168,6 +188,16 @@ def f_from_lat(lat):
     return 2.*Omega*np.sin(np.pi/180.*lat)
 
 
+def omega_from_w_rho_hydrostatic(w, rho):
+    '''
+    Calculates pressure tendency (Pa/s) from vertical velocity (m/s) and
+    density (kg/m^3) using the hydrostatic assumption.
+
+    omega = -rho*g*w
+    '''
+    return -rho*g*w
+
+
 def p_ideal_gas(rho, Tv):
     '''
     Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K).
@@ -175,6 +205,35 @@ def p_ideal_gas(rho, Tv):
     p = rho*Rd*Tv
     '''
     return rho*Rd*Tv
+
+
+def plcl_from_p_T_Td(p, T, Td):
+    '''
+    Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K), and
+    dew point temperature (K).
+
+    Calculates the pressure of the lifting condensation level computed by an
+    iterative procedure described by equations 8-12 (pp 13-14) of:
+
+    Stipanuk, G.S., (1973) original version.
+    "Algorithms for generating a skew-t, log p diagram and computing selected
+    meteorological quantities."
+
+    Atmospheric sciences laboratory
+    U.S. Army Electronics Command
+    White Sands Missile Range, New Mexico 88002
+    '''
+    raise NotImplementedError()
+
+
+def Phi_from_z(z):
+    '''
+    Calculates geopotential height (m^2/s^2) from height (m) assuming constant
+    g.
+
+    Phi = g*z
+    '''
+    return g*z
 
 
 def q_from_AH_rho(AH, rho):
@@ -604,6 +663,16 @@ def thetaae_from_p_Tae_wvap(p, Tae, wvap):
     return Tae*(1e5/p)**(Rd/Cp)
 
 
+def w_from_omega_rho_hydrostatic(omega, rho):
+    '''
+    Calculates vertical velocity (m/s) from vertical pressure tendency (Pa/s)
+    and density (kg/m^3) using the hydrostatic assumption.
+
+    w = -omega/(rho*g)
+    '''
+    return -omega/(rho*g)
+
+
 def wvap_from_q(q):
     '''
     Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
@@ -633,6 +702,16 @@ def wvaps_from_qs(qs):
     return qs/(1-qs)
 
 
+def z_from_Phi(Phi):
+    '''
+    Calculates height (m) from geopotential height (m^2/s^2) assuming constant
+    g.
+
+    z = Phi/g
+    '''
+    return Phi/g
+
+
 class _BaseDeriver(object):
     '''
     '''
@@ -658,11 +737,44 @@ class _BaseDeriver(object):
                             'subclass.')
         return object.__new__(cls, *args, **kwargs)
 
-    def __init__(self, methods=(), axis_coords=None, override_coord_axes=None,
+    def __init__(self, methods=(), derivative=None,
+                 axis_coords=None, override_coord_axes=None,
                  coords_own_axis=None, **kwargs):
         '''
         Initializes with the given methods enabled, and variables passed as
         keyword arguments stored.
+
+        Parameters
+        ----------
+        methods : tuple, optional
+            Strings specifying which methods to enable.
+        derivative : str, optional
+            Which spatial derivative calculation to use. Set to 'centered' for
+            second-order centered finite difference with first-order
+            forward and backward differencing at boundaries, or None to disable
+            derivatives.
+        axis_coords : iterable, optional
+            Defines the default coordinate to assume for each axis. Should
+            contain 't' to denote a time-like coordinate, 'z' to denote a
+            vertical-like coordinate, 'y' to denote a meridional-like
+            component, and 'x' to denote a zonal-like component.
+            Only required for calculations that require this knowledge.
+        override_coord_axes : mapping, optional
+            A mapping of quantity strings to tuples defining the axes of those
+            quantities, overriding the default of axis_coords.
+        coords_own_axis : mapping, optional
+            A mapping of quantity strings for coordinate-like quantities to
+            their index which corresponds to their own axis. For example, if
+            lon is given as an array in [lat, lon], its value would be 1,
+            whereas if it is a 1-D array its value would be 0. This is assumed
+            to be 0 by default.
+
+        Notes
+        -----
+        y and x defined in axis_coords need not be meridional and longitudinal,
+        so long as it is understood that any zonal or meridional quantities
+        calculated by this object (such as u and v) were done so under this
+        assumption.
         '''
         if any([coord not in self.coord_types.keys()
                 for coord in axis_coords]):
@@ -683,6 +795,9 @@ class _BaseDeriver(object):
         self.coords_own_axis = {'t': 0, 'z': 0, 'y': 0, 'x': 0}
         if coords_own_axis is not None:
             self.coords_own_axis.update(coords_own_axis)
+        if derivative not in ('centered', None):
+            raise ValueError('invalid value given for derivative')
+        self._derivative = derivative
 
     def calculate(self, quantity_out):
         '''
@@ -856,6 +971,9 @@ class _BaseDeriver(object):
             A tuple of strings denoting the variables that are output by
             each function in funcs
         '''
+        # Check if derivatives are disabled
+        if self.derivative is None:
+            return None
         match = self.derivative_prog.match(out_name)
         if match is None:
             raise ValueError('out_name is not in the form of a derivative')
@@ -915,14 +1033,14 @@ class _BaseDeriver(object):
             An iterable of strings corresponding to the variables that must be
             passed as arguments to the function returned by this function
         '''
-        self.coord_axes
-        self.override_coord_axes
-        self.coords_own_axis
-        self.coord_types
         axis = self.coord_axes[self.coord_types[coordname]]
-        func = lambda data, coord: \
-            ddx(data, axis, x=coord,
-                axis_x=self.coords_own_axis[self.coord_types[coordname]])
+        if self._derivative == 'centered':
+            func = lambda data, coord: \
+                ddx(data, axis, x=coord,
+                    axis_x=self.coords_own_axis[self.coord_types[coordname]])
+        else:
+            raise ValueError('invalid derivative type used to construct '
+                             'Deriver')
         return (func, (varname, coordname))
 
     def _get_methods(self, method_options):
@@ -1050,7 +1168,8 @@ class FluidDeriver(_BaseDeriver):
         return super(FluidDeriver, self).calculate(quantity_out, **kwargs)
 
 
-def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
+def calculate(output, methods=(), derivative=None,
+              axis_coords=None, override_coord_axes=None,
               coords_own_axis=None, **kwargs):
     '''
     Calculates and returns a requested quantity from quantities passed in as
@@ -1063,6 +1182,28 @@ def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
         which are names of quantities to be calculated.
     methods : tuple, optional
         Names of methods that can be used for calculation, as strings.
+    derivative : str, optional
+        Which spatial derivative calculation to use. Set to 'centered' for
+        second-order centered finite difference, or None to disable
+        derivatives.
+    periodic : bool, optional
+        Whether the domain is periodic in space. Used when calculating
+        spatial derivatives.
+    axis_coords : iterable, optional
+        Defines the default coordinate to assume for each axis. Should
+        contain 't' to denote a time-like coordinate, 'z' to denote a
+        vertical-like coordinate, 'y' to denote a meridional-like
+        component, and 'x' to denote a zonal-like component.
+        Only required for calculations that require this knowledge.
+    override_coord_axes : mapping, optional
+        A mapping of quantity strings to tuples defining the axes of those
+        quantities, overriding the default of axis_coords.
+    coords_own_axis : mapping, optional
+        A mapping of quantity strings for coordinate-like quantities to
+        their index which corresponds to their own axis. For example, if
+        lon is given as an array in [lat, lon], its value would be 1,
+        whereas if it is a 1-D array its value would be 0. This is assumed
+        to be 0 by default.
 
     Quantity Parameters
     -------------------
@@ -1094,12 +1235,17 @@ def calculate(output, methods=(), axis_coords=None, override_coord_axes=None,
 
     Notes
     -----
+    y and x defined in axis_coords need not be meridional and longitudinal,
+    so long as it is understood that any zonal or meridional quantities
+    calculated by this object (such as u and v) were done so under this
+    assumption.
 
     Examples
     --------
     >>>
     '''
-    deriver = FluidDeriver(methods, axis_coords, override_coord_axes,
+    deriver = FluidDeriver(methods, derivative,
+                           axis_coords, override_coord_axes,
                            coords_own_axis, **kwargs)
     try:
         result = [deriver.calculate(var) for var in output]
