@@ -39,7 +39,7 @@ This temporary script file is located here:
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
 import numpy as np
-from constants import g0, stefan, r_earth, Omega, Rd, Rv, Cpd, Gammad, Lv0
+from constants import g0, Omega, Rd, Rv, Cpd, Lv0
 
 
 # Define some decorators for our equations
@@ -64,14 +64,14 @@ def _inputs(*args):
 
 
 @_assumes()
-def AH_from_q_rho(q, rho):
+def AH_from_qv_rho(qv, rho):
     '''
     Calculates absolute humidity (kg/m^3) from specific humidity (kg/kg) and
     air density (kg/m^3).
 
-    AH = q*rho
+    AH = qv*rho
     '''
-    return q*rho
+    return qv*rho
 
 
 @_assumes('hydrostatic')
@@ -108,12 +108,12 @@ def DSE_from_T_Phi(T, Phi):
 
 
 @_assumes()
-def e_from_p_q(p, q):
+def e_from_p_qv(p, qv):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa) and
     specific humidity (kg/kg).
     '''
-    return p*q/(0.622+q)
+    return p*qv/(0.622+qv)
 
 
 @_assumes('goff-gratch')
@@ -300,30 +300,30 @@ def f_from_lat(lat):
 
 
 @_assumes('constant g', 'constant Lv')
-def Gammam_from_wvaps_T(wvaps, T):
+def Gammam_from_rvs_T(rvs, T):
     '''
-    Calculates saturation adiabatic lapse rate (K/m) from pressure (Pa) and
-    temperature (K), assuming constant g and latent heat of vaporization of
-    water.
+    Calculates saturation adiabatic lapse rate (K/m) from water vapor mixing
+    ratio (kg/kg) and temperature (K), assuming constant g and latent heat of
+    vaporization of water.
 
-    Gammam = g0*(1+(Lv0*wvaps)/(Rd*T))/(Cpd+(Lv0**2*wvaps)/(Rv*T**2))
+    Gammam = g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
 
     From the American Meteorological Society Glossary of Meteorology
     http://glossary.ametsoc.org/wiki/Saturation-adiabatic_lapse_rate
     Retrieved March 25, 2015
     '''
-    return g0*(1+(Lv0*wvaps)/(Rd*T))/(Cpd+(Lv0**2*wvaps)/(Rv*T**2))
+    return g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
 
 
 @_assumes('constant Lv')
-def MSE_from_DSE_q(DSE, q):
+def MSE_from_DSE_qv(DSE, qv):
     '''
     Calculates moist static energy (J) from dry static energy (J) and specific
     humidity (kg/kg) assuming constant latent heat of vaporization of water.
 
-    MSE = DSE + Lv0*q
+    MSE = DSE + Lv0*qv
     '''
-    return DSE + Lv0*q
+    return DSE + Lv0*qv
 
 
 @_assumes('hydrostatic')
@@ -346,6 +346,16 @@ def p_from_rho_Tv_ideal_gas(rho, Tv):
     p = rho*Rd*Tv
     '''
     return rho*Rd*Tv
+
+
+@_assumes('constant Cp')
+def plcl_from_p_T_Tlcl(p, T, Tlcl):
+    '''
+    Calculates pressure after adiabatic ascent to lifting condensation level
+    (Pa) from pressure (Pa), temperature (K), and temperature after adiabatic
+    ascent to lifting condensation level (K).
+    '''
+    return p*(Tlcl/T)**(Rd/Cpd)
 
 
 @_assumes('stipanuk')
@@ -380,77 +390,79 @@ def Phi_from_z(z):
 
 
 @_assumes()
-def q_from_AH_rho(AH, rho):
+def qv_from_AH_rho(AH, rho):
     '''
     Calculates specific humidity (kg/kg) from absolute humidity (kg/m^3) and
     air density (kg/m^3).
 
-    q = AH/rho
+    qv = AH/rho
     '''
     return AH/rho
 
 
 @_assumes()
-def q_from_wvap(wvap):
+def qv_from_rv(rv):
     '''
     Calculates specific humidity (kg/kg) from water vapor mixing ratio (kg/kg).
 
-    q = wvap/(1+wvap)
+    qv = rv/(1+rv)
     '''
-    return wvap/(1+wvap)
+    return rv/(1.+rv)
 
 
 @_assumes()
-def q_from_p_e(p, e):
+def qv_from_p_e(p, e):
     '''
     Calculates specific humidity (kg/kg) from air pressure (Pa) and water vapor
     partial pressure (Pa).
+
+    qv = 0.622*e/(p-e)
     '''
     return 0.622*e/(p-e)
 
 
 @_assumes()
-def qs_from_wvaps(wvaps):
+def qvs_from_rvs(rvs):
     '''
     Calculates saturation specific humidity (kg/kg) from saturated water vapor
     mixing ratio (kg/kg).
 
-    q = wvap/(1+wvap)
+    qvs = rvs/(1+rvs)
     '''
-    return wvaps/(1+wvaps)
+    return rvs/(1+rvs)
 
 
 @_assumes()
-def RH_from_q_qs(q, qs):
+def RH_from_qv_qvs(qv, qvs):
     '''
     Calculates relative humidity (%) from specific humidity (kg/kg) and
     saturation specific humidity (kg/kg).
 
-    RH = q/qs*100.
+    RH = qv/qvs*100.
     '''
-    return q/qs*100.
+    return qv/qvs*100.
 
 
 @_assumes()
-def RH_from_wvap_wvaps(wvap, wvaps):
+def RH_from_rv_rvs(rv, rvs):
     '''
     Calculates relative humidity (%) from mixing ratio (kg/kg) and
     saturation mixing ratio (kg/kg)
 
-    RH = wvap/wvaps*100.
+    RH = rv/rvs*100.
     '''
-    return wvap/wvaps*100.
+    return rv/rvs*100.
 
 
 @_assumes()
-def rho_from_q_AH(q, AH):
+def rho_from_qv_AH(qv, AH):
     '''
     Calculates density (kg/m^3) from specific humidity (kg/kg) and absolute
     humidity (kg/m^3).
 
-    rho = AH/q
+    rho = AH/qv
     '''
-    return AH/q
+    return AH/qv
 
 
 @_assumes('hydrostatic', 'constant g')
@@ -475,6 +487,38 @@ def rho_from_p_Tv_ideal_gas(p, Tv):
     return p/(Rd*Tv)
 
 
+@_assumes()
+def rv_from_qv(qv):
+    '''
+    Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
+
+    rv = q/(1-q)
+    '''
+    return qv/(1-qv)
+
+
+@_assumes()
+def rvs_from_p_es(p, es):
+    '''
+    Calculates saturation mixing ratio from pressure (Pa) and saturation
+    vapor pressure (Pa).
+
+    rvs = Rd/Rv*es/(p-es)
+    '''
+    return Rd/Rv*es/(p-es)
+
+
+@_assumes()
+def rvs_from_qvs(qvs):
+    '''
+    Calculates saturation water vapor mixing ratio (kg/kg) from saturation
+    specific humidity (kg/kg).
+
+    rv = qvs/(1-qvs)
+    '''
+    return qvs/(1-qvs)
+
+
 @_assumes('bolton')
 def T_from_es_Bolton(es):
     '''
@@ -496,12 +540,12 @@ def T_from_es_Bolton(es):
 
 
 @_assumes('bolton')
-def TL_from_T_RH(T, RH):
+def Tlcl_from_T_RH(T, RH):
     '''
     Calculates temperature at LCL (K) from temperature (K) and relative
     humidity (%) using Bolton (1980) equation 22.
 
-    TL = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.
+    Tlcl = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.
 
     References
     ----------
@@ -513,12 +557,12 @@ def TL_from_T_RH(T, RH):
 
 
 @_assumes('bolton')
-def TL_from_T_Td(T, Td):
+def Tlcl_from_T_Td(T, Td):
     '''
     Calculates temperature at LCL (K) from temperature (K) and dewpoint
     temperature (K) using Bolton (1980) equation 15.
 
-    TL = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.
+    Tlcl = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.
 
     References
     ----------
@@ -530,12 +574,12 @@ def TL_from_T_Td(T, Td):
 
 
 @_assumes('bolton')
-def TL_from_T_e(T, e):
+def Tlcl_from_T_e(T, e):
     '''
     Calculates temperature at LCL (K) from temperature (K) and water vapor
     partial pressure (Pa) using Bolton (1980) equation 21.
 
-    TL = 2840./(3.5*log(T)-log(e)-4.805) + 55.
+    Tlcl = 2840./(3.5*log(T)-log(e)-4.805) + 55.
 
     References
     ----------
@@ -547,42 +591,42 @@ def TL_from_T_e(T, e):
 
 
 @_assumes('constant Lv')
-def Tae_from_T_wvap(T, wvap):
+def Tae_from_T_rv(T, rv):
     '''
     Calculates adiabatic equivalent temperature (aka pseudoequivalent
     temperature) (K) from temperature (K) and water vapor mixing ratio (kg/kg)
 
-    Tae = T*exp(Lv0*wvap/(Cpd*T))
+    Tae = T*exp(Lv0*rv/(Cpd*T))
 
     From the American Meteorological Society Glossary of Meteorology
     http://glossary.ametsoc.org/wiki/Equivalent_temperature
     Retrieved March 25, 2015
     '''
-    return T*np.exp(Lv0*wvap/(Cpd*T))
+    return T*np.exp(Lv0*rv/(Cpd*T))
 
 
 @_assumes('constant Lv')
-def Tie_from_T_wvap(T, wvap):
+def Tie_from_T_rv(T, rv):
     '''
     Calculates isobaric equivalent temperature (K) from temperature (K) and
     water vapor mixing ratio (kg/kg).
 
-    Tie = T*(1.+Lv0*wvap/(Cpd*T))
+    Tie = T*(1.+Lv0*rv/(Cpd*T))
 
     From the American Meteorological Society Glossary of Meteorology
     http://glossary.ametsoc.org/wiki/Equivalent_temperature
     Retrived March 25, 2015
     '''
-    return T*(1.+Lv0*wvap/(Cpd*T))
+    return T*(1.+Lv0*rv/(Cpd*T))
 
 
-@_assumes()
-def Tv_from_T_p_q(T, q):
+@_assumes('no liquid water', 'no solid water')
+def Tv_from_T_qv(T, qv):
     '''
     Calculates virtual temperature from temperature (K) and specific
     humidity (kg/kg).
     '''
-    raise NotImplementedError()
+    return T*(1+0.608*qv)
 
 
 @_assumes('Tv equals T')
@@ -652,7 +696,7 @@ def theta_from_p_T(p, T):
 
 
 @_assumes('bolton', 'constant Cp')
-def thetae_from_theta_TL_wvap_Bolton(theta, TL, wvap):
+def thetae_from_theta_TL_rv_Bolton(theta, TL, rv):
     '''
     Calculates equivalent potential temperature (K) from potential
     temperature (K), temperature at LCL (K), and water vapor mixing ratio
@@ -671,27 +715,27 @@ def thetae_from_theta_TL_wvap_Bolton(theta, TL, wvap):
         Temperature. Mon. Wea. Rev., 137, 3137–3148.
         doi: http://dx.doi.org/10.1175/2009MWR2774.1
     '''
-    return theta*np.exp((3.376/TL-0.00254)*wvap*1e3*(1+0.81*wvap))
+    return theta*np.exp((3.376/TL-0.00254)*rv*1e3*(1+0.81*rv))
 
 
 @_assumes('constant Lv')
-def thetaie_from_T_theta_wvap(T, theta, wvap):
+def thetaie_from_T_theta_rv(T, theta, rv):
     '''
     Calculates isobaric equivalent potential temperature (K) from temperature
     (K), potential temperature (K), and water vapor mixing ratio (kg/kg).
 
-    thetaie = theta*(1+Lv0*wvap/(Cpd*T))
+    thetaie = theta*(1+Lv0*rv/(Cpd*T))
 
     References
     ----------
     Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
         Sundog Publishing, pg. 203
     '''
-    return theta*(1+Lv0*wvap/(Cpd*T))
+    return theta*(1+Lv0*rv/(Cpd*T))
 
 
 @_assumes('constant Cp')
-def thetaie_from_p_Tie_wvap(p, Tie, wvap):
+def thetaie_from_p_Tie_rv(p, Tie, rv):
     '''
     Calculates isobaric equivalent potential temperature (K) from isobaric
     equivalent temperature (K) and water vapor mixing ratio (kg/kg).
@@ -707,7 +751,7 @@ def thetaie_from_p_Tie_wvap(p, Tie, wvap):
 
 
 @_assumes('constant Cp')
-def thetaae_from_p_Tae_wvap(p, Tae, wvap):
+def thetaae_from_p_Tae_rv(p, Tae, rv):
     '''
     Calculates adiabatic equivalent potential temperature (K) from adiabatic
     equivalent temperature (K) and water vapor mixing ratio (kg/kg).
@@ -726,38 +770,6 @@ def w_from_omega_rho_hydrostatic(omega, rho):
     w = -omega/(rho*g0)
     '''
     return -omega/(rho*g0)
-
-
-@_assumes()
-def wvap_from_q(q):
-    '''
-    Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
-
-    wvap = q/(1-q)
-    '''
-    return q/(1-q)
-
-
-@_assumes()
-def wvaps_from_p_es(p, es):
-    '''
-    Calculates saturation mixing ratio from pressure (Pa) and saturation
-    vapor pressure (Pa).
-
-    wvaps = Rd/Rv*es/(p-es)
-    '''
-    return Rd/Rv*es/(p-es)
-
-
-@_assumes()
-def wvaps_from_qs(qs):
-    '''
-    Calculates saturation water vapor mixing ratio (kg/kg) from saturation
-    specific humidity (kg/kg).
-
-    wvap = q/(1-q)
-    '''
-    return qs/(1-qs)
 
 
 @_assumes('constant g')
