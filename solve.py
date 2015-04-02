@@ -11,12 +11,13 @@ import equations
 
 default_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv')
 all_methods = tuple(set([]).union(*[f[1].func_dict['assumptions']
-                     for f in inspect.getmembers(equations)
-                     if hasattr(f[1], 'func_dict') and 'assumptions' in
-                     f[1].func_dict.keys()]))
+                                    for f in inspect.getmembers(equations)
+                                    if hasattr(f[1], 'func_dict') and
+                                    'assumptions' in
+                                    f[1].func_dict.keys()]))
 # all_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
 #                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
-#                'stipanuk', 'dry')
+#                'stipanuk', 'dry', 'Tv equals T')
 
 
 def _get_methods(module):

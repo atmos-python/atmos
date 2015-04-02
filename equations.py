@@ -77,8 +77,8 @@ def AH_from_q_rho(q, rho):
 @_assumes('hydrostatic')
 def dpdz_from_rho_hydrostatic(rho):
     '''
-    Calculates vertical derivative of pressure (Pa/m) from density (kg/m^3) and
-    hydrostatic balance.
+    Calculates vertical derivative of pressure (Pa/m) from density (kg/m^3),
+    assuming hydrostatic balance.
 
     dp/dz = -rho*g0
     '''
@@ -88,9 +88,10 @@ def dpdz_from_rho_hydrostatic(rho):
 @_assumes('constant g')
 def DSE_from_T_z(T, z):
     '''
-    Calculates dry static energy (J) from temperature (K) and height (m).
+    Calculates dry static energy (J) from temperature (K) and height (m)
+    assuming constant g.
 
-    DSE = Cp*T + g*z
+    DSE = Cp*T + g0*z
     '''
     return Cpd*T + g0*z
 
@@ -339,7 +340,8 @@ def omega_from_w_rho_hydrostatic(w, rho):
 @_assumes('ideal gas')
 def p_from_rho_Tv_ideal_gas(rho, Tv):
     '''
-    Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K).
+    Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K)
+    assuming an ideal gas.
 
     p = rho*Rd*Tv
     '''
@@ -451,11 +453,11 @@ def rho_from_q_AH(q, AH):
     return AH/q
 
 
-@_assumes('hydrostatic')
+@_assumes('hydrostatic', 'constant g')
 def rho_from_dpdz_hydrostatic(dpdz):
     '''
-    Calculates density (kg/m^3) from vertical derivative of pressure (Pa/m) and
-    hydrostatic balance.
+    Calculates density (kg/m^3) from vertical derivative of pressure (Pa/m)
+    assuming hydrostatic balance and constant g.
 
     rho = -dpdz/g0
     '''
@@ -465,7 +467,8 @@ def rho_from_dpdz_hydrostatic(dpdz):
 @_assumes('ideal gas')
 def rho_from_p_Tv_ideal_gas(p, Tv):
     '''
-    Calculates density (kg/m^3) from pressure (Pa) and virtual temperature (K).
+    Calculates density (kg/m^3) from pressure (Pa) and virtual temperature (K)
+    assuming an ideal gas.
 
     rho = p/(Rd*Tv)
     '''
@@ -582,8 +585,8 @@ def Tv_from_T_p_q(T, q):
     raise NotImplementedError()
 
 
-@_assumes('dry')
-def Tv_from_T_assuming_dry(T):
+@_assumes('Tv equals T')
+def Tv_from_T_assuming_Tv_equals_T(T):
     '''
     Calculates virtual temperature from temperature assuming no moisture.
     That is to say, it returns the input back.
@@ -623,8 +626,8 @@ def Tw_from_T_RH_Stull(T, RH):
             + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
 
 
-@_assumes('dry')
-def T_from_Tv_assuming_dry(Tv):
+@_assumes('Tv equals T')
+def T_from_Tv_assuming_Tv_equals_T(Tv):
     '''
     Calculates temperature from virtual temperature assuming no moisture.
     That is to say, it returns the input back.
