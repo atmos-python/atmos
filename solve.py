@@ -49,6 +49,27 @@ def _get_methods(module):
     return methods
 
 
+def _get_best_result(results):
+    '''
+    Takes in an iterable of (funcs, func_args, outputs) tuples, and returns the
+    one that corresponds to the "best" solution. This means the fewest
+    function calls, with ties broken by the fewest total function arguments.
+
+    Note the definition of "best" solution is subject to change.
+    '''
+    if len(results) == 0:
+        raise ValueError('results must be nonempty')
+    min_length = min([len(r[0]) for r in results])
+    first_pass = [r for r in results if len(r[0]) == min_length]
+    if len(first_pass) == 1:
+        return first_pass[0]
+    else:
+        min_args = min([sum([len(args) for args in r[1]]) for r in results])
+        second_pass = [r for r in results if
+                       sum([len(args) for args in r[1]]) == min_args]
+        return second_pass[0]
+
+
 class _BaseSolver(object):
     '''
     '''
@@ -233,13 +254,17 @@ class _BaseSolver(object):
                              'determines it'.format(out_name))
         # Check whether we already have calculated everything to complete
         # one of the available methods
+        results = []
         for args, func in methods[out_name].items():
             # See if all arguments are either provided or already calculated
             if all([(arg in in_values.keys() or arg in extra_values) for arg
                     in args]):
                 # If this is the case, use this method
-                return (funcs + (func,), func_args + (args,),
-                        extra_values + (out_name,))
+                results.append(((func,), (args,), (out_name,)))
+        if len(results) > 0:
+            result = _get_best_result(results)
+            return (funcs + result[0], func_args + result[1],
+                    extra_values + result[2])
         # See if we can calculate from a method by calculating the missing
         # arguments
         for args, func in methods[out_name].items():
@@ -255,12 +280,14 @@ class _BaseSolver(object):
                 if arg in in_values.keys() or arg in temp_extra_values:
                     # We already have this, check the next one
                     continue
+                # See if this is a derivative and we can get it
                 try:
                     result = self._get_derivative(arg, methods, exclude +
                                                   (out_name,), temp_funcs,
                                                   temp_func_args, in_values,
                                                   temp_extra_values)
                 except ValueError:
+                    # either it's not a derivative or we can't calculate it
                     pass
                 # We'd need to calculate this argument. See if we can
                 try:
@@ -273,13 +300,18 @@ class _BaseSolver(object):
                 # We can get this argument, so add it to our list
                 temp_funcs, temp_func_args, temp_extra_values = result
             else:  # We have all our arguments, since we didn't break
-                return (temp_funcs + (func,), temp_func_args + (args,),
-                        temp_extra_values + (out_name,))
-        # We could not calculate this with any method available
-        raise ValueError('Could not determine {} from given variables'
-                         ' {}'.format(out_name,
-                                      ', '.join(tuple(in_values.keys()) +
-                                                extra_values)))
+                # Add this possible solution to our list
+                results.append((temp_funcs, temp_func_args, temp_extra_values))
+        if len(results) == 0:
+            # We could not calculate this with any method available
+            raise ValueError('Could not determine {} from given variables'
+                             ' {}'.format(out_name,
+                                          ', '.join(tuple(in_values.keys()) +
+                                                    extra_values)))
+        else:
+            result = _get_best_result(results)
+            return (funcs + result[0], func_args + result[1],
+                    extra_values + result[2])
 
     def _get_derivative(self, out_name, methods, exclude, funcs, func_args,
                         in_values, extra_values):

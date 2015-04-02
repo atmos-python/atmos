@@ -326,6 +326,15 @@ def MSE_from_DSE_qv(DSE, qv):
     return DSE + Lv0*qv
 
 
+@_assumes('constant g')
+def N2_from_theta_dthetadz(theta, dthetadz):
+    '''
+    Calculates the squared Brunt-Väisälä frequency (Hz^2) from potential
+    temperature (K) and vertical gradient of potential temperature (K/m)
+    '''
+    return g0/theta*dthetadz
+
+
 @_assumes('hydrostatic')
 def omega_from_w_rho_hydrostatic(w, rho):
     '''
@@ -430,6 +439,18 @@ def qvs_from_rvs(rvs):
     qvs = rvs/(1+rvs)
     '''
     return rvs/(1+rvs)
+
+
+@_assumes()
+def RB_from_N2_u_v(N2, dudz, dvdz):
+    '''
+    Calculates the bulk Richardson number from the squared Brunt-Väisälä
+    frequency (Hz^2), vertical derivative of zonal wind velocity (Hz), and
+    vertical derivative of meridional wind velocity (Hz).
+
+    RB = N2/(dudz^2 + dvdz^2)
+    '''
+    return N2/(dudz**2 + dvdz**2)
 
 
 @_assumes()
@@ -775,9 +796,9 @@ def w_from_omega_rho_hydrostatic(omega, rho):
 @_assumes('constant g')
 def z_from_Phi(Phi):
     '''
-    Calculates height (m) from geopotential height (m^2/s^2) assuming constant
-    g.
+    Calculates height (m) from geopotential (m^2/s^2) assuming constant g.
 
     z = Phi/g0
     '''
     return Phi/g0
+

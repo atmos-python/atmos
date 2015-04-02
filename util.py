@@ -488,7 +488,7 @@ def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
         # target is the position where the derivative is being calculated
         target[axis] = np.array([0, -1])
         if dx is not None:  # grid spacing is constant
-            deriv = (np.roll(data, -1, axis) - np.roll(data, 1, axis))/(2*dx)
+            deriv = (np.roll(data, -1, axis) - np.roll(data, 1, axis))/(2.*dx)
             deriv[target] = (data[front]-data[back])/dx
         else:  # grid spacing is arbitrary
             # Need to calculate differences for our grid positions, too!
@@ -509,3 +509,82 @@ def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
         raise ValueError('Invalid option {} for boundary '
                          'condition.'.format(boundary))
     return deriv
+
+
+def integrate(base, x, dvardx, coord_index, base_at_start=True):
+    '''
+    Calculates a variable from a boundary condition, a second field x, and its
+    derivative with respect to that field. Assumes the field x varies along
+    only one axis.
+
+    Parameters
+    ----------
+    base : ndarray
+        Boundary condition for var.
+    x : ndarray
+        Field from which to calculate var
+    dvardx : ndarray
+        Derivative of var with respect to the field
+    coord_index : int
+        Index in x that corresponds to the direction along which x is assumed
+        to vary. Differences along other axes are neglected.
+    base_at_start : bool
+        if True, assumes base corresponds to the value of var before the first
+        index of 
+    '''
+
+
+def d_x(data, axis, boundary='forward-backward'):
+    '''
+    Calculates a second-order centered finite difference of data along the
+    specified axis.
+
+    Parameters
+    ----------
+    data : ndarray
+        Data on which we are taking a derivative.
+    axis : int
+        Index of the data array on which to take the difference.
+    boundary: string, optional
+        Boundary condition. If 'periodic', assume periodic boundary condition
+        for centered difference. If 'forward-backward', take first-order
+        forward or backward derivatives at boundary.
+
+    Returns
+    -------
+    derivative : ndarray
+        Derivative of the data along the specified axis.
+
+    Raises
+    ------
+    ValueError:
+        If an invalid boundary condition choice is given.
+        If both dx and x are specified.
+        If axis is out of the valid range for the shape of the data
+        If x is specified and axis_x is out of the valid range for the shape
+            of x
+    '''
+    if abs(axis) > len(data.shape):
+        raise ValueError('axis is out of bounds for the shape of data')
+    if boundary == 'periodic':
+        diff = np.roll(data, -1, axis) - np.roll(data, 1, axis)
+    elif boundary == 'forward-backward':
+        # We will take forward-backward differencing at edges
+        # need some fancy indexing to handle arbitrary derivative axis
+        # Initialize our index lists
+        front = [slice(s) for s in data.shape]
+        back = [slice(s) for s in data.shape]
+        target = [slice(s) for s in data.shape]
+        # Set our index values for the derivative axis
+        # front is the +1 index for derivative
+        front[axis] = np.array([1, -1])
+        # back is the -1 index for derivative
+        back[axis] = np.array([0, -2])
+        # target is the position where the derivative is being calculated
+        target[axis] = np.array([0, -1])
+        diff = (np.roll(data, -1, axis) - np.roll(data, 1, axis))/(2.)
+        diff[target] = (data[front]-data[back])
+    else:  # invalid boundary condition was given
+        raise ValueError('Invalid option {} for boundary '
+                         'condition.'.format(boundary))
+    return diff

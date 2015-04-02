@@ -18,22 +18,19 @@ import calendar
 from scipy.io import loadmat
 from twinetcdf import find_nearest_index
 
-R_d = 287.04 # gas constant in J/(K kg)
-g = 9.80655 # m/s^2
-R_earth = 6378100. # radius of Earth in metres
-Omega = 7.292*10**(-5) # rotation of Earth in rad/s
+R_d = 287.04  # gas constant in J/(K kg)
+g = 9.80655  # m/s^2
+R_earth = 6378100.  # radius of Earth in metres
+Omega = 7.292*10**(-5)  # rotation of Earth in rad/s
+
 
 def avg_datetime(datetimes):
     timestamps = []
     for dt in datetimes:
         timestamps.append(calendar.timegm(dt.timetuple()))
-    return datetime.utcfromtimestamp(np.mean(timestamps)).replace(tzinfo=datetimes[0].tzinfo)
-    total = sum(dt.hour * 3600 + dt.minute * 60 + dt.second for dt in datetimes)
-    avg = total / len(datetimes)
-    minutes, seconds = divmod(int(avg), 60)
-    hours, minutes = divmod(minutes, 60)
-    mean = datetime.combine(datetime_mod.date(1900, 1, 1), datetime_mod.time(hours, minutes, seconds))
-    return mean.replace(tzinfo=datetimes[0].tzinfo)
+    return datetime.utcfromtimestamp(
+        np.mean(timestamps)).replace(tzinfo=datetimes[0].tzinfo)
+
 
 def get_it_min_max(time, datetime_start, datetime_end):
     if datetime_start is None:
@@ -45,23 +42,26 @@ def get_it_min_max(time, datetime_start, datetime_end):
     else:
         it_max = find_nearest_index(datetime_end, time) + 1
     return it_min, it_max
-    
+
+
 def get_day_in_year(dt):
     '''Takes in a datetime, and returns the day within the year as a float.
     '''
-    year_start = datetime(dt.year,1,1,tzinfo=dt.tzinfo)
+    year_start = datetime(dt.year, 1, 1, tzinfo=dt.tzinfo)
     diff = dt - year_start
     return diff.total_seconds() / 86400.
-    
+
+
 def datetime_to_SAM_time(time):
     '''datetime_to_SAM_time(array([datetime, ...])) --> float
        Takes in a timezone-aware datetime array and returns an array of floats
        indicating the time passed in days since January 1, 0:00 of that year.
     '''
-    SAM_time = np.zeros(time.shape,dtype=np.float)
+    SAM_time = np.zeros(time.shape, dtype=np.float)
     for i in range(len(time)):
         SAM_time[i] = get_day_in_year(time[i])
     return SAM_time
+
 
 def relative_humidity_to_specific_humidity(RH, T, p):
     '''Takes in an array of relative humidity as a ratio,
@@ -71,13 +71,10 @@ def relative_humidity_to_specific_humidity(RH, T, p):
     es = 611.2*np.exp(17.67*(T[:]-273.15)/(T[:]-29.5))
     qs = 0.622*es/(p[:]*100.-es)
     return RH * qs
-    #e_s = 6.11*np.exp(np.log(10) * (7.5 * T[:])/(237.7 + T[:]))
-    #w_s = 0.622*e_s/p[:]
-    #w = RH * w_s # note RH is a ratio, not a percentage!
-    #return w / (1 + w)
-    
+
+
 class NetCDF(object):
-    
+
     def __init__(self, filename):
         if not self.filename_pattern:
             raise NotImplementedError('Must implement filename_pattern')
@@ -88,54 +85,61 @@ class NetCDF(object):
         except ValueError:
             self._file_time = None
         self._set_time()
-        
+
     def _set_time(self):
         raise NotImplementedError()
-                
+
     def time(self, datetime_start=None, datetime_end=None):
         try:
-            it_min, it_max = get_it_min_max(self._time, datetime_start, datetime_end)
+            it_min, it_max = get_it_min_max(self._time, datetime_start,
+                                            datetime_end)
             return self._time[it_min:it_max]
         except NameError:
-            raise NotImplementedError('self._time must be set by __init__ for subclasses of NetCDF')
-            
+            raise NotImplementedError('self._time must be set by __init__ '
+                                      'for subclasses of NetCDF')
+
     def file_time(self):
         if self._file_time is None:
-            raise ValueError('No time found from filename {} using pattern'.format(self.filename, self.filename_pattern.pattern))
+            raise ValueError('No time found from filename {} using '
+                             'pattern'.format(self.filename,
+                                              self.filename_pattern.pattern))
         else:
             return self._file_time
-        
+
     def _get_time_from_filename(self, filename):
         if not isinstance(filename, basestring):
             raise TypeError('filename must be string')
         try:
             match = self.filename_pattern.search(filename)
         except NameError:
-            raise NotImplementedError('must define filename_pattern for {}'.format(repr(self.type)))
+            raise NotImplementedError('must define filename_pattern for '
+                                      '{}'.format(repr(self.type)))
         if match:
             g = match.groups()
             if len(g) > 3:
-                t = datetime(int(g[0]),int(g[1]),int(g[2]),int(g[3]),int(g[4]),int(g[5]))
+                t = datetime(int(g[0]), int(g[1]), int(g[2]), int(g[3]),
+                             int(g[4]), int(g[5]))
             else:
-                t = datetime(int(g[0]),int(g[1]),int(g[2]))
+                t = datetime(int(g[0]), int(g[1]), int(g[2]))
             return t.replace(tzinfo=pytz.utc)
         else:
-            raise ValueError('Could not determine time from filename {}'.format(filename))
-            
+            raise ValueError('Could not determine time from filename '
+                             '{}'.format(filename))
+
     def get(self, varname):
         return self._netcdf.variables[varname]
-        
+
     def netcdf(self):
         return self._netcdf
-        
+
     def plot(self, ax, varname, title=None, xlim=None, ylim=None):
         var = self.get(varname)
-        if len(var.shape) != 1: # not a 1D variable
+        if len(var.shape) != 1:  # not a 1D variable
             raise ValueError('varname must refer to a 1D variable')
         ax.plot(var, self.get('alt'))
         try:
             xlabel = var.long_name + ' ' + var.units
-        except KeyError: # TODO: this may be the wrong error type to check
+        except KeyError:  # TODO: this may be the wrong error type to check
             xlabel = varname
         if title is not None:
             ax.set_title(title)
@@ -145,56 +149,57 @@ class NetCDF(object):
             ax.set_ylim(ylim)
         if xlim is not None:
             ax.set_xlim(xlim)
-            
+
     def pcolormesh(self, fig, ax, varname, title=None, cbar_label=None,
                    xlim=None, ylim=None, clim=None):
         datenums = matplotlib.dates.date2num(self.time())
-        z = np.repeat(self.get('z')[:][None,:], len(datenums), axis=0)
+        z = np.repeat(self.get('z')[:][None, :], len(datenums), axis=0)
         data = self.get(varname)
         if len(data.shape) != 2:
             raise ValueError('varname must refer to a 2D variable')
-        im = ax.pcolormesh(np.repeat(datenums[:,None],z.shape[1], axis=1), z, data)
+        im = ax.pcolormesh(np.repeat(datenums[:, None], z.shape[1], axis=1),
+                           z, data)
         ax.xaxis_date()
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%b %d\n%H:%M'))
+        ax.xaxis.set_major_formatter(
+            matplotlib.dates.DateFormatter('%b %d\n%H:%M'))
         ax.set_xlabel('Time (UTC)')
         ax.set_ylabel('Height (m)')
         if title is not None:
             ax.set_title(title)
-        cbar=fig.colorbar(im)
+        cbar = fig.colorbar(im)
         if cbar_label is not None:
             cbar.ax.get_yaxis().labelpad = 15
             cbar.ax.set_ylabel(cbar_label, rotation=270)
         if ylim is not None:
             ax.set_ylim(ylim)
         if clim is not None:
-            #cbar.set_clim(-0.00008,0.00008)
-            im.set_clim(vmin=clim[0],vmax=clim[1])
+            im.set_clim(vmin=clim[0], vmax=clim[1])
         elif ylim is not None:
-            iz_min = max([find_nearest_index(ylim[0], z[i,:])
-                            for i in range(z.shape[0])])
-            iz_max = min([find_nearest_index(ylim[1], z[i,:])
-                            for i in range(z.shape[0])])
-            if z[0,-1] < z[0,0]:
+            iz_min = max([find_nearest_index(ylim[0], z[i, :])
+                          for i in range(z.shape[0])])
+            iz_max = min([find_nearest_index(ylim[1], z[i, :])
+                          for i in range(z.shape[0])])
+            if z[0, -1] < z[0, 0]:
                 # note that the 0 index in z is at TOA
-                im.set_clim(vmin=data[:,iz_max:iz_min].min(),
-                            vmax=data[:,iz_max:iz_min].max())
+                im.set_clim(vmin=data[:, iz_max:iz_min].min(),
+                            vmax=data[:, iz_max:iz_min].max())
             else:
-                im.set_clim(vmin=data[:,iz_min:iz_max].min(),
-                            vmax=data[:,iz_min:iz_max].max())
+                im.set_clim(vmin=data[:, iz_min:iz_max].min(),
+                            vmax=data[:, iz_min:iz_max].max())
         if xlim is None:
-            ax.set_xlim((datenums[0],datenums[-1]))
+            ax.set_xlim((datenums[0], datenums[-1]))
         else:
             ax.set_xlim((xlim[0], xlim[1]))
-        
+
 
 class NetCDFSet(object):
     element_type = NetCDF
-    
+
     def __init__(self, foldername=None):
         self._datasets = set([])
         if foldername is not None:
             self.add_folder(foldername)
-            
+
     def add_folder(self, foldername):
         '''add_folder(string) --> None
            Takes in a folder containing NetCDF files, and adds files matching
@@ -205,26 +210,30 @@ class NetCDFSet(object):
             try:
                 match = self.element_type.filename_pattern.search(filename)
             except NameError:
-                raise NotImplementedError('must define filename_pattern for {}'.format(repr(self.element_type)))
+                raise NotImplementedError('must define filename_pattern for '
+                                          '{}'.format(repr(self.element_type)))
             if match:
-                self.add_element(self.element_type(os.path.join(foldername, filename)))
-          
+                self.add_element(self.element_type(
+                    os.path.join(foldername, filename)))
+
     def add_element(self, element):
         '''add_element(NetCDF) --> None
            Takes in a NetCDF object and adds it to the NetCDFSet.
         '''
         if not isinstance(element, self.element_type):
-            raise TypeError('element must be of type {}'.format(repr(self.element_type)))
+            raise TypeError('element must be of type '
+                            '{}'.format(repr(self.element_type)))
         self._datasets.add(element)
 
     def items(self):
         '''items() --> [NetCDF, ...]
-           Returns NetCDF elements of the NetCDFSet, sorted by their file_time()
-           method.
+           Returns NetCDF elements of the NetCDFSet, sorted by their
+           file_time() method.
         '''
-        return sorted(self._datasets, key=lambda x:x.file_time())
-        
-    def save(self, filename, clobber=False, time_name='number_of_forecast_times'):
+        return sorted(self._datasets, key=lambda x: x.file_time())
+
+    def save(self, filename, clobber=False,
+             time_name='number_of_forecast_times'):
         '''save(filename) --> None
            Concatenates the elements of the NetCDFSet and saves them into a
            single NetCDF file at the given filename.
@@ -247,62 +256,72 @@ class NetCDFSet(object):
         outgrp.createDimension(time_name, num_timesteps)
         # initialize variables
         for v_name, var in ingrps[0].variables.iteritems():
-            out_var = outgrp.createVariable(v_name, var.datatype, var.dimensions)
+            out_var = outgrp.createVariable(v_name, var.datatype,
+                                            var.dimensions)
             out_var.setncatts(var.__dict__)
         # set global attributes
         outgrp.setncatts(ingrps[0].__dict__)
         # iterate and merge
-        i=0
+        i = 0
         for grp in ingrps:
             try:
                 steps = len(grp.dimensions[time_name])
             except KeyError:
-                raise ValueError('time_name {} does not exist in NetCDF'.format(time_name))
+                raise ValueError('time_name {} does not exist in '
+                                 'NetCDF'.format(time_name))
             for v_name, var in grp.variables.iteritems():
                 if time_name in var.dimensions:
                     if len(var.dimensions) > 1:
-                        outgrp.variables[v_name][i:i+steps,:] = var[:]
+                        outgrp.variables[v_name][i:i+steps, :] = var[:]
                     elif len(var.dimensions) == 1:
                         outgrp.variables[v_name][i:i+steps] = var[:]
-                elif i==0:
+                elif i == 0:
                     outgrp.variables[v_name][:] = var[:]
             grp.close()
             i = i + steps
         outgrp.close()
 
+
 class ARMData(NetCDF):
     filename_pattern = re.compile(r'.+?.(\d{4})(\d\d)(\d\d).+?\.cdf')
 
     def _set_time(self):
-        base_time = datetime.utcfromtimestamp(self._netcdf.variables['base_time'].getValue())
+        base_time = datetime.utcfromtimestamp(
+            self._netcdf.variables['base_time'].getValue())
         self._time = np.array([(base_time + timedelta(seconds=offset)
-                      ).replace(tzinfo=pytz.UTC)
-                     for offset in self._netcdf.variables['time_offset'][:]])
-                         
+                                ).replace(tzinfo=pytz.UTC)
+                               for offset in
+                               self._netcdf.variables['time_offset'][:]])
+
+
 class LWPData(ARMData):
-    filename_pattern = re.compile(r'magmwrlosM1\.b1\.(\d{4})(\d\d)(\d\d).+?\.cdf')
-    
+    filename_pattern = re.compile(
+        r'magmwrlosM1\.b1\.(\d{4})(\d\d)(\d\d).+?\.cdf')
+
+
 class RadFluxData(ARMData):
-    filename_pattern = re.compile(r'magprpradM1\.a1\.(\d{4})(\d\d)(\d\d).+?\.cdf')
-    
-    
+    filename_pattern = re.compile(
+        r'magprpradM1\.a1\.(\d{4})(\d\d)(\d\d).+?\.cdf')
+
+
 class SoundingData(NetCDF):
-    filename_pattern = re.compile(r'magsondewnpnM1\.b1\.(\d{4})(\d\d)(\d\d)\.(\d\d)(\d\d)(\d\d)\.custom\.cdf')
+    filename_pattern = re.compile(
+        r'magsondewnpnM1\.b1\.(\d{4})(\d\d)(\d\d)\.(\d\d)(\d\d)(\d\d)\.' +
+        'custom\.cdf')
 
     def _set_time(self):
         pass
-    
+
     def time(self):
         raise NotImplementedError()
-    
-    
+
 
 class SoundingDataSet(NetCDFSet):
     element_type = SoundingData
     z = np.concatenate(
-        (np.arange(1.,2000.,10.),
-        np.arange(2000.,4000.,25.),
-        np.arange(4000.,25000.,200.),)  
+        (np.arange(1., 2000., 10.),
+         np.arange(2000., 4000., 25.),
+         np.arange(4000., 25000., 200.),)
     )
     z_bounds = np.zeros(
         shape=(z.shape[0]+1,),
@@ -311,26 +330,26 @@ class SoundingDataSet(NetCDFSet):
     z_bounds[0] = z[0]
     z_bounds[-1] = z[-1]
     z_bounds[1:-1] = 0.5*(z[:-1] + z[1:])
-    
+
     def __init__(self, foldername=None):
         super(SoundingDataSet, self).__init__(foldername)
         self._init_data()
-    
+
     def add_element(self, element):
         '''add_element(NetCDF) --> None
            Takes in a SoundingData object and adds it to the SoundingDataSet.
         '''
         super(SoundingDataSet, self).add_element(element)
         self._init_data()
-        
+
     def _init_data(self):
         self._data = {}
         self._data['time'] = np.array([s.file_time() for s in self.items()])
-            
+
     def _init_var(self, varname):
         datasets = self.items()
         if varname == 'time' or len(datasets[0].get(varname).shape) != 1:
-            return # time axis is handled separately
+            return  # time axis is handled separately
         data = np.zeros(
             shape=(len(self._data['time']), len(self.z)),
             dtype=datasets[0].get(varname).dtype,
@@ -339,30 +358,32 @@ class SoundingDataSet(NetCDFSet):
             iz_swap = 281
             # exponential kernel with sigma of 25m up to 4km
             z = s.get('alt')[:]
-            var = s.get(varname)[:][:,None]
-            kernel = np.exp(-(z[:,None]-self.z[:iz_swap])**2/(2*(20.)**2))
-            kernel = kernel / np.sum(kernel, axis=0)[None,:]
-            data[it,:iz_swap] = ne.evaluate('sum(kernel*var, axis=0)',
+            var = s.get(varname)[:][:, None]
+            kernel = np.exp(-(z[:, None]-self.z[:iz_swap])**2/(2*(20.)**2))
+            kernel = kernel / np.sum(kernel, axis=0)[None, :]
+            data[it, :iz_swap] = ne.evaluate('sum(kernel*var, axis=0)',
+                                             {'var': var, 'kernel': kernel})
             # switch to a sigma of 200m above this
-                {'var':var, 'kernel':kernel})
-            kernel = np.exp(-(z[:,None]-self.z[iz_swap:])**2/(2*(200.)**2))
-            kernel = kernel / np.sum(kernel, axis=0)[None,:]
-            data[it,iz_swap:] = ne.evaluate('sum(kernel*var, axis=0)',
-                {'var':var, 'kernel':kernel})
+            kernel = np.exp(-(z[:, None]-self.z[iz_swap:])**2/(2*(200.)**2))
+            kernel = kernel / np.sum(kernel, axis=0)[None, :]
+            data[it, iz_swap:] = ne.evaluate('sum(kernel*var, axis=0)',
+                                             {'var': var, 'kernel': kernel})
             #for iz in range(len(self.z)):
             #    z_curr = s.get('alt')
             #    data[it,iz] = np.nanmean(var[(z_curr >= self.z_bounds[iz]) &
             #                                (z_curr < self.z_bounds[iz+1])]
             #                            )
         self._data[varname] = data
-        
+
     def get(self, varname, datetime_start=None, datetime_end=None):
         if varname not in self._data.keys():
             self._init_var(varname)
-        it_min, it_max = get_it_min_max(self._data['time'], datetime_start, datetime_end)
+        it_min, it_max = get_it_min_max(self._data['time'], datetime_start,
+                                        datetime_end)
         return self._data[varname][it_min:it_max]
-        
-    def save(self, filename, clobber=False, time_name='number_of_forecast_times'):
+
+    def save(self, filename, clobber=False,
+             time_name='number_of_forecast_times'):
         '''save(filename) --> None
            Concatenates the elements of the NetCDFSet and saves them into a
            single NetCDF file at the given filename.
@@ -371,29 +392,33 @@ class SoundingDataSet(NetCDFSet):
         '''
         raise NotImplementedError('Cannot save SoundingSet objects')
 
+
 def get_gauss_weight(lon_grid, lat_grid, lon, lat, sigma):
     cutoff_sigma = 3. # number of sigmas to stop grid
     horizontal_resolution = abs(lat_grid[1]-lat_grid[0])
     if abs(lon_grid[1]-lon_grid[0]) != horizontal_resolution:
-        raise ValueError('longitude and latitude must have same grid spacing, instead is {:.2f} and {:.2f}'.format(
-            abs(lon_grid[1]-lon_grid[0]),abs(lat_grid[1]-lat_grid[0])))
+        raise ValueError('longitude and latitude must have same grid spacing,'
+                         ' instead is {:.2f} and {:.2f}'.format(
+            abs(lon_grid[1]-lon_grid[0]), abs(lat_grid[1]-lat_grid[0])))
     ilon = find_nearest_index(lon, lon_grid)
     ilat = find_nearest_index(lat, lat_grid)
     sigma_ind = sigma / horizontal_resolution
-    lind = max(0, ilon - int(cutoff_sigma*sigma_ind)) # lower horizontal index
+    lind = max(0, ilon - int(cutoff_sigma*sigma_ind))  # lower horizontal index
     rind = min(ilon + int(cutoff_sigma*sigma_ind), len(lon_grid))+1
     # remember lat decreases with index
-    bind = max(0, ilat - int(cutoff_sigma*sigma_ind)) # lower vertical index
+    bind = max(0, ilat - int(cutoff_sigma*sigma_ind))  # lower vertical index
     tind = min(ilat + int(cutoff_sigma*sigma_ind), len(lat_grid))+1
     weight_lon = np.exp(-0.5*((lon_grid[lind:rind] - lon)/sigma)**2)
     weight_lat = np.exp(-0.5*((lat_grid[bind:tind] - lat)/sigma)**2)
-    weight = weight_lat[:,None]*weight_lon[None,:]
+    weight = weight_lat[:, None]*weight_lon[None, :]
     return weight / ne.evaluate('sum(weight)'), lind, rind, bind, tind
-        
+
+
 class SurfaceData(NetCDF):
-    filename_pattern = re.compile(r'ecmwf_oper_(\d{4})(\d\d)(\d\d)_magic\.sfc\.nc')
-    horizontal_resolution = 0.5 # degrees per horizontal index
-            
+    filename_pattern = re.compile(
+        r'ecmwf_oper_(\d{4})(\d\d)(\d\d)_magic\.sfc\.nc')
+    horizontal_resolution = 0.5  # degrees per horizontal index
+
     def _set_time(self):
         time_offsets = self._netcdf.variables['forecast_verification_time']
         initial_time = datetime.strptime(str(getattr(self._netcdf,'forecast_verification_date')), '%Y%m%d')
@@ -593,11 +618,13 @@ class GriddedData(NetCDF):
         else:
             raise ValueError("direction must be one of 'lat', 'lon', 'y', or 'x'")
 
+
 class GriddedDataSet(NetCDFSet):
     element_type = GriddedData
 
+
 class TextData(object):
-    
+
     def __init__(self, filename):
         self._data = {}
         self._interp = {}
@@ -613,11 +640,12 @@ class TextData(object):
             for i in range(self._length):
                 time[i] = datetime(*[int(arg[i]) for arg in dt_args]).replace(tzinfo=pytz.UTC)
             self._data['time'] = time
-            
+
     def get(self, varname, datetime_start=None, datetime_end=None):
-        it_min, it_max = get_it_min_max(self._data['time'], datetime_start, datetime_end)
+        it_min, it_max = get_it_min_max(self._data['time'], datetime_start,
+                                        datetime_end)
         return self._data[varname][it_min:it_max]
-        
+
     def get_interp(self, varname, time):
         '''Time can be a single datetime or an array of datetimes. An array is
            returned.
@@ -632,7 +660,7 @@ class TextData(object):
             return self._interp[varname](calendar.timegm(time.timetuple()))
         else:
             return self._interp[varname]([calendar.timegm(dt.timetuple()) for dt in time])
-        
+
     def get_interp_value(self, varname, time, window_seconds=None):
         '''Time should be a single timezone-aware datetime. A single value is
            returned. If window_seconds is given, the average value within a
@@ -649,7 +677,7 @@ class TextData(object):
                 return np.nanmean(self.get(varname)[window])
         # No window or average is not relevant, Return interpolated value.
         return self.get_interp(varname, time)
-        
+
     def plot(self, ax, varname, time=None, time_format='%b %d\n%H:%M', xlim=None, ylim=None):
         '''Plots the given variable on an argument-defined axis. Interpolates
            to the time axis if given. Also sets x and y-axis labels.
@@ -676,9 +704,11 @@ class TextData(object):
         if xlim:
             ax.set_xlim(xlim)
 
+
 class HeatFluxData(TextData):
-    
-    def __init__(self, filename, window_seconds, datetime_start=None, datetime_end=None):
+
+    def __init__(self, filename, window_seconds, datetime_start=None,
+                 datetime_end=None):
         '''
         Parameters
         ----------
@@ -693,7 +723,8 @@ class HeatFluxData(TextData):
         '''
         self._interp = {}
         self._data = {}
-        if datetime_start is not None and datetime_end is not None and (datetime_end < datetime_start):
+        if (datetime_start is not None and datetime_end is not None and
+            (datetime_end < datetime_start)):
             raise ValueError('datetime_start must be before datetime_end')
         fluxdata = loadmat(filename)['flux']
         sensible_obs = np.array(-1*fluxdata['Hs'][0][0].flatten())
@@ -713,7 +744,7 @@ class HeatFluxData(TextData):
         interp_times = np.empty((int((datetime_end - datetime_start).total_seconds()/window_seconds),), dtype=datetime)
         shf_interp, lhf_interp = np.zeros(interp_times.shape, dtype=sensible_obs.dtype), np.zeros(interp_times.shape, dtype=latent_obs.dtype)    
         i = 0
-        while i < len(interp_times):# and dt < datetime_end
+        while i < len(interp_times):  # and dt < datetime_end
             max_time = dt + timedelta(seconds=window_seconds)
             time_window_flux = (flux_times < max_time) & (flux_times >= dt)
             shf_interp[i] = np.nanmean(sensible_obs[time_window_flux])
@@ -727,18 +758,19 @@ class HeatFluxData(TextData):
         self._data['lhf'] = lhf_interp[valid]
         self._data['time'] = interp_times[valid]
 
+
 class ShipData(TextData):
-    
+
     _rownames = ['navg', 'year', 'month', 'day', 'hour', 'minute', 'second',
                  'lat', 'lon', 'sog', 'cog', 'pitch', 'pstd', 'roll', 'rstd',
                  'hdg']
     units = {
-        'lat':'degrees N',
-        'lon':'degrees E',
-        'u':'m/s',
-        'v':'m/s',
-        'sog':'m/s',
-        'cog':'degrees',
+        'lat': 'degrees N',
+        'lon': 'degrees E',
+        'u': 'm/s',
+        'v': 'm/s',
+        'sog': 'm/s',
+        'cog': 'degrees',
     }
     long_name = {
         'u': 'Eastward Wind',
@@ -749,6 +781,7 @@ class ShipData(TextData):
         'cog': 'Course over ground',
     }
     
+    
     def __init__(self, filename):
         super(ShipData, self).__init__(filename)
         self._data['u'] = ne.evaluate('speed_ship*sin(angle_ship*2*pi/360.)',
@@ -757,41 +790,43 @@ class ShipData(TextData):
                 {'pi':np.pi, 'speed_ship':self._data['sog'], 'angle_ship':self._data['cog']})
         self._data['lon'] += 360.
 
+
 class SSTData(TextData):
-    
+
     _rownames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'lat',
                  'lon', 'sst']
     units = {
-        'lat':'degrees N',
-        'lon':'degrees E',
-        'sst':'K',
+        'lat': 'degrees N',
+        'lon': 'degrees E',
+        'sst': 'K',
     }
     long_name = {
-        'lat':'Latitude',
-        'lon':'Longitude',
-        'sst':'Sea Surface Temperature',
+        'lat': 'Latitude',
+        'lon': 'Longitude',
+        'sst': 'Sea Surface Temperature',
     }
-    
+
     def __init__(self, filename):
         super(SSTData, self).__init__(filename)
         self._data['sst'] += 273.15
-        
+
 class SamOutputData(NetCDF):
     filename_pattern = re.compile(r'MAGIC_(\d{4})(\d\d)(\d\d).+?\.nc')
-    
+
     def _set_time(self):
         year = self.file_time().year
         self._time = np.array([(datetime(year,1,1) + timedelta(days=float(t))
                       ).replace(tzinfo=pytz.UTC)
                      for t in self._netcdf.variables['time'][:]])
 
+
 class LargeScaleForcingCalculator(object):
-    
+
     def __init__(self, surface, gridded, ship):
         self.surface = surface
         self.gridded = gridded
         self.ship = ship
-        
+
     def get_forcings(self, sigma_h=None,
                      datetime_start=None, datetime_end=None):
         time = self.gridded.time(datetime_start=datetime_start, datetime_end=datetime_end)

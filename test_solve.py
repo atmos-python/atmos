@@ -7,10 +7,55 @@ Created on Tue Mar 24 11:44:56 2015
 import unittest
 import nose
 import numpy as np
+import equations
 from nose.tools import raises
 from constants import Rd
-from solve import *
-from solve import _BaseSolver
+from solve import _BaseSolver, FluidSolver, calculate, _get_best_result, \
+    _get_methods, default_methods, all_methods
+
+
+def test_get_methods_nonempty():
+    result = _get_methods(equations)
+    assert len(result) > 0
+
+
+def test_default_methods_exist():
+    for m in default_methods:
+        if m not in all_methods:
+            raise AssertionError('{} not a valid method'.format(m))
+
+
+@raises(ValueError)
+def test_get_best_result_empty():
+    '''With empty input should raise ValueError.'''
+    _get_best_result(())
+
+
+def test_get_best_result_single():
+    '''With single input should return that input'''
+    f = lambda x: x
+    tup = ((f,), ('p',), ('p',),)
+    result = _get_best_result((tup,))
+    assert result == tup
+
+
+def test_get_best_result_multiple():
+    '''With single input should return input with fewest function calls.'''
+    f = lambda x: x
+    tup1 = ((f,), ('p',), ('r',),)
+    tup2 = ((f, f), ('p', 'q'), ('r', 'h'),)
+    tup3 = ((f, f, f), ('p', 'q', 'a'), ('r', 'h', 'm'))
+    result = _get_best_result((tup1, tup2, tup3))
+    assert result == tup1
+
+
+def test_get_best_result_multiple_repeats():
+    f = lambda x: x
+    tup1 = ((f,), ('p',), ('r',),)
+    tup2 = ((f, f), ('p', 'q'), ('r', 'h'),)
+    tup3 = ((f, f, f), ('p', 'q', 'a'), ('r', 'h', 'm'))
+    result = _get_best_result((tup3, tup2, tup1, tup2, tup1, tup3))
+    assert result == tup1
 
 
 class BaseSolverTests(unittest.TestCase):
@@ -44,7 +89,7 @@ class FluidSolverTests(unittest.TestCase):
         FluidSolver(methods=('hydrostatic',))
 
     def test_creation_compatible_methods(self):
-        FluidSolver(methods=('hydrostatic', 'dry',))
+        FluidSolver(methods=('hydrostatic', 'Tv equals T',))
 
     @raises(ValueError)
     def test_creation_incompatible_methods(self):
@@ -62,7 +107,7 @@ class FluidSolverTests(unittest.TestCase):
         FluidSolver(**self.vars1)
 
     def test_creation_with_vars_and_method(self):
-        FluidSolver(methods=('dry',), **self.vars1)
+        FluidSolver(methods=('Tv equals T',), **self.vars1)
 
     def test_simple_calculation(self):
         deriver = FluidSolver(methods=default_methods, **self.vars1)
@@ -71,7 +116,8 @@ class FluidSolverTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        deriver = FluidSolver(methods=default_methods + ('dry',), **self.vars2)
+        deriver = FluidSolver(methods=default_methods + ('Tv equals T',),
+                              **self.vars2)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
@@ -97,15 +143,15 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        rho = calculate('rho', methods=default_methods + ('dry',),
-                        **self.vars2)
+        rho = calculate('rho', methods=default_methods +
+                        ('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_double_calculation(self):
-        Tv, rho = calculate('Tv', 'rho', methods=default_methods + ('dry',),
-                            **self.vars2)
+        Tv, rho = calculate('Tv', 'rho', methods=default_methods +
+                            ('Tv equals T',), **self.vars2)
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
@@ -113,8 +159,8 @@ class calculateTests(unittest.TestCase):
         assert isinstance(Tv, np.ndarray)
 
     def test_double_reverse_calculation(self):
-        rho, Tv = calculate('rho', 'Tv', methods=default_methods + ('dry',),
-                            **self.vars2)
+        rho, Tv = calculate('rho', 'Tv', methods=default_methods +
+                            ('Tv equals T',), **self.vars2)
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
         assert isinstance(Tv, np.ndarray)
