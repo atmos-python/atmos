@@ -11,7 +11,7 @@ import equations
 from nose.tools import raises
 from constants import Rd
 from solve import _BaseSolver, FluidSolver, calculate, _get_best_result, \
-    _get_methods, default_methods, all_methods
+    _get_methods, default_methods, all_methods, _get_relevant_methods
 
 
 def test_get_methods_nonempty():
@@ -23,6 +23,61 @@ def test_default_methods_exist():
     for m in default_methods:
         if m not in all_methods:
             raise AssertionError('{} not a valid method'.format(m))
+
+
+def test_get_relevant_methods_empty():
+    methods = {}
+    out_methods = _get_relevant_methods((), methods)
+    assert isinstance(out_methods, dict)
+    assert len(out_methods) == 0
+
+
+def test_get_relevant_methods_returns_correct_type():
+    methods = {'a': {('b',): lambda x: x}}
+    out_methods = _get_relevant_methods(('b',), methods)
+    assert isinstance(out_methods, dict)
+
+
+def test_get_relevant_methods_gets_single_method():
+    methods = {'a': {('b',): lambda x: x}}
+    out_methods = _get_relevant_methods(('b',), methods)
+    assert 'a' in out_methods.keys()
+
+
+def test_get_relevant_methods_removes_correct_second_method():
+    methods = {'a': {('b',): lambda x: x,
+                     ('c', 'b'): lambda x: x}}
+    out_methods = _get_relevant_methods(('b', 'c'), methods)
+    assert 'a' in out_methods.keys()
+    assert ('b',) in out_methods['a'].keys()
+    assert len(out_methods['a']) == 1
+
+
+def test_get_relevant_methods_removes_irrelevant_second_method():
+    methods = {'a': {('b', 'd'): lambda x, y: x,
+                     ('c',): lambda x: x}}
+    out_methods = _get_relevant_methods(('b', 'd'), methods)
+    assert 'a' in out_methods.keys()
+    assert ('b', 'd') in out_methods['a'].keys()
+    assert len(out_methods['a']) == 1
+
+
+def test_get_relevant_methods_gets_no_methods():
+    methods = {'a': {('b',): lambda x: x},
+               'x': {('y', 'z'): lambda y, z: y*z}
+               }
+    out_methods = _get_relevant_methods(('q',), methods)
+    assert isinstance(out_methods, dict)
+    assert len(out_methods) == 0
+
+
+def test_get_relevant_methods_doesnt_calculate_input():
+    methods = {'a': {('b',): lambda x: x},
+               'x': {('y', 'z'): lambda y, z: y*z}
+               }
+    out_methods = _get_relevant_methods(('b', 'a'), methods)
+    assert isinstance(out_methods, dict)
+    assert len(out_methods) == 0
 
 
 @raises(ValueError)
