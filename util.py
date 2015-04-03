@@ -5,6 +5,25 @@ Created on Fri Mar 27 13:11:26 2015
 @author: mcgibbon
 """
 import numpy as np
+from equations import quantities
+import re
+
+derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
+
+
+def parse_derivative_string(string):
+    '''
+    Assuming the string is of the form d(var1)d(var2), returns var1, var2.
+    Raises ValueError if the string is not of this form.
+    '''
+    match = derivative_prog.match(string)
+    if match is None:
+        raise ValueError('string is not in the form of a derivative')
+    varname = match.group(1)
+    coordname = match.group(2)
+    if varname not in quantities.keys() or coordname not in quantities.keys():
+        raise ValueError('variable in string not a valid quantity')
+    return varname, coordname
 
 
 def advect_var(dvardx, dvardy, u, v):

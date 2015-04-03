@@ -8,9 +8,10 @@ import unittest
 import nose
 import numpy as np
 import equations
+import util
 from nose.tools import raises
 from constants import Rd
-from solve import _BaseSolver, FluidSolver, calculate, _get_best_result, \
+from solve import _BaseSolver, FluidSolver, calculate, \
     _get_methods, default_methods, all_methods, _get_relevant_methods
 
 
@@ -18,7 +19,10 @@ def test_quantities_dict_complete():
     names = _get_methods(equations).keys()
     for name in names:
         if name not in equations.quantities.keys():
-            raise AssertionError('{} not in quantities dict'.format(name))
+            try:
+                util.parse_derivative_string(name)
+            except ValueError:
+                raise AssertionError('{} not in quantities dict'.format(name))
 
 
 def test_get_methods_nonempty():
@@ -85,39 +89,6 @@ def test_get_relevant_methods_doesnt_calculate_input():
     out_methods = _get_relevant_methods(('b', 'a'), methods)
     assert isinstance(out_methods, dict)
     assert len(out_methods) == 0
-
-
-@raises(ValueError)
-def test_get_best_result_empty():
-    '''With empty input should raise ValueError.'''
-    _get_best_result(())
-
-
-def test_get_best_result_single():
-    '''With single input should return that input'''
-    f = lambda x: x
-    tup = ((f,), ('p',), ('p',),)
-    result = _get_best_result((tup,))
-    assert result == tup
-
-
-def test_get_best_result_multiple():
-    '''With single input should return input with fewest function calls.'''
-    f = lambda x: x
-    tup1 = ((f,), ('p',), ('r',),)
-    tup2 = ((f, f), ('p', 'q'), ('r', 'h'),)
-    tup3 = ((f, f, f), ('p', 'q', 'a'), ('r', 'h', 'm'))
-    result = _get_best_result((tup1, tup2, tup3))
-    assert result == tup1
-
-
-def test_get_best_result_multiple_repeats():
-    f = lambda x: x
-    tup1 = ((f,), ('p',), ('r',),)
-    tup2 = ((f, f), ('p', 'q'), ('r', 'h'),)
-    tup3 = ((f, f, f), ('p', 'q', 'a'), ('r', 'h', 'm'))
-    result = _get_best_result((tup3, tup2, tup1, tup2, tup1, tup3))
-    assert result == tup1
 
 
 class BaseSolverTests(unittest.TestCase):
