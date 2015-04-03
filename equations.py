@@ -43,10 +43,177 @@ from constants import g0, Omega, Rd, Rv, Cpd, Lv0
 from decorators import assumes, equation_docstring
 
 quantities = {
+    'AH': {
+        'name': 'absolute humidity',
+        'units': 'kg/m^3',
+    },
+    'DSE': {
+        'name': 'dry static energy',
+        'units': 'J',
+    },
+    'e': {
+        'name': 'water vapor partial pressure',
+        'units': 'Pa',
+    },
+    'es': {
+        'name': 'saturation water vapor partial pressure',
+        'units': 'Pa',
+    },
+    'f': {
+        'name': 'Coriolis parameter',
+        'units': 'Hz',
+    },
+    'Gammam': {
+        'name': 'moist adiabatic lapse rate',
+        'units': 'K/m',
+    },
+    'lat': {
+        'name': 'latitude',
+        'units': 'degrees N',
+    },
+    'lon': {
+        'name': 'longitude',
+        'units': 'degrees E',
+    },
+    'MSE': {
+        'name': 'moist static energy',
+        'units': 'J',
+    },
+    'N2': {
+        'name': 'squared Brunt-Väisälä frequency',
+        'units': 'Hz^2',
+    },
+    'omega': {
+        'name': 'vertical velocity expressed as tendency of pressure',
+        'units': 'Pa/s',
+    },
+    'p': {
+        'name': 'pressure',
+        'units': 'Pa',
+    },
+    'plcl': {
+        'name': 'pressure at lifting condensation level',
+        'units': 'Pa',
+    },
+    'Phi': {
+        'name': 'geopotential',
+        'units': 'm^2/s^2',
+    },
+    'qv': {
+        'name': 'specific humidity',
+        'units': 'kg/kg',
+    },
+    'qvs': {
+        'name': 'saturation specific humidity',
+        'units': 'kg/kg',
+    },
+    'RB': {
+        'name': 'bulk Richardson number',
+        'units': 'unitless',
+    },
+    'RH': {
+        'name': 'relative humidity',
+        'units': '%',
+    },
+    'rho': {
+        'name': 'density',
+        'units': 'kg/m^3',
+    },
+    'rv': {
+        'name': 'water vapor mixing ratio',
+        'units': 'kg/kg',
+    },
+    'rvs': {
+        'name': 'saturation water vapor mixing ratio',
+        'units': 'kg/kg',
+    },
+    'T': {
+        'name': 'temperature',
+        'units': 'K',
+    },
+    'Td': {
+        'name': 'dewpoint temperature',
+        'units': 'K',
+    },
+    'Tlcl': {
+        'name': 'temperature at lifting condensation level',
+        'units': 'K',
+    },
     'Tv': {
         'name': 'virtual temperature',
         'units': 'K',
     },
+    'Tae': {
+        'name': 'adiabatic equivalent temperature',
+        'units': 'K',
+    },
+    'Tie': {
+        'name': 'isobaric equivalent temperature',
+        'units': 'K',
+    },
+    'Tw': {
+        'name': 'wet bulb temperature',
+        'units': 'K',
+    },
+    'theta': {
+        'name': 'potential temperature',
+        'units': 'K',
+    },
+    'thetae': {
+        'name': 'equivalent temperature',
+        'units': 'K',
+    },
+    'thetaae': {
+        'name': 'adiabatic equivalent temperature',
+        'units': 'K',
+    },
+    'thetaie': {
+        'name': 'isentropic equivalent temperature',
+        'units': 'K',
+    },
+    'u': {
+        'name': 'eastward zonal wind velocity',
+        'units': 'm/s',
+    },
+    'v': {
+        'name': 'northward meridional wind velocity',
+        'units': 'm/s',
+    },
+    'w': {
+        'name': 'vertical velocity',
+        'units': 'm/s',
+    },
+    'x': {
+        'name': 'x',
+        'units': 'm',
+    },
+    'y': {
+        'name': 'y',
+        'units': 'm',
+    },
+    'z': {
+        'name': 'height',
+        'units': 'm',
+    },
+    'Z': {
+        'name': 'geopotential height',
+        'units': 'm',
+    }
+}
+# all_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
+#                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
+#                'stipanuk', 'dry', 'Tv equals T')
+
+assumptions = {
+    'hydrostatic': 'hydrostatic balance',
+    'constant g': 'g is constant',
+    'constant Lv': 'latent heat of vaporization of water is constant',
+    'ideal_gas': 'the ideal gas law holds',
+    'bolton': 'the assumptions in Bolton (1980) hold',
+    'goff-gratch': 'the Goff-Gratch equation for es',
+    'frozen bulb': 'the bulb is frozen',
+    'unfrozen bulb': 'the bulb is not frozen',
+    'Tv equals T': 'the virtual temperature correction can be neglected',
 }
 
 
@@ -354,24 +521,26 @@ def plcl_from_p_T_Tlcl(p, T, Tlcl):
     return p*(Tlcl/T)**(Rd/Cpd)
 
 
-@assumes('stipanuk')
-def plcl_from_p_T_Td(p, T, Td):
-    '''
-    Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K), and
-    dew point temperature (K).
-
-    Calculates the pressure of the lifting condensation level computed by an
-    iterative procedure described by equations 8-12 (pp 13-14) of:
-
-    Stipanuk, G.S., (1973) original version.
-    "Algorithms for generating a skew-t, log p diagram and computing selected
-    meteorological quantities."
-
-    Atmospheric sciences laboratory
-    U.S. Army Electronics Command
-    White Sands Missile Range, New Mexico 88002
-    '''
-    raise NotImplementedError()
+# =============================================================================
+# @assumes('stipanuk')
+# def plcl_from_p_T_Td(p, T, Td):
+#     '''
+#     Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K),
+#     and dew point temperature (K).
+#
+#     Calculates the pressure of the lifting condensation level computed by an
+#     iterative procedure described by equations 8-12 (pp 13-14) of:
+#
+#     Stipanuk, G.S., (1973) original version.
+#     "Algorithms for generating a skew-t, log p diagram and computing selected
+#     meteorological quantities."
+#
+#     Atmospheric sciences laboratory
+#     U.S. Army Electronics Command
+#     White Sands Missile Range, New Mexico 88002
+#     '''
+#     raise NotImplementedError()
+# =============================================================================
 
 
 @assumes('constant g')

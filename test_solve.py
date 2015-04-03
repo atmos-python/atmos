@@ -14,6 +14,13 @@ from solve import _BaseSolver, FluidSolver, calculate, _get_best_result, \
     _get_methods, default_methods, all_methods
 
 
+def test_quantities_dict_complete():
+    names = _get_methods(equations).keys()
+    for name in names:
+        if name not in equations.quantities.keys():
+            raise AssertionError('{} not in quantities dict'.format(name))
+
+
 def test_get_methods_nonempty():
     result = _get_methods(equations)
     assert len(result) > 0
