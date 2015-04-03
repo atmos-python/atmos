@@ -20,6 +20,103 @@ all_methods = tuple(set([]).union(*[f[1].func_dict['assumptions']
 #                'stipanuk', 'dry', 'Tv equals T')
 
 
+def _get_relevant_methods(inputs, methods):
+    '''
+    Given an iterable of input variable names and a methods dictionary,
+    returns the subset of that methods dictionary that can be calculated and
+    which doesn't calculate something we already have. Additionally it may
+    only contain one method for any given output variable, which is the one
+    with the fewest possible arguments.
+    '''
+    # Initialize a return dictionary
+    relevant_methods = {}
+    # Iterate through each potential method output
+    for var in methods.keys():
+        # See if we already have this output
+        if var in inputs:
+            pass  # if we have it, we don't need to calculate it!
+        else:
+            # Initialize a dict for this output variable
+            var_dict = {}
+            for args, func in methods[var].items():
+                # See if we have what we need to solve this equation
+                if all([arg in inputs for arg in args]):
+                    # If we do, add it to the var_dict
+                    var_dict[args] = func
+            if len(var_dict) == 0:
+                # No methods for this variable, keep going
+                pass
+            elif len(var_dict) == 1:
+                # Exactly one method, perfect.
+                relevant_methods[var] = var_dict
+            else:
+                # More than one method, find the one with the least arguments
+                min_args = min(var_dict.keys(), key=lambda x: len(x))
+                relevant_methods[var] = {min_args: var_dict[min_args]}
+    return relevant_methods
+
+
+def _get_shortest_solution(outputs, inputs, exclude, methods):
+    '''
+    Parameters
+    ----------
+    outputs: iterable
+        Strings corresponding to the final variables we want output
+    inputs: iterable
+        Strings corresponding to the variables we have so far
+    exclude: list
+        Strings corresponding to variables that won't help calculate the
+        outputs.
+    methods: dict
+        A methods dictionary
+
+    Returns (funcs, func_args, extra_values).
+    '''
+    if all([o in inputs for o in outputs]):
+        return ((), (), ())
+    relevant_methods = _get_relevant_methods(inputs, methods)
+    if len(relevant_methods) == 0:
+        raise ValueError('cannot calculate outputs from inputs')
+    next_variables = [key for key in relevant_methods.keys()
+                      if key not in exclude]
+    result = _get_shortest_solution(outputs, inputs + (next_variables[0],),
+                                    exclude, methods)
+    args, func = relevant_methods[next_variables[0]].items()[0]
+    best_option = ((func,) + result[0], (args,) + result[1],
+                   (next_variables[0],) + result[2])
+    for intermediate in next_variables[1:]:
+        if intermediate in exclude:
+            continue
+        result = _get_shortest_solution(outputs, inputs + (intermediate,),
+                                        exclude, methods)
+        args, func = relevant_methods[intermediate].items()[0]
+        next_option = ((func,) + result[0], (args,) + result[1],
+                       (next_variables[0],) + result[2])
+        # Compare number of calculations
+        if len(next_option[0]) < len(best_option[0]):
+            # This option is better than the previous best option
+            # That means we shouldn't try to calculate the previous best
+            # variable
+            exclude.append(best_option[-1][-1])
+            # update the new best option
+            best_option = next_option
+        elif len(next_option[0]) == len(best_option[0]):
+            # not sure which one is better
+            # Compare number of arguments passed in
+            if (sum([len(tup) for tup in next_option[1]]) <
+                    sum([len(tup) for tup in next_option[1]])):
+                # This option is better than the previous best option
+                # That means we shouldn't try to calculate that variable
+                exclude.append(best_option[-1][-1])
+                # update the new best option
+                best_option = next_option
+            else:
+                exclude.append(intermediate)
+        else:
+            exclude.append(intermediate)
+    return best_option
+
+
 def _get_methods(module):
     '''
     Returns a methods dictionary corresponding to the equations in the given
@@ -157,7 +254,7 @@ class _BaseSolver(object):
             raise ValueError('invalid value given for derivative')
         self._derivative = derivative
 
-    def calculate(self, quantity_out):
+    def calculate(self, *args):
         '''
         Calculates and returns a requested quantity from quantities passed in
         as keyword arguments.
@@ -201,8 +298,9 @@ class _BaseSolver(object):
         >>>
         '''
         funcs, func_args, extra_values = \
-            self._calculate(quantity_out, self.methods,
-                            (), (), (), self.vars, ())
+            _get_shortest_solution(tuple(args), tuple(self.vars.keys()), [],
+                                   self.methods)
+        print(funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
         for i, func in enumerate(funcs):
@@ -210,7 +308,10 @@ class _BaseSolver(object):
             value = func(*[self.vars[varname] for varname in func_args[i]])
             # Add it to our dictionary of quantities for successive functions
             self.vars[extra_values[i]] = value
-        return self.vars[quantity_out]
+        if len(args) == 1:
+            return self.vars[args[0]]
+        else:
+            return [self.vars[arg] for arg in args]
 
     def _calculate(self, out_name, methods, exclude, funcs, func_args,
                    in_values, extra_values):
