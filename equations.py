@@ -40,30 +40,17 @@ This temporary script file is located here:
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
 import numpy as np
 from constants import g0, Omega, Rd, Rv, Cpd, Lv0
+from decorators import assumes, equation_docstring
+
+quantities = {
+    'Tv': {
+        'name': 'virtual temperature',
+        'units': 'K',
+    },
+}
 
 
-# Define some decorators for our equations
-def _assumes(*args):
-    '''Stores a function's assumptions as an attribute.'''
-    args = tuple(args)
-
-    def decorator(func):
-        func.assumptions = args
-        return func
-    return decorator
-
-
-def _inputs(*args):
-    '''Stores a function's input quantities as an attribute.'''
-    args = tuple(args)
-
-    def decorator(func):
-        func.inputs = args
-        return func
-    return decorator
-
-
-@_assumes()
+@assumes()
 def AH_from_qv_rho(qv, rho):
     '''
     Calculates absolute humidity (kg/m^3) from specific humidity (kg/kg) and
@@ -74,7 +61,7 @@ def AH_from_qv_rho(qv, rho):
     return qv*rho
 
 
-@_assumes('hydrostatic')
+@assumes('hydrostatic')
 def dpdz_from_rho_hydrostatic(rho):
     '''
     Calculates vertical derivative of pressure (Pa/m) from density (kg/m^3),
@@ -85,7 +72,7 @@ def dpdz_from_rho_hydrostatic(rho):
     return -rho*g0
 
 
-@_assumes('constant g')
+@assumes('constant g')
 def DSE_from_T_z(T, z):
     '''
     Calculates dry static energy (J) from temperature (K) and height (m)
@@ -96,7 +83,7 @@ def DSE_from_T_z(T, z):
     return Cpd*T + g0*z
 
 
-@_assumes()
+@assumes()
 def DSE_from_T_Phi(T, Phi):
     '''
     Calculates dry static energy (J) from temperature (K) and geopotential
@@ -107,7 +94,7 @@ def DSE_from_T_Phi(T, Phi):
     return Cpd*T + Phi
 
 
-@_assumes()
+@assumes()
 def e_from_p_qv(p, qv):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa) and
@@ -116,7 +103,7 @@ def e_from_p_qv(p, qv):
     return p*qv/(0.622+qv)
 
 
-@_assumes('goff-gratch')
+@assumes('goff-gratch')
 def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa),
@@ -136,7 +123,7 @@ def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
     return es_from_T_Goff_Gratch(Tw) - 0.799e-3*p*(T-Tw)
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def e_from_p_T_Tw_Bolton(p, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from air pressure (Pa),
@@ -158,7 +145,7 @@ def e_from_p_T_Tw_Bolton(p, T, Tw):
     return es_from_T_Bolton(Tw) - 0.799e-3*p*(T-Tw)
 
 
-@_assumes('goff-gratch')
+@assumes('goff-gratch')
 def e_from_Td_Goff_Gratch(Td):
     '''
     Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
@@ -169,7 +156,7 @@ def e_from_Td_Goff_Gratch(Td):
     return es_from_T_Goff_Gratch(Td)
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def e_from_Td_Bolton(Td):
     '''
     Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
@@ -181,7 +168,7 @@ def e_from_Td_Bolton(Td):
     return es_from_T_Bolton(Td)
 
 
-@_assumes('unfrozen bulb')
+@assumes('unfrozen bulb')
 def e_from_p_es_T_Tw(p, es, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
@@ -198,7 +185,7 @@ def e_from_p_es_T_Tw(p, es, T, Tw):
     return es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p
 
 
-@_assumes('frozen bulb')
+@assumes('frozen bulb')
 def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
     '''
     Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
@@ -215,7 +202,7 @@ def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
     return es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p
 
 
-@_assumes('goff-gratch')
+@assumes('goff-gratch')
 def es_from_T_Goff_Gratch(T):
     '''
     Calculate the equilibrium water vapor pressure over a plane surface
@@ -269,7 +256,7 @@ def es_from_T_Goff_Gratch(T):
                          + 8.1328e-3*(10.**(-3.49149*(ratio-1.))-1.)))
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def es_from_T_Bolton(T):
     '''
     Calculates saturation vapor pressure using Bolton's fit to Wexler's
@@ -289,7 +276,7 @@ def es_from_T_Bolton(T):
     return 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
 
 
-@_assumes()
+@assumes()
 def f_from_lat(lat):
     '''
     Calculates the Coriolis parameter (Rad/s) from latitude (degrees N).
@@ -299,7 +286,7 @@ def f_from_lat(lat):
     return 2.*Omega*np.sin(np.pi/180.*lat)
 
 
-@_assumes('constant g', 'constant Lv')
+@assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
     '''
     Calculates saturation adiabatic lapse rate (K/m) from water vapor mixing
@@ -315,7 +302,7 @@ def Gammam_from_rvs_T(rvs, T):
     return g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
 
 
-@_assumes('constant Lv')
+@assumes('constant Lv')
 def MSE_from_DSE_qv(DSE, qv):
     '''
     Calculates moist static energy (J) from dry static energy (J) and specific
@@ -326,7 +313,7 @@ def MSE_from_DSE_qv(DSE, qv):
     return DSE + Lv0*qv
 
 
-@_assumes('constant g')
+@assumes('constant g')
 def N2_from_theta_dthetadz(theta, dthetadz):
     '''
     Calculates the squared Brunt-Väisälä frequency (Hz^2) from potential
@@ -335,7 +322,7 @@ def N2_from_theta_dthetadz(theta, dthetadz):
     return g0/theta*dthetadz
 
 
-@_assumes('hydrostatic')
+@assumes('hydrostatic')
 def omega_from_w_rho_hydrostatic(w, rho):
     '''
     Calculates pressure tendency (Pa/s) from vertical velocity (m/s) and
@@ -346,7 +333,7 @@ def omega_from_w_rho_hydrostatic(w, rho):
     return -rho*g0*w
 
 
-@_assumes('ideal gas')
+@assumes('ideal gas')
 def p_from_rho_Tv_ideal_gas(rho, Tv):
     '''
     Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K)
@@ -357,7 +344,7 @@ def p_from_rho_Tv_ideal_gas(rho, Tv):
     return rho*Rd*Tv
 
 
-@_assumes('constant Cp')
+@assumes('constant Cp')
 def plcl_from_p_T_Tlcl(p, T, Tlcl):
     '''
     Calculates pressure after adiabatic ascent to lifting condensation level
@@ -367,7 +354,7 @@ def plcl_from_p_T_Tlcl(p, T, Tlcl):
     return p*(Tlcl/T)**(Rd/Cpd)
 
 
-@_assumes('stipanuk')
+@assumes('stipanuk')
 def plcl_from_p_T_Td(p, T, Td):
     '''
     Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K), and
@@ -387,7 +374,7 @@ def plcl_from_p_T_Td(p, T, Td):
     raise NotImplementedError()
 
 
-@_assumes('constant g')
+@assumes('constant g')
 def Phi_from_z(z):
     '''
     Calculates geopotential height (m^2/s^2) from height (m) assuming constant
@@ -398,7 +385,7 @@ def Phi_from_z(z):
     return g0*z
 
 
-@_assumes()
+@assumes()
 def qv_from_AH_rho(AH, rho):
     '''
     Calculates specific humidity (kg/kg) from absolute humidity (kg/m^3) and
@@ -409,7 +396,7 @@ def qv_from_AH_rho(AH, rho):
     return AH/rho
 
 
-@_assumes()
+@assumes()
 def qv_from_rv(rv):
     '''
     Calculates specific humidity (kg/kg) from water vapor mixing ratio (kg/kg).
@@ -419,7 +406,7 @@ def qv_from_rv(rv):
     return rv/(1.+rv)
 
 
-@_assumes()
+@assumes()
 def qv_from_p_e(p, e):
     '''
     Calculates specific humidity (kg/kg) from air pressure (Pa) and water vapor
@@ -430,7 +417,7 @@ def qv_from_p_e(p, e):
     return 0.622*e/(p-e)
 
 
-@_assumes()
+@assumes()
 def qvs_from_rvs(rvs):
     '''
     Calculates saturation specific humidity (kg/kg) from saturated water vapor
@@ -441,7 +428,7 @@ def qvs_from_rvs(rvs):
     return rvs/(1+rvs)
 
 
-@_assumes()
+@assumes()
 def RB_from_N2_u_v(N2, dudz, dvdz):
     '''
     Calculates the bulk Richardson number from the squared Brunt-Väisälä
@@ -453,7 +440,7 @@ def RB_from_N2_u_v(N2, dudz, dvdz):
     return N2/(dudz**2 + dvdz**2)
 
 
-@_assumes()
+@assumes()
 def RH_from_qv_qvs(qv, qvs):
     '''
     Calculates relative humidity (%) from specific humidity (kg/kg) and
@@ -464,7 +451,7 @@ def RH_from_qv_qvs(qv, qvs):
     return qv/qvs*100.
 
 
-@_assumes()
+@assumes()
 def RH_from_rv_rvs(rv, rvs):
     '''
     Calculates relative humidity (%) from mixing ratio (kg/kg) and
@@ -475,7 +462,7 @@ def RH_from_rv_rvs(rv, rvs):
     return rv/rvs*100.
 
 
-@_assumes()
+@assumes()
 def rho_from_qv_AH(qv, AH):
     '''
     Calculates density (kg/m^3) from specific humidity (kg/kg) and absolute
@@ -486,7 +473,7 @@ def rho_from_qv_AH(qv, AH):
     return AH/qv
 
 
-@_assumes('hydrostatic', 'constant g')
+@assumes('hydrostatic', 'constant g')
 def rho_from_dpdz_hydrostatic(dpdz):
     '''
     Calculates density (kg/m^3) from vertical derivative of pressure (Pa/m)
@@ -497,7 +484,7 @@ def rho_from_dpdz_hydrostatic(dpdz):
     return -dpdz/g0
 
 
-@_assumes('ideal gas')
+@assumes('ideal gas')
 def rho_from_p_Tv_ideal_gas(p, Tv):
     '''
     Calculates density (kg/m^3) from pressure (Pa) and virtual temperature (K)
@@ -508,7 +495,7 @@ def rho_from_p_Tv_ideal_gas(p, Tv):
     return p/(Rd*Tv)
 
 
-@_assumes()
+@assumes()
 def rv_from_qv(qv):
     '''
     Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
@@ -518,7 +505,7 @@ def rv_from_qv(qv):
     return qv/(1-qv)
 
 
-@_assumes()
+@assumes()
 def rvs_from_p_es(p, es):
     '''
     Calculates saturation mixing ratio from pressure (Pa) and saturation
@@ -529,7 +516,7 @@ def rvs_from_p_es(p, es):
     return Rd/Rv*es/(p-es)
 
 
-@_assumes()
+@assumes()
 def rvs_from_qvs(qvs):
     '''
     Calculates saturation water vapor mixing ratio (kg/kg) from saturation
@@ -540,7 +527,7 @@ def rvs_from_qvs(qvs):
     return qvs/(1-qvs)
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def T_from_es_Bolton(es):
     '''
     Calculates temperature (K) from saturation water vapor pressure (Pa) using
@@ -560,7 +547,7 @@ def T_from_es_Bolton(es):
     return (29.65*np.log(es)-4880.16)/(np.log(es)-19.48)
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def Tlcl_from_T_RH(T, RH):
     '''
     Calculates temperature at LCL (K) from temperature (K) and relative
@@ -577,7 +564,7 @@ def Tlcl_from_T_RH(T, RH):
     return 1./((1./(T-55.))-(np.log(RH/100.)/2840.)) + 55.
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def Tlcl_from_T_Td(T, Td):
     '''
     Calculates temperature at LCL (K) from temperature (K) and dewpoint
@@ -594,7 +581,7 @@ def Tlcl_from_T_Td(T, Td):
     return 1./((1./(Td-56.))-(np.log(T/Td)/800.)) + 56.
 
 
-@_assumes('bolton')
+@assumes('bolton')
 def Tlcl_from_T_e(T, e):
     '''
     Calculates temperature at LCL (K) from temperature (K) and water vapor
@@ -611,7 +598,7 @@ def Tlcl_from_T_e(T, e):
     return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
 
 
-@_assumes('constant Lv')
+@assumes('constant Lv')
 def Tae_from_T_rv(T, rv):
     '''
     Calculates adiabatic equivalent temperature (aka pseudoequivalent
@@ -626,7 +613,7 @@ def Tae_from_T_rv(T, rv):
     return T*np.exp(Lv0*rv/(Cpd*T))
 
 
-@_assumes('constant Lv')
+@assumes('constant Lv')
 def Tie_from_T_rv(T, rv):
     '''
     Calculates isobaric equivalent temperature (K) from temperature (K) and
@@ -641,7 +628,7 @@ def Tie_from_T_rv(T, rv):
     return T*(1.+Lv0*rv/(Cpd*T))
 
 
-@_assumes('no liquid water', 'no solid water')
+@assumes('no liquid water', 'no solid water')
 def Tv_from_T_qv(T, qv):
     '''
     Calculates virtual temperature from temperature (K) and specific
@@ -650,7 +637,7 @@ def Tv_from_T_qv(T, qv):
     return T*(1+0.608*qv)
 
 
-@_assumes('Tv equals T')
+@assumes('Tv equals T')
 def Tv_from_T_assuming_Tv_equals_T(T):
     '''
     Calculates virtual temperature from temperature assuming no moisture.
@@ -664,7 +651,7 @@ def Tv_from_T_assuming_Tv_equals_T(T):
     return 1.*T
 
 
-@_assumes('ideal gas')
+@assumes('ideal gas')
 def Tv_ideal_gas(p, rho):
     '''
     Calculates virtual temperature (K) from density (kg/m^3) and pressure (Pa).
@@ -674,7 +661,7 @@ def Tv_ideal_gas(p, rho):
     return p/(rho*Rd)
 
 
-@_assumes('stull')
+@assumes('stull')
 def Tw_from_T_RH_Stull(T, RH):
     '''
     Calculates wet bulb temperature (K) from temperature (K) and relative
@@ -691,7 +678,7 @@ def Tw_from_T_RH_Stull(T, RH):
             + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
 
 
-@_assumes('Tv equals T')
+@assumes('Tv equals T')
 def T_from_Tv_assuming_Tv_equals_T(Tv):
     '''
     Calculates temperature from virtual temperature assuming no moisture.
@@ -705,7 +692,7 @@ def T_from_Tv_assuming_Tv_equals_T(Tv):
     return 1.*Tv
 
 
-@_assumes('constant Cp')
+@assumes('constant Cp')
 def theta_from_p_T(p, T):
     '''
     Calculates potential temperature (K) from pressure (Pa) and temperature
@@ -716,7 +703,7 @@ def theta_from_p_T(p, T):
     return T*(1e5/p)**(Rd/Cpd)
 
 
-@_assumes('bolton', 'constant Cp')
+@assumes('bolton', 'constant Cp')
 def thetae_from_theta_TL_rv_Bolton(theta, TL, rv):
     '''
     Calculates equivalent potential temperature (K) from potential
@@ -739,7 +726,7 @@ def thetae_from_theta_TL_rv_Bolton(theta, TL, rv):
     return theta*np.exp((3.376/TL-0.00254)*rv*1e3*(1+0.81*rv))
 
 
-@_assumes('constant Lv')
+@assumes('constant Lv')
 def thetaie_from_T_theta_rv(T, theta, rv):
     '''
     Calculates isobaric equivalent potential temperature (K) from temperature
@@ -755,7 +742,7 @@ def thetaie_from_T_theta_rv(T, theta, rv):
     return theta*(1+Lv0*rv/(Cpd*T))
 
 
-@_assumes('constant Cp')
+@assumes('constant Cp')
 def thetaie_from_p_Tie_rv(p, Tie, rv):
     '''
     Calculates isobaric equivalent potential temperature (K) from isobaric
@@ -771,7 +758,7 @@ def thetaie_from_p_Tie_rv(p, Tie, rv):
     return Tie*(1e5/p)**(Rd/Cpd)
 
 
-@_assumes('constant Cp')
+@assumes('constant Cp')
 def thetaae_from_p_Tae_rv(p, Tae, rv):
     '''
     Calculates adiabatic equivalent potential temperature (K) from adiabatic
@@ -782,7 +769,7 @@ def thetaae_from_p_Tae_rv(p, Tae, rv):
     return Tae*(1e5/p)**(Rd/Cpd)
 
 
-@_assumes('constant g')
+@assumes('constant g')
 def w_from_omega_rho_hydrostatic(omega, rho):
     '''
     Calculates vertical velocity (m/s) from vertical pressure tendency (Pa/s)
@@ -793,7 +780,7 @@ def w_from_omega_rho_hydrostatic(omega, rho):
     return -omega/(rho*g0)
 
 
-@_assumes('constant g')
+@assumes('constant g')
 def z_from_Phi(Phi):
     '''
     Calculates height (m) from geopotential (m^2/s^2) assuming constant g.
@@ -801,4 +788,3 @@ def z_from_Phi(Phi):
     z = Phi/g0
     '''
     return Phi/g0
-
