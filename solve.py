@@ -72,11 +72,21 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
 
     Returns (funcs, func_args, extra_values).
     '''
-    if all([o in inputs for o in outputs]):
-        return ((), (), ())
     relevant_methods = _get_relevant_methods(inputs, methods)
+    # Check if we can already directly compute the outputs
     if len(relevant_methods) == 0:
         raise ValueError('cannot calculate outputs from inputs')
+    if all([(o in relevant_methods.keys()) or (o in inputs) for o in outputs]):
+        funcs = []
+        args = []
+        extra_values = []
+        for o in outputs:
+            if o not in inputs:
+                o_args, o_func = relevant_methods[o].items()[0]
+                funcs.append(o_func)
+                args.append(o_args)
+                extra_values.append(o)
+        return tuple(funcs), tuple(args), tuple(extra_values)
     next_variables = [key for key in relevant_methods.keys()
                       if key not in exclude]
     result = _get_shortest_solution(outputs, inputs + (next_variables[0],),
