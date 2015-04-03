@@ -302,6 +302,7 @@ class _BaseSolver(object):
         print(funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
+        print(funcs, func_args, extra_values)
         for i, func in enumerate(funcs):
             # Compute this quantity
             value = func(*[self.vars[varname] for varname in func_args[i]])
@@ -401,7 +402,8 @@ class _BaseSolver(object):
                 temp_funcs, temp_func_args, temp_extra_values = result
             else:  # We have all our arguments, since we didn't break
                 # Add this possible solution to our list
-                results.append((temp_funcs, temp_func_args, temp_extra_values))
+                results.append((temp_funcs + (func,), temp_func_args + (args,),
+                                temp_extra_values + (out_name,)))
         if len(results) == 0:
             # We could not calculate this with any method available
             raise ValueError('Could not determine {} from given variables'
