@@ -60,11 +60,11 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     '''
     Parameters
     ----------
-    outputs: iterable
+    outputs: tuple
         Strings corresponding to the final variables we want output
-    inputs: iterable
+    inputs: tuple
         Strings corresponding to the variables we have so far
-    exclude: list
+    exclude: tuple
         Strings corresponding to variables that won't help calculate the
         outputs.
     methods: dict
@@ -84,6 +84,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     args, func = relevant_methods[next_variables[0]].items()[0]
     best_option = ((func,) + result[0], (args,) + result[1],
                    (next_variables[0],) + result[2])
+    exclude = exclude + (next_variables[0],)
     for intermediate in next_variables[1:]:
         if intermediate in exclude:
             continue
@@ -94,26 +95,14 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
                        (next_variables[0],) + result[2])
         # Compare number of calculations
         if len(next_option[0]) < len(best_option[0]):
-            # This option is better than the previous best option
-            # That means we shouldn't try to calculate the previous best
-            # variable
-            exclude.append(best_option[-1][-1])
             # update the new best option
             best_option = next_option
-        elif len(next_option[0]) == len(best_option[0]):
-            # not sure which one is better
-            # Compare number of arguments passed in
-            if (sum([len(tup) for tup in next_option[1]]) <
-                    sum([len(tup) for tup in next_option[1]])):
-                # This option is better than the previous best option
-                # That means we shouldn't try to calculate that variable
-                exclude.append(best_option[-1][-1])
+        elif (len(next_option[0]) == len(best_option[0]) and
+              sum([len(tup) for tup in next_option[1]]) <
+              sum([len(tup) for tup in next_option[1]])):
                 # update the new best option
                 best_option = next_option
-            else:
-                exclude.append(intermediate)
-        else:
-            exclude.append(intermediate)
+        exclude = exclude + (intermediate,)
     return best_option
 
 
@@ -298,7 +287,7 @@ class _BaseSolver(object):
         >>>
         '''
         funcs, func_args, extra_values = \
-            _get_shortest_solution(tuple(args), tuple(self.vars.keys()), [],
+            _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
                                    self.methods)
         print(funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
