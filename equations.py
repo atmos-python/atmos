@@ -34,6 +34,7 @@ This temporary script file is located here:
 #   Calculate pressure from surface pressure and hydrostatic balance
 #   Similarly with thermal wind and surface winds
 #
+# Need an equation or two for Td
 #
 # Equivalent potential temperature... What even.
 #
@@ -519,7 +520,7 @@ def plcl_from_p_T_Tlcl(p, T, Tlcl):
     (Pa) from pressure (Pa), temperature (K), and temperature after adiabatic
     ascent to lifting condensation level (K).
     '''
-    return p*(Tlcl/T)**(Rd/Cpd)
+    return p*(Tlcl/T)**(Cpd/Rd)
 
 
 # =============================================================================
@@ -748,7 +749,7 @@ def Tlcl_from_T_Td(T, Td):
         Mon. Wea. Rev., 108, 1046–1053.
         doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
     '''
-    return 1./((1./(Td-56.))-(np.log(T/Td)/800.)) + 56.
+    return 1./((1./(Td-56.))+(np.log(T/Td)/800.)) + 56.
 
 
 @assumes('bolton')
@@ -853,7 +854,7 @@ def Tw_from_T_RH_Stull(T, RH):
         doi: http://dx.doi.org/10.1175/JAMC-D-11-0143.1
     '''
     return ((T-273.15)*np.arctan(0.151977*(RH + 8.313659)**0.5)
-            + np.arctan(T-273.15+RH) + np.arctan(RH - 1.676331)
+            + np.arctan(T-273.15+RH) - np.arctan(RH - 1.676331)
             + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
 
 

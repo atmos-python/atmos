@@ -199,6 +199,10 @@ class _BaseSolver(object):
         calculated by this object (such as u and v) were done so under this
         assumption.
         '''
+        if 'debug' in kwargs.keys():
+            self._debug = kwargs['debug']
+        else:
+            self._debug = False
         if axis_coords is not None and any([coord not in
                                             self.coord_types.keys()
                                             for coord in axis_coords]):
@@ -274,10 +278,16 @@ class _BaseSolver(object):
             value = func(*[self.vars[varname] for varname in func_args[i]])
             # Add it to our dictionary of quantities for successive functions
             self.vars[extra_values[i]] = value
-        if len(args) == 1:
-            return self.vars[args[0]]
+        if self._debug:
+            if len(args) == 1:
+                return self.vars[args[0]], funcs
+            else:
+                return [self.vars[arg] for arg in args] + [funcs, ]
         else:
-            return [self.vars[arg] for arg in args]
+            if len(args) == 1:
+                return self.vars[args[0]]
+            else:
+                return [self.vars[arg] for arg in args]
 
     def _get_methods(self, method_options):
         '''
