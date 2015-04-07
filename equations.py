@@ -230,17 +230,6 @@ def AH_from_qv_rho(qv, rho):
     return qv*rho
 
 
-@assumes('hydrostatic')
-def dpdz_from_rho_hydrostatic(rho):
-    '''
-    Calculates vertical derivative of pressure (Pa/m) from density (kg/m^3),
-    assuming hydrostatic balance.
-
-    dp/dz = -rho*g0
-    '''
-    return -rho*g0
-
-
 @assumes('constant g')
 def DSE_from_T_z(T, z):
     '''
@@ -482,15 +471,6 @@ def MSE_from_DSE_qv(DSE, qv):
     return DSE + Lv0*qv
 
 
-@assumes('constant g')
-def N2_from_theta_dthetadz(theta, dthetadz):
-    '''
-    Calculates the squared Brunt-Väisälä frequency (Hz^2) from potential
-    temperature (K) and vertical gradient of potential temperature (K/m)
-    '''
-    return g0/theta*dthetadz
-
-
 @assumes('hydrostatic')
 def omega_from_w_rho_hydrostatic(w, rho):
     '''
@@ -642,17 +622,6 @@ def rho_from_qv_AH(qv, AH):
     rho = AH/qv
     '''
     return AH/qv
-
-
-@assumes('hydrostatic', 'constant g')
-def rho_from_dpdz_hydrostatic(dpdz):
-    '''
-    Calculates density (kg/m^3) from vertical derivative of pressure (Pa/m)
-    assuming hydrostatic balance and constant g.
-
-    rho = -dpdz/g0
-    '''
-    return -dpdz/g0
 
 
 @assumes('ideal gas')
