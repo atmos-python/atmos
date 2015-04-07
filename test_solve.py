@@ -216,13 +216,9 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         skew_T_value = self.quantities.pop(quantity)
         print('calculating {} from {}'.format(
             quantity, self.quantities.keys()))
-        try:
-            calculated_value = calculate(quantity, methods=default_methods +
-                                         ('bolton', 'unfrozen bulb'),
-                                         **self.quantities)
-        except ValueError:
-            raise AssertionError('calculate {} raised ValueError'.format(
-                quantity))
+        calculated_value = calculate(quantity, methods=default_methods +
+                                     ('bolton', 'unfrozen bulb'),
+                                     **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
             raise AssertionError('difference is {:.2f} for {}'.format(
