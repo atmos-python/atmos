@@ -874,7 +874,7 @@ def theta_from_p_T(p, T):
 
 
 @assumes('bolton', 'constant Cp')
-def thetae_from_theta_TL_rv_Bolton(theta, TL, rv):
+def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
     '''
     Calculates equivalent potential temperature (K) from potential
     temperature (K), temperature at LCL (K), and water vapor mixing ratio
