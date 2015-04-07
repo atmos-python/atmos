@@ -43,7 +43,6 @@ import numpy as np
 from constants import g0, Omega, Rd, Rv, Cpd, Lv0
 from decorators import assumes, equation_docstring
 
-
 quantities = {
     'AH': {
         'name': 'absolute humidity',
@@ -210,54 +209,43 @@ assumptions = {
     'hydrostatic': 'hydrostatic balance',
     'constant g': 'g is constant',
     'constant Lv': 'latent heat of vaporization of water is constant',
-    'ideal_gas': 'the ideal gas law holds',
+    'ideal gas': 'the ideal gas law holds',
     'bolton': 'the assumptions in Bolton (1980) hold',
     'goff-gratch': 'the Goff-Gratch equation for es',
     'frozen bulb': 'the bulb is frozen',
     'unfrozen bulb': 'the bulb is not frozen',
     'Tv equals T': 'the virtual temperature correction can be neglected',
+    'constant Cp': 'Cp is constant and equal to Cp for dry air at 0C',
+    'no liquid water': 'liquid water can be neglected',
+    'no solid water': 'ice can be neglected',
 }
 
 
+def autodoc(**kwargs):
+    return equation_docstring(quantities, assumptions, **kwargs)
+
+
+@autodoc(equation='AH = qv*rho')
 @assumes()
 def AH_from_qv_rho(qv, rho):
-    '''
-    Calculates absolute humidity (kg/m^3) from specific humidity (kg/kg) and
-    air density (kg/m^3).
-
-    AH = qv*rho
-    '''
     return qv*rho
 
 
+@autodoc(equation='DSE = Cpd*T + g0*z')
 @assumes('constant g')
 def DSE_from_T_z(T, z):
-    '''
-    Calculates dry static energy (J) from temperature (K) and height (m)
-    assuming constant g.
-
-    DSE = Cp*T + g0*z
-    '''
     return Cpd*T + g0*z
 
 
+@autodoc(equation='DSE = Cpd*T + Phi')
 @assumes()
 def DSE_from_T_Phi(T, Phi):
-    '''
-    Calculates dry static energy (J) from temperature (K) and geopotential
-    height (m^2/s^2).
-
-    DSE = Cp*T + Phi
-    '''
     return Cpd*T + Phi
 
 
+@autodoc(equation=' p*qv/(0.622+qv)')
 @assumes()
 def e_from_p_qv(p, qv):
-    '''
-    Calculates water vapor partial pressure (Pa) from air pressure (Pa) and
-    specific humidity (kg/kg).
-    '''
     return p*qv/(0.622+qv)
 
 
@@ -272,7 +260,8 @@ def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
 
     e = es(Tw) - 0.799e-3*p*(T-Tw)
 
-    Reference:
+    References
+    ----------
     Wong, W.T. 1989: Comparison of Algorithms for the Computation of the
         Thermodynamic Properties of Moist Air, Technical Note (Local) No. 51,
         Royal Observatory, Hong Kong. Retrieved March 25, 2015 from
@@ -303,60 +292,35 @@ def e_from_p_T_Tw_Bolton(p, T, Tw):
     return es_from_T_Bolton(Tw) - 0.799e-3*p*(T-Tw)
 
 
+@autodoc(equation='e = es(Td)')
 @assumes('goff-gratch')
 def e_from_Td_Goff_Gratch(Td):
-    '''
-    Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
-    Uses the Goff-Gratch equation for saturation water vapor partial pressure.
-
-    e = es(Td)
-    '''
     return es_from_T_Goff_Gratch(Td)
 
 
+@autodoc(equation='e = es(Td)')
 @assumes('bolton')
 def e_from_Td_Bolton(Td):
-    '''
-    Calculates water vapor partial pressure (Pa) from dewpoint temperature (K).
-    Uses Bolton's approximation to Wexler's formula for saturation water vapor
-    partial pressure.
-
-    e = es(Td)
-    '''
     return es_from_T_Bolton(Td)
 
 
+@autodoc(equation='e = es - 6.60e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p',
+         references='''
+Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
+    Sundog Publishing. p.216
+''')
 @assumes('unfrozen bulb')
 def e_from_p_es_T_Tw(p, es, T, Tw):
-    '''
-    Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
-    water vapor partial pressure (Pa), temperature (K), and wet bulb
-    temperature (K). Assumes the wet bulb is not frozen.
-
-    e = es - 6.60e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p
-
-    References
-    ----------
-    Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
-        Sundog Publishing. p.216
-    '''
     return es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p
 
 
+@autodoc(equation='e = es - 5.82e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p',
+         references='''
+Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
+    Sundog Publishing. p.216
+''')
 @assumes('frozen bulb')
 def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
-    '''
-    Calculates water vapor partial pressure (Pa) from pressure (Pa), saturation
-    water vapor partial pressure (Pa), temperature (K), and wet bulb
-    temperature (K). Assumes the wet bulb is not frozen.
-
-    e = es - 5.82e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p
-
-    References
-    ----------
-    Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
-        Sundog Publishing. p.216
-    '''
     return es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p
 
 
@@ -434,16 +398,19 @@ def es_from_T_Bolton(T):
     return 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
 
 
+@autodoc(equation='f = 2.*Omega*sin(pi/180.*lat)')
 @assumes()
 def f_from_lat(lat):
-    '''
-    Calculates the Coriolis parameter (Rad/s) from latitude (degrees N).
-
-    f = 2.*Omega*sin(pi/180.*lat)
-    '''
     return 2.*Omega*np.sin(np.pi/180.*lat)
 
 
+@autodoc(
+    equation='Gammam = g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))',
+    references='''
+American Meteorological Society Glossary of Meteorology
+    http://glossary.ametsoc.org/wiki/Saturation-adiabatic_lapse_rate
+    Retrieved March 25, 2015
+''')
 @assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
     '''
@@ -460,46 +427,27 @@ def Gammam_from_rvs_T(rvs, T):
     return g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
 
 
+@autodoc(equation='MSE = DSE + Lv0*qv')
 @assumes('constant Lv')
 def MSE_from_DSE_qv(DSE, qv):
-    '''
-    Calculates moist static energy (J) from dry static energy (J) and specific
-    humidity (kg/kg) assuming constant latent heat of vaporization of water.
-
-    MSE = DSE + Lv0*qv
-    '''
     return DSE + Lv0*qv
 
 
+@autodoc(equation='omega = -rho*g0*w')
 @assumes('hydrostatic')
 def omega_from_w_rho_hydrostatic(w, rho):
-    '''
-    Calculates pressure tendency (Pa/s) from vertical velocity (m/s) and
-    density (kg/m^3) using the hydrostatic assumption.
-
-    omega = -rho*g0*w
-    '''
     return -rho*g0*w
 
 
+@autodoc(equation='p = rho*Rd*Tv')
 @assumes('ideal gas')
 def p_from_rho_Tv_ideal_gas(rho, Tv):
-    '''
-    Calculates pressure (Pa) from density (kg/m^3) and virtual temperature (K)
-    assuming an ideal gas.
-
-    p = rho*Rd*Tv
-    '''
     return rho*Rd*Tv
 
 
+@autodoc(equation='plcl = p*(Tlcl/T)**(Cpd/Rd)')
 @assumes('constant Cp')
 def plcl_from_p_T_Tlcl(p, T, Tlcl):
-    '''
-    Calculates pressure after adiabatic ascent to lifting condensation level
-    (Pa) from pressure (Pa), temperature (K), and temperature after adiabatic
-    ascent to lifting condensation level (K).
-    '''
     return p*(Tlcl/T)**(Cpd/Rd)
 
 
@@ -525,145 +473,75 @@ def plcl_from_p_T_Tlcl(p, T, Tlcl):
 # =============================================================================
 
 
+@autodoc(equation='Phi = g0*z')
 @assumes('constant g')
 def Phi_from_z(z):
-    '''
-    Calculates geopotential height (m^2/s^2) from height (m) assuming constant
-    g.
-
-    Phi = g0*z
-    '''
     return g0*z
 
 
+@autodoc(equation='qv = AH/rho')
 @assumes()
 def qv_from_AH_rho(AH, rho):
-    '''
-    Calculates specific humidity (kg/kg) from absolute humidity (kg/m^3) and
-    air density (kg/m^3).
-
-    qv = AH/rho
-    '''
     return AH/rho
 
 
+@autodoc(equation='qv = rv/(1+rv)')
 @assumes()
 def qv_from_rv(rv):
-    '''
-    Calculates specific humidity (kg/kg) from water vapor mixing ratio (kg/kg).
-
-    qv = rv/(1+rv)
-    '''
     return rv/(1.+rv)
 
 
+@autodoc(equation='qv = 0.622*e/(p-e)')
 @assumes()
 def qv_from_p_e(p, e):
-    '''
-    Calculates specific humidity (kg/kg) from air pressure (Pa) and water vapor
-    partial pressure (Pa).
-
-    qv = 0.622*e/(p-e)
-    '''
     return 0.622*e/(p-e)
 
 
+@autodoc(equation='qvs = rvs/(1+rvs)')
 @assumes()
 def qvs_from_rvs(rvs):
-    '''
-    Calculates saturation specific humidity (kg/kg) from saturated water vapor
-    mixing ratio (kg/kg).
-
-    qvs = rvs/(1+rvs)
-    '''
     return rvs/(1+rvs)
 
 
-@assumes()
-def RB_from_N2_u_v(N2, dudz, dvdz):
-    '''
-    Calculates the bulk Richardson number from the squared Brunt-Väisälä
-    frequency (Hz^2), vertical derivative of zonal wind velocity (Hz), and
-    vertical derivative of meridional wind velocity (Hz).
-
-    RB = N2/(dudz^2 + dvdz^2)
-    '''
-    return N2/(dudz**2 + dvdz**2)
-
-
+@autodoc(equation='RH = qv/qvs*100.')
 @assumes()
 def RH_from_qv_qvs(qv, qvs):
-    '''
-    Calculates relative humidity (%) from specific humidity (kg/kg) and
-    saturation specific humidity (kg/kg).
-
-    RH = qv/qvs*100.
-    '''
     return qv/qvs*100.
 
 
+@autodoc(equation='RH = rv/rvs*100.')
 @assumes()
 def RH_from_rv_rvs(rv, rvs):
-    '''
-    Calculates relative humidity (%) from mixing ratio (kg/kg) and
-    saturation mixing ratio (kg/kg)
-
-    RH = rv/rvs*100.
-    '''
     return rv/rvs*100.
 
 
+@autodoc(equation='rho = AH/qv')
 @assumes()
 def rho_from_qv_AH(qv, AH):
-    '''
-    Calculates density (kg/m^3) from specific humidity (kg/kg) and absolute
-    humidity (kg/m^3).
-
-    rho = AH/qv
-    '''
     return AH/qv
 
 
+@autodoc(equation='rho = p/(Rd*Tv)')
 @assumes('ideal gas')
 def rho_from_p_Tv_ideal_gas(p, Tv):
-    '''
-    Calculates density (kg/m^3) from pressure (Pa) and virtual temperature (K)
-    assuming an ideal gas.
-
-    rho = p/(Rd*Tv)
-    '''
     return p/(Rd*Tv)
 
 
+@autodoc(equation='rv = qv/(1-qv)')
 @assumes()
 def rv_from_qv(qv):
-    '''
-    Calculates water vapor mixing ratio (kg/kg) from specific humidity (kg/kg).
-
-    rv = q/(1-q)
-    '''
     return qv/(1-qv)
 
 
+@autodoc(equation='rvs = Rd/Rv*es/(p-es)')
 @assumes()
 def rvs_from_p_es(p, es):
-    '''
-    Calculates saturation mixing ratio from pressure (Pa) and saturation
-    vapor pressure (Pa).
-
-    rvs = Rd/Rv*es/(p-es)
-    '''
     return Rd/Rv*es/(p-es)
 
 
+@autodoc(equation='rv = qvs/(1-qvs)')
 @assumes()
 def rvs_from_qvs(qvs):
-    '''
-    Calculates saturation water vapor mixing ratio (kg/kg) from saturation
-    specific humidity (kg/kg).
-
-    rv = qvs/(1-qvs)
-    '''
     return qvs/(1-qvs)
 
 
@@ -738,51 +616,39 @@ def Tlcl_from_T_e(T, e):
     return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
 
 
-@assumes('constant Lv')
-def Tae_from_T_rv(T, rv):
-    '''
-    Calculates adiabatic equivalent temperature (aka pseudoequivalent
-    temperature) (K) from temperature (K) and water vapor mixing ratio (kg/kg)
-
-    Tae = T*exp(Lv0*rv/(Cpd*T))
-
-    From the American Meteorological Society Glossary of Meteorology
+@autodoc(
+    equation='Tae = T*exp(Lv0*rv/(Cpd*T))',
+    references='''
+American Meteorological Society Glossary of Meteorology
     http://glossary.ametsoc.org/wiki/Equivalent_temperature
     Retrieved March 25, 2015
-    '''
+''')
+@assumes('constant Lv')
+def Tae_from_T_rv(T, rv):
     return T*np.exp(Lv0*rv/(Cpd*T))
 
 
+@autodoc(
+    equation='Tie = T*(1.+Lv0*rv/(Cpd*T))',
+    references='''
+American Meteorological Society Glossary of Meteorology
+    http://glossary.ametsoc.org/wiki/Equivalent_temperature
+    Retrieved March 25, 2015
+''')
 @assumes('constant Lv')
 def Tie_from_T_rv(T, rv):
-    '''
-    Calculates isobaric equivalent temperature (K) from temperature (K) and
-    water vapor mixing ratio (kg/kg).
-
-    Tie = T*(1.+Lv0*rv/(Cpd*T))
-
-    From the American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Equivalent_temperature
-    Retrived March 25, 2015
-    '''
     return T*(1.+Lv0*rv/(Cpd*T))
 
 
+@autodoc(equation='Tv/(1+0.608*qv)')
 @assumes('no liquid water', 'no solid water')
 def T_from_Tv_qv(Tv, qv):
-    '''
-    Calculates virtual temperature from temperature (K) and specific
-    humidity (kg/kg).
-    '''
     return Tv/(1+0.608*qv)
 
 
+@autodoc(equation='T*(1+0.608*qv)')
 @assumes('no liquid water', 'no solid water')
 def Tv_from_T_qv(T, qv):
-    '''
-    Calculates virtual temperature from temperature (K) and specific
-    humidity (kg/kg).
-    '''
     return T*(1+0.608*qv)
 
 
@@ -800,13 +666,9 @@ def Tv_from_T_assuming_Tv_equals_T(T):
     return 1.*T
 
 
+@autodoc(equation='Tv = p/(rho*Rd)')
 @assumes('ideal gas')
-def Tv_ideal_gas(p, rho):
-    '''
-    Calculates virtual temperature (K) from density (kg/m^3) and pressure (Pa).
-
-    Tv = p/(rho*Rd)
-    '''
+def Tv_from_p_rho_ideal_gas(p, rho):
     return p/(rho*Rd)
 
 
@@ -841,14 +703,9 @@ def T_from_Tv_assuming_Tv_equals_T(Tv):
     return 1.*Tv
 
 
+@autodoc(equation='theta = T*(1e5/p)**(Rd/Cpd)')
 @assumes('constant Cp')
 def theta_from_p_T(p, T):
-    '''
-    Calculates potential temperature (K) from pressure (Pa) and temperature
-    (K). Assumes Cp does not vary with pressure or temperature.
-
-    theta = T*(1e5/p)**(Rd/Cpd)
-    '''
     return T*(1e5/p)**(Rd/Cpd)
 
 
@@ -875,65 +732,41 @@ def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
     return theta*np.exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))
 
 
+@autodoc(
+    equation='thetaie = theta*(1+Lv0*rv/(Cpd*T))',
+    references='''
+Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
+    Sundog Publishing, pg. 203
+''')
 @assumes('constant Lv')
 def thetaie_from_T_theta_rv(T, theta, rv):
-    '''
-    Calculates isobaric equivalent potential temperature (K) from temperature
-    (K), potential temperature (K), and water vapor mixing ratio (kg/kg).
-
-    thetaie = theta*(1+Lv0*rv/(Cpd*T))
-
-    References
-    ----------
-    Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
-        Sundog Publishing, pg. 203
-    '''
     return theta*(1+Lv0*rv/(Cpd*T))
 
 
+@autodoc(
+    equation='thetaie = Tie*(1e5/p)**(Rd/Cpd)',
+    references='''
+Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
+    Sundog Publishing, pg. 203
+''')
 @assumes('constant Cp')
 def thetaie_from_p_Tie_rv(p, Tie, rv):
-    '''
-    Calculates isobaric equivalent potential temperature (K) from isobaric
-    equivalent temperature (K) and water vapor mixing ratio (kg/kg).
-
-    thetaie = Tie*(1e5/p)**(Rd/Cpd)
-
-    References
-    ----------
-    Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
-        Sundog Publishing, pg. 203
-    '''
     return Tie*(1e5/p)**(Rd/Cpd)
 
 
+@autodoc(equation='thetaae = Tae*(1e5/p)**(Rd/Cpd)')
 @assumes('constant Cp')
 def thetaae_from_p_Tae_rv(p, Tae, rv):
-    '''
-    Calculates adiabatic equivalent potential temperature (K) from adiabatic
-    equivalent temperature (K) and water vapor mixing ratio (kg/kg).
-
-    thetaae = Tae*(1e5/p)**(Rd/Cpd)
-    '''
     return Tae*(1e5/p)**(Rd/Cpd)
 
 
+@autodoc(equation='w = -omega/(rho*g0)')
 @assumes('constant g')
 def w_from_omega_rho_hydrostatic(omega, rho):
-    '''
-    Calculates vertical velocity (m/s) from vertical pressure tendency (Pa/s)
-    and density (kg/m^3) using the hydrostatic assumption.
-
-    w = -omega/(rho*g0)
-    '''
     return -omega/(rho*g0)
 
 
+@autodoc(equation='z = Phi/g0')
 @assumes('constant g')
 def z_from_Phi(Phi):
-    '''
-    Calculates height (m) from geopotential (m^2/s^2) assuming constant g.
-
-    z = Phi/g0
-    '''
     return Phi/g0

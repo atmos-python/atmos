@@ -5,6 +5,7 @@ Created on Fri Apr  3 11:59:55 2015
 @author: mcgibbon
 """
 import inspect
+from textwrap import wrap
 
 
 # Define some decorators for our equations
@@ -18,8 +19,12 @@ def assumes(*args):
     return decorator
 
 
-def equation_docstring(quantity_dict, assumption_dict):
+def equation_docstring(quantity_dict, assumption_dict,
+                       equation=None, references=None):
     def quantity_string(name):
+        '''Takes in an abbreviation for a quantity, and returns a more
+           descriptive string of the quantity as "name (units)"
+        '''
         return '{} ({})'.format(quantity_dict[name]['name'],
                                 quantity_dict[name]['units'])
 
@@ -41,6 +46,15 @@ def equation_docstring(quantity_dict, assumption_dict):
         assumption_strings = [assumption_dict[a] for a in assumptions]
         return strings_to_list_string(assumption_strings)
 
+    def quantity_spec_string(name):
+        s = '{} : ndarray\n'.format(name)
+        s += '    ' + doc_paragraph('Data for {}.'.format(
+            quantity_string(name)))
+        return s
+
+    def doc_paragraph(s):
+        return '\n'.join(wrap(s, width=80))
+
     def decorator(func):
         out_name_end_index = func.__name__.find('_from_')
         if out_name_end_index == -1:
@@ -48,18 +62,36 @@ def equation_docstring(quantity_dict, assumption_dict):
                              'function whose name contains "_from_"')
         out_quantity = func.__name__[:out_name_end_index]
         in_quantities = inspect.getargspec(func).args
-        docstring = 'Calculates {} from {}'.format(
-            quantity_string(out_quantity),
-            quantity_list_string(in_quantities))
+        docstring = 'Calculates {}'.format(
+            quantity_string(out_quantity))
         try:
             if len(func.assumptions) > 0:
-                docstring += ', assuming {}'.format(
+                docstring += ' assuming {}'.format(
                     assumption_list_string(func.assumptions))
         except AttributeError:
             pass
         docstring += '.'
+        docstring = doc_paragraph(docstring)
+        docstring += '\n\n'
+        if equation is not None:
+            func.func_dict['equation'] = equation
+            docstring += equation.strip() + '\n\n'
+        docstring += 'Parameters\n'
+        docstring += '----------\n'
+        docstring += '\n'.join([quantity_spec_string(q)
+                                for q in in_quantities])
+        docstring += '\n\n'
+        docstring += 'Returns\n'
+        docstring += '-------\n'
+        docstring += quantity_spec_string(out_quantity)
+        if references is not None:
+            func.func_dict['references'] = references
+            docstring += '\n\n'
+            docstring += 'References\n'
+            docstring += '----------\n'
+            docstring += references.strip()
+        docstring += '\n'
         func.func_doc = docstring
         return func
 
-    raise NotImplementedError
     return decorator
