@@ -799,6 +799,15 @@ def Tie_from_T_rv(T, rv):
 
 
 @assumes('no liquid water', 'no solid water')
+def T_from_Tv_qv(Tv, qv):
+    '''
+    Calculates virtual temperature from temperature (K) and specific
+    humidity (kg/kg).
+    '''
+    return Tv/(1+0.608*qv)
+
+
+@assumes('no liquid water', 'no solid water')
 def Tv_from_T_qv(T, qv):
     '''
     Calculates virtual temperature from temperature (K) and specific
@@ -893,7 +902,7 @@ def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
         Temperature. Mon. Wea. Rev., 137, 3137–3148.
         doi: http://dx.doi.org/10.1175/2009MWR2774.1
     '''
-    return theta*np.exp((3.376/TL-0.00254)*rv*1e3*(1+0.81*rv))
+    return theta*np.exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))
 
 
 @assumes('constant Lv')

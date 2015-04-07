@@ -6,14 +6,13 @@ Created on Tue Mar 24 11:44:56 2015
 """
 import unittest
 import nose
-import sys
 import numpy as np
 import equations
 import util
 from nose.tools import raises
 from constants import Rd
 from solve import _BaseSolver, FluidSolver, calculate, \
-    _get_methods, default_methods, all_methods, _get_relevant_methods, \
+    _get_methods, default_assumptions, all_assumptions, _get_relevant_methods,\
     _get_shortest_solution
 
 
@@ -32,9 +31,9 @@ def test_get_methods_nonempty():
     assert len(result) > 0
 
 
-def test_default_methods_exist():
-    for m in default_methods:
-        if m not in all_methods:
+def test_default_assumptions_exist():
+    for m in default_assumptions:
+        if m not in all_assumptions:
             raise AssertionError('{} not a valid method'.format(m))
 
 
@@ -121,37 +120,37 @@ class FluidSolverTests(unittest.TestCase):
         assert isinstance(deriv, _BaseSolver)
 
     def test_creation_one_method(self):
-        FluidSolver(methods=('hydrostatic',))
+        FluidSolver(assumptions=('hydrostatic',))
 
     def test_creation_compatible_methods(self):
-        FluidSolver(methods=('hydrostatic', 'Tv equals T',))
+        FluidSolver(assumptions=('hydrostatic', 'Tv equals T',))
 
     @raises(ValueError)
     def test_creation_incompatible_methods(self):
-        FluidSolver(methods=('Goff-Gratch', 'Wexler',))
+        FluidSolver(assumptions=('Goff-Gratch', 'Wexler',))
 
     @raises(ValueError)
     def test_creation_undefined_method(self):
-        FluidSolver(methods=('moocow',))
+        FluidSolver(assumptions=('moocow',))
 
     @raises(ValueError)
     def test_creation_undefined_method_with_defined_method(self):
-        FluidSolver(methods=('hydrostatic', 'moocow',))
+        FluidSolver(assumptions=('hydrostatic', 'moocow',))
 
     def test_creation_with_vars(self):
         FluidSolver(**self.vars1)
 
     def test_creation_with_vars_and_method(self):
-        FluidSolver(methods=('Tv equals T',), **self.vars1)
+        FluidSolver(assumptions=('Tv equals T',), **self.vars1)
 
     def test_simple_calculation(self):
-        deriver = FluidSolver(methods=default_methods, **self.vars1)
+        deriver = FluidSolver(assumptions=default_assumptions, **self.vars1)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        deriver = FluidSolver(methods=default_methods + ('Tv equals T',),
+        deriver = FluidSolver(assumptions=default_assumptions + ('Tv equals T',),
                               **self.vars2)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
@@ -178,14 +177,14 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        rho = calculate('rho', methods=default_methods +
+        rho = calculate('rho', assumptions=default_assumptions +
                         ('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_double_calculation(self):
-        Tv, rho = calculate('Tv', 'rho', methods=default_methods +
+        Tv, rho = calculate('Tv', 'rho', assumptions=default_assumptions +
                             ('Tv equals T',), **self.vars2)
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
@@ -194,7 +193,7 @@ class calculateTests(unittest.TestCase):
         assert isinstance(Tv, np.ndarray)
 
     def test_double_reverse_calculation(self):
-        rho, Tv = calculate('rho', 'Tv', methods=default_methods +
+        rho, Tv = calculate('rho', 'Tv', assumptions=default_assumptions +
                             ('Tv equals T',), **self.vars2)
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
@@ -209,16 +208,16 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
                            'Tw': 7.+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            'thetaae': 36.+273.15, 'thetaie': 36.+273.15,
                            }
-        #self.quantities['Tv'] = calculate('Tv', **self.quantities)
+        self.quantities['T'] = calculate('T', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
 
     def _generator(self, quantity, tolerance):
         skew_T_value = self.quantities.pop(quantity)
         print('calculating {} from {}'.format(
             quantity, self.quantities.keys()))
-        calculated_value = calculate(quantity, methods=default_methods +
-                                     ('bolton', 'unfrozen bulb'),
-                                     **self.quantities)
+        calculated_value = calculate(
+            quantity, assumptions=default_assumptions +
+            ('bolton', 'unfrozen bulb'), **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
             raise AssertionError('difference is {:.2f} for {}'.format(
@@ -233,8 +232,8 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
     def test_calculate_p(self):
         self._generator('p', 10000.)
 
-    def test_calculate_T(self):
-        self._generator('T', 1.)
+    def test_calculate_Tv(self):
+        self._generator('Tv', 1.)
 
     def test_calculate_theta(self):
         self._generator('theta', 1.)
@@ -249,7 +248,15 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         self._generator('thetae', 1.)
 
     def test_calculate_Tw(self):
-        self._generator('Tw', 1.)
+        quantity = 'Tw'
+        skew_T_value = self.quantities.pop(quantity)
+        calculated_value = calculate(
+            quantity, assumptions=default_assumptions +
+            ('bolton', 'unfrozen bulb', 'stull'), **self.quantities)
+        diff = abs(skew_T_value - calculated_value)
+        if diff > 1.:
+            raise AssertionError('difference is {:.2f} for {}'.format(
+                diff, quantity))
 
     def test_calculate_Td(self):
         self._generator('Td', 1.)

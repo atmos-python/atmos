@@ -9,13 +9,14 @@ import re
 import inspect
 import equations
 
-default_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv')
-all_methods = tuple(set([]).union(*[f[1].func_dict['assumptions']
+default_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
+                       'constant Cp', 'no liquid water', 'no solid water')
+all_assumptions = tuple(set([]).union(*[f[1].func_dict['assumptions']
                                     for f in inspect.getmembers(equations)
                                     if hasattr(f[1], 'func_dict') and
                                     'assumptions' in
                                     f[1].func_dict.keys()]))
-# all_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
+# all_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
 #                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
 #                'stipanuk', 'dry', 'Tv equals T')
 
@@ -140,7 +141,7 @@ def _get_methods(module):
         try:
             assumptions = tuple(funcs[i].assumptions)
         except AttributeError:
-            raise NotImplementedError('function {} in equations module as no '
+            raise NotImplementedError('function {} in equations module has no '
                                       'assumption '
                                       'definition'.format(funcs[i].__name__))
         methods[outputs[i]].append((args, assumptions, funcs[i]))
@@ -159,17 +160,17 @@ class _BaseSolver(object):
                             'subclass.')
         return object.__new__(cls, *args, **kwargs)
 
-    def __init__(self, methods=(), derivative=None,
+    def __init__(self, assumptions=(), derivative=None,
                  axis_coords=None, override_coord_axes=None,
                  coords_own_axis=None, **kwargs):
         '''
-        Initializes with the given methods enabled, and variables passed as
+        Initializes with the given assumptions enabled, and variables passed as
         keyword arguments stored.
 
         Parameters
         ----------
-        methods : tuple, optional
-            Strings specifying which methods to enable.
+        assumptions : tuple, optional
+            Strings specifying which assumptions to enable.
         derivative : str, optional
             Which spatial derivative calculation to use. Set to 'centered' for
             second-order centered finite difference with first-order
@@ -202,7 +203,7 @@ class _BaseSolver(object):
                                             self.coord_types.keys()
                                             for coord in axis_coords]):
             raise ValueError('Invalid value given in axis_coords')
-        self.methods = self._get_methods(methods)
+        self.methods = self._get_methods(assumptions)
         self.vars = kwargs
         if axis_coords is not None:
             coord_axes = {}
@@ -231,8 +232,6 @@ class _BaseSolver(object):
         ----------
         varname_out : string
             Name of quantity to be calculated.
-        methods : tuple, optional
-            Names of methods that can be used for calculation, as strings.
 
         Quantity Parameters
         -------------------
@@ -300,7 +299,7 @@ class _BaseSolver(object):
                 output quantity from the same input quantities
         '''
         for m in method_options:
-            if m not in all_methods:
+            if m not in all_assumptions:
                 raise ValueError('method {} matches no equations'.format(m))
         methods = {}
         # Go through each output variable
@@ -455,14 +454,14 @@ def calculate(*args, **kwargs):
             arg = None
         return arg
     try:
-        methods = kwargs.pop('methods')
+        assumptions = kwargs.pop('assumptions')
     except KeyError:
-        methods = default_methods
+        assumptions = default_assumptions
     derivative = get_arg('derivative', kwargs)
     axis_coords = get_arg('axis_coords', kwargs)
     override_coord_axes = get_arg('override_coord_axes', kwargs)
     coords_own_axis = get_arg('coords_own_axis', kwargs)
-    solver = FluidSolver(methods, derivative,
+    solver = FluidSolver(assumptions, derivative,
                          axis_coords, override_coord_axes,
                          coords_own_axis, **kwargs)
     result = [solver.calculate(var) for var in args]
