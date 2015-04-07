@@ -6,13 +6,15 @@ Created on Tue Mar 24 11:44:56 2015
 """
 import unittest
 import nose
+import sys
 import numpy as np
 import equations
 import util
 from nose.tools import raises
 from constants import Rd
 from solve import _BaseSolver, FluidSolver, calculate, \
-    _get_methods, default_methods, all_methods, _get_relevant_methods
+    _get_methods, default_methods, all_methods, _get_relevant_methods, \
+    _get_shortest_solution
 
 
 def test_quantities_dict_complete():
@@ -198,24 +200,39 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
         assert isinstance(Tv, np.ndarray)
 
-
+ 
 class TestSolveValuesNearSkewT(unittest.TestCase):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e4, 'T': 9.+273.15, 'theta': 17.9+273.15,
+        self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 17.9+273.15,
                            'rv': 6e-3, 'Tlcl': 4.+273.15, 'thetae': 36.+273.15,
                            'Tw': 7.+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            'thetaae': 36.+273.15, 'thetaie': 36.+273.15,
                            }
+        #self.quantities['Tv'] = calculate('Tv', **self.quantities)
+        self.quantities['rho'] = calculate('rho', **self.quantities)
 
     def _generator(self, quantity, tolerance):
         skew_T_value = self.quantities.pop(quantity)
-        calculated_value = calculate(quantity, methods=default_methods +
-                                     ('bolton',), **self.quantities)
-        assert abs(skew_T_value - calculated_value) < tolerance
+        print('calculating {} from {}'.format(
+            quantity, self.quantities.keys()))
+        try:
+            calculated_value = calculate(quantity, methods=default_methods +
+                                         ('bolton', 'unfrozen bulb'),
+                                         **self.quantities)
+        except ValueError:
+            raise AssertionError('calculate {} raised ValueError'.format(
+                quantity))
+        diff = abs(skew_T_value - calculated_value)
+        if diff > tolerance:
+            raise AssertionError('difference is {:.2f} for {}'.format(
+                diff, quantity))
 
     def tearDown(self):
         self.quantities = None
+
+    def test_calculate_precursors(self):
+        pass
 
     def test_calculate_p(self):
         self._generator('p', 10000.)
@@ -250,5 +267,38 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
     def test_calculate_thetaie(self):
         self._generator('thetaie', 1.)
 
+
+class GetShortestSolutionTests(unittest.TestCase):
+
+    def setUp(self):
+        self.methods = {
+            'x': {('a', 'b'): lambda a, b: a},
+            'y': {('x',): lambda x: x},
+            'z': {('x', 'y'): lambda x, y: x*y},
+            'w': {('z', 'y'): lambda x, y: x*y},
+        }
+
+    def tearDown(self):
+        self.methods = None
+
+    def test_no_calculation(self):
+        sol = _get_shortest_solution(('x',), ('x',), (), self.methods)
+        assert isinstance(sol, tuple)
+        assert len(sol) == 3
+        assert len(sol[0]) == 0
+        assert len(sol[1]) == 0
+        assert len(sol[2]) == 0
+
+    def test_simplest_calculation(self):
+        sol = _get_shortest_solution(('y',), ('x',), (), self.methods)
+        assert len(sol[0]) == 1
+
+    def test_depth_2_calculation(self):
+        _get_shortest_solution(('z',), ('a', 'b'), (), self.methods)
+
+    def test_depth_3_calculation(self):
+        _get_shortest_solution(('w',), ('a', 'b'), (), self.methods)
+
 if __name__ == '__main__':
     nose.run()
+    #unittest.main(verbosity=2)
