@@ -19,6 +19,8 @@ all_methods = tuple(set([]).union(*[f[1].func_dict['assumptions']
 #                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
 #                'stipanuk', 'dry', 'Tv equals T')
 
+class ExcludeError(Exception):
+    pass
 
 def _get_relevant_methods(inputs, methods):
     '''
@@ -89,30 +91,30 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
         return tuple(funcs), tuple(args), tuple(extra_values)
     next_variables = [key for key in relevant_methods.keys()
                       if key not in exclude]
-    result = _get_shortest_solution(outputs, inputs + (next_variables[0],),
-                                    exclude, methods)
-    args, func = relevant_methods[next_variables[0]].items()[0]
-    best_option = ((func,) + result[0], (args,) + result[1],
-                   (next_variables[0],) + result[2])
-    exclude = exclude + (next_variables[0],)
-    for intermediate in next_variables[1:]:
-        if intermediate in exclude:
+    if len(next_variables) == 0:
+        raise ExcludeError
+    results = []
+    intermediates = []
+    for i in range(len(next_variables)):
+        try:
+            results.append(_get_shortest_solution(
+                outputs, inputs + (next_variables[i],), exclude, methods))
+        except ExcludeError:
             continue
-        result = _get_shortest_solution(outputs, inputs + (intermediate,),
-                                        exclude, methods)
-        args, func = relevant_methods[intermediate].items()[0]
-        next_option = ((func,) + result[0], (args,) + result[1],
-                       (next_variables[0],) + result[2])
-        # Compare number of calculations
-        if len(next_option[0]) < len(best_option[0]):
-            # update the new best option
-            best_option = next_option
-        elif (len(next_option[0]) == len(best_option[0]) and
-              sum([len(tup) for tup in next_option[1]]) <
-              sum([len(tup) for tup in next_option[1]])):
-                # update the new best option
-                best_option = next_option
-        exclude = exclude + (intermediate,)
+        intermediates.append(next_variables[i])
+        exclude = exclude + (next_variables[i],)
+    if len(results) == 0:
+        # all subresults raised ExcludeError
+        raise ExcludeError
+
+    def option_key(a):
+        return len(a[0]) + 0.001*len(a[1])
+    best_result = min(results, key=option_key)
+    best_index = results.index(best_result)
+    best_intermediate = intermediates[best_index]
+    args, func = relevant_methods[best_intermediate].items()[0]
+    best_option = ((func,) + best_result[0], (args,) + best_result[1],
+                   (best_intermediate,) + best_result[2])
     return best_option
 
 
@@ -266,10 +268,8 @@ class _BaseSolver(object):
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
                                    self.methods)
-        print(funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
-        print(funcs, func_args, extra_values)
         for i, func in enumerate(funcs):
             # Compute this quantity
             value = func(*[self.vars[varname] for varname in func_args[i]])
