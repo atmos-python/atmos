@@ -45,6 +45,46 @@ import numpy as np
 from constants import g0, Omega, Rd, Rv, Cpd, Lv0
 from decorators import assumes, equation_docstring
 
+ref = {'AMS Glossary Gammam': '''
+American Meteorological Society Glossary of Meteorology
+    http://glossary.ametsoc.org/wiki/Saturation-adiabatic_lapse_rate
+    Retrieved March 25, 2015''',
+       'AMS Glossary thetae': '''
+American Meteorological Society Glossary of Meteorology
+    http://glossary.ametsoc.org/wiki/Equivalent_temperature
+    Retrieved March 25, 2015''',
+       'Wong 1989': '''
+Wong, W.T. 1989: Comparison of Algorithms for the Computation of the
+    Thermodynamic Properties of Moist Air, Technical Note (Local) No. 51,
+    Royal Observatory, Hong Kong. Retrieved March 25, 2015 from
+    http://www.weather.gov.hk/publica/tnl/tnl051.pdf
+    ''',
+       'Petty 2008': '''
+Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics. 1st Ed.
+    Sundog Publishing.''',
+       'Goff-Gratch': '''
+Goff, J. A., and Gratch, S. 1946: Low-pressure properties of water
+    from −160 to 212 °F, in Transactions of the American Society of
+    Heating and Ventilating Engineers, pp 95–122, presented at the
+    52nd annual meeting of the American Society of Heating and
+    Ventilating Engineers, New York, 1946.''',
+       'Wexler 1976': '''
+Wexler, A. (1976): Vapor pressure formulation for water in range 0 to
+    100 C. A revision. J. Res. Natl. Bur. Stand. A, 80, 775-785.''',
+       'Bolton 1980': '''
+Bolton, D. 1980: The Computation of Equivalent Potential Temperature.
+    Mon. Wea. Rev., 108, 1046–1053.
+    doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2''',
+       'Stull 2011': '''
+Stull, R. 2011: Wet-Bulb Temperature from Relative Humidity and Air
+    Temperature. J. Appl. Meteor. Climatol., 50, 2267–2269.
+    doi: http://dx.doi.org/10.1175/JAMC-D-11-0143.1''',
+       'Davies-Jones 2009': '''
+Davies-Jones, R. 2009: On Formulas for Equivalent Potential
+    Temperature. Mon. Wea. Rev., 137, 3137–3148.
+    doi: http://dx.doi.org/10.1175/2009MWR2774.1'''
+       }
+
 quantities = {
     'AH': {
         'name': 'absolute humidity',
@@ -251,50 +291,29 @@ def e_from_p_qv(p, qv):
     return p*qv/(0.622+qv)
 
 
+@autodoc(equation='e = es(Tw) - 0.799e-3*p*(T-Tw)',
+         references=ref['Wong 1989'] + ref['Goff-Gratch'],
+         notes='''
+Approximates saturation vapor pressure at the wet bulb temperature
+using the Goff-Gratch equation. Uses an approximation from the Royal
+Observatory outlined in the referenced document.''')
 @assumes('goff-gratch')
 def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
-    '''
-    Calculates water vapor partial pressure (Pa) from air pressure (Pa),
-    temperature (K), and wet bulb temperature (K). Approximates saturation
-    vapor pressure at the wet bulb temperature using the Goff-Gratch equation.
-    Uses an approximation from the Royal Observatory outlined in the referenced
-    document.
-
-    e = es(Tw) - 0.799e-3*p*(T-Tw)
-
-    References
-    ----------
-    Wong, W.T. 1989: Comparison of Algorithms for the Computation of the
-        Thermodynamic Properties of Moist Air, Technical Note (Local) No. 51,
-        Royal Observatory, Hong Kong. Retrieved March 25, 2015 from
-        http://www.weather.gov.hk/publica/tnl/tnl051.pdf
-    '''
     return es_from_T_Goff_Gratch(Tw) - 0.799e-3*p*(T-Tw)
 
 
+@autodoc(equation='e = es(Tw) - 0.799e-3*p*(T-Tw)',
+         references=ref['Wong 1989'] + ref['Bolton 1980'],
+         notes='''
+Approximates saturation vapor pressure at the wet bulb temperature
+using Bolton's approximation to Wexler's formula. Uses an approximation from
+the Royal Observatory outlined in the referenced document.''')
 @assumes('bolton')
 def e_from_p_T_Tw_Bolton(p, T, Tw):
-    '''
-    Calculates water vapor partial pressure (Pa) from air pressure (Pa),
-    temperature (K), and wet bulb temperature (K). Approximates saturation
-    vapor pressure at the wet bulb temperature using Bolton's approximation to
-    Wexler's formula.
-
-    Uses an approximation from the Royal Observatory outlined in the referenced
-    document.
-
-    e = es(Tw) - 0.799e-3*p*(T-Tw)
-
-    Reference:
-    Wong, W.T. 1989: Comparison of Algorithms for the Computation of the
-        Thermodynamic Properties of Moist Air, Technical Note (Local) No. 51,
-        Royal Observatory, Hong Kong. Retrieved March 25, 2015 from
-        http://www.weather.gov.hk/publica/tnl/tnl051.pdf
-    '''
     return es_from_T_Bolton(Tw) - 0.799e-3*p*(T-Tw)
 
 
-@autodoc(equation='e = es(Td)')
+@autodoc(equation='e = es(Td)', references=ref['Goff-Gratch'])
 @assumes('goff-gratch')
 def e_from_Td_Goff_Gratch(Td):
     return es_from_T_Goff_Gratch(Td)
@@ -307,96 +326,67 @@ def e_from_Td_Bolton(Td):
 
 
 @autodoc(equation='e = es - 6.60e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p',
-         references='''
-Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
-    Sundog Publishing. p.216
-''')
+         references=ref['Petty 2008'])
 @assumes('unfrozen bulb')
 def e_from_p_es_T_Tw(p, es, T, Tw):
     return es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p
 
 
 @autodoc(equation='e = es - 5.82e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p',
-         references='''
-Petty, G.W. 1958: A First Course in Atmospheric Thermodynamics. 1st Ed.
-    Sundog Publishing. p.216
-''')
+         references=ref['Petty 2008'])
 @assumes('frozen bulb')
 def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
     return es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p
 
 
-@assumes('goff-gratch')
-def es_from_T_Goff_Gratch(T):
-    '''
-    Calculate the equilibrium water vapor pressure over a plane surface
-    of ice according to http://en.wikipedia.org/wiki/Goff-Gratch_equation
-    The formula (T in K, es in hPa):
-
-    The original Goff–Gratch (1946) equation reads as follows:
-
-    Log10(es) = -7.90298 (Tst/T-1)
-                + 5.02808 Log10(Tst/T)
-                - 1.3816*10-7 (10^(11.344 (1-T/Tst)) - 1)
-                + 8.1328*10-3 (10^(-3.49149 (Tst/T-1)) - 1)
-                + Log10(es_st)
-    where:
-    Log10 refers to the logarithm in base 10
-    es is the saturation water vapor pressure (hPa)
-    T is the absolute air temperature in kelvins
-    Tst is the steam-point (i.e. boiling point at 1 atm.) temperature (373.16K)
-    es_st is es at the steam-point pressure (1 atm = 1013.25 hPa)
-
-    Note:
-        This formula is accurate but computationally intensive. For most
-    purposes, a more approximate formula is appropriate.
-
-    References
-    ----------
-        http://en.wikipedia.org/wiki/Goff-Gratch_equation
-        Goff, J. A., and S. Gratch (1946) Low-pressure properties of water
-    from −160 to 212 °F, in Transactions of the American Society of Heating and
-    Ventilating Engineers, pp 95–122, presented at the 52nd annual meeting of
-    the American Society of Heating and Ventilating Engineers, New York, 1946.
-        Goff, J. A. (1957) Saturation pressure of water on the new Kelvin
+@autodoc(references=ref['Goff-Gratch'] + '''
+Goff, J. A. (1957) Saturation pressure of water on the new Kelvin
     temperature scale, Transactions of the American Society of Heating and
     Ventilating Engineers, pp 347–354, presented at the semi-annual meeting of
     the American Society of Heating and Ventilating Engineers, Murray Bay, Que.
     Canada.
-        World Meteorological Organization (1988) General meteorological
+World Meteorological Organization (1988) General meteorological
     standards and recommended practices, Appendix A, WMO Technical Regulations,
     WMO-No. 49.
-        World Meteorological Organization (2000) General meteorological
+World Meteorological Organization (2000) General meteorological
     standards and recommended practices, Appendix A, WMO Technical Regulations,
     WMO-No. 49, corrigendum.
-        Murphy, D. M. and Koop, T. (2005): Review of the vapour pressures of
+Murphy, D. M. and Koop, T. (2005): Review of the vapour pressures of
     ice and supercooled water for atmospheric applications, Quarterly Journal
     of the Royal Meteorological Society 131(608): 1539–1565.
-    doi:10.1256/qj.04.94
-    '''
+    doi:10.1256/qj.04.94''',
+         notes='''
+The original Goff–Gratch (1946) equation reads as follows:
+
+Log10(es) = -7.90298 (Tst/T-1)
+            + 5.02808 Log10(Tst/T)
+            - 1.3816*10-7 (10^(11.344 (1-T/Tst)) - 1)
+            + 8.1328*10-3 (10^(-3.49149 (Tst/T-1)) - 1)
+            + Log10(es_st)
+where:
+Log10 refers to the logarithm in base 10
+es is the saturation water vapor pressure (hPa)
+T is the absolute air temperature in kelvins
+Tst is the steam-point (i.e. boiling point at 1 atm.) temperature (373.16K)
+es_st is es at the steam-point pressure (1 atm = 1013.25 hPa)
+
+This formula is accurate but computationally intensive. For most purposes,
+a more approximate formula is appropriate.''')
+@assumes('goff-gratch')
+def es_from_T_Goff_Gratch(T):
     ratio = 373.16/T
     return 101325.*10.**(-1.90298*((ratio-1.) + 5.02808*np.log10(ratio)
                          - 1.3816e-7 * (10.**(11.344*(1.-1./ratio))-1.)
                          + 8.1328e-3*(10.**(-3.49149*(ratio-1.))-1.)))
 
 
+@autodoc(equation='es(T) = 611.2*exp(17.67*(T-273.15)/(T-29.65))',
+         references=ref['Bolton 1980'] + ref['Wexler 1976'],
+         notes='''
+Fits Wexler's formula to an accuracy of 0.1% for temperatures between
+-35C and 35C.''')
 @assumes('bolton')
 def es_from_T_Bolton(T):
-    '''
-    Calculates saturation vapor pressure using Bolton's fit to Wexler's
-    formula. Fits Wexler's formula to an accuracy of 0.1% for temperatures
-    between -35C and 35C.
-
-    es(T) = 611.2*exp(17.67*(T-273.15)/(T-29.65))  [Pa]
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    Wexler, A. (1976): Vapor pressure formulation for water in range 0 to
-        100 C. A revision. J. Res. Natl. Bur. Stand. A, 80, 775-785.
-    '''
     return 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
 
 
@@ -408,24 +398,9 @@ def f_from_lat(lat):
 
 @autodoc(
     equation='Gammam = g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))',
-    references='''
-American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Saturation-adiabatic_lapse_rate
-    Retrieved March 25, 2015
-''')
+    references=ref['AMS Glossary Gammam'])
 @assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
-    '''
-    Calculates saturation adiabatic lapse rate (K/m) from water vapor mixing
-    ratio (kg/kg) and temperature (K), assuming constant g and latent heat of
-    vaporization of water.
-
-    Gammam = g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
-
-    From the American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Saturation-adiabatic_lapse_rate
-    Retrieved March 25, 2015
-    '''
     return g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
 
 
@@ -559,84 +534,43 @@ def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
 
 
+@autodoc(equation='T = (29.65*log(es)-4880.16)/(log(es)-19.48)',
+         references=ref['Bolton 1980'] + ref['Wexler 1976'],
+         notes='''
+Fits Wexler's formula to an accuracy of 0.1% for temperatures between
+-35C and 35C.''')
 @assumes('bolton')
 def T_from_es_Bolton(es):
-    '''
-    Calculates temperature (K) from saturation water vapor pressure (Pa) using
-    Bolton's fit to Wexler's formula, converted to K. Fits Wexler's formula to
-    an accuracy of 0.1% for temperatures between -35C and 35C.
-
-    T = (29.65*log(es)-4880.16)/(log(es)-19.48)
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    Wexler, A. (1976): Vapor pressure formulation for water in range 0 to
-        100 C. A revision. J. Res. Natl. Bur. Stand. A, 80, 775-785.
-    '''
     return (29.65*np.log(es)-4880.16)/(np.log(es)-19.48)
 
 
+@autodoc(equation='Tlcl = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.',
+         references=ref['Bolton 1980'],
+         notes='Uses Bolton (1980) equation 22.')
 @assumes('bolton')
 def Tlcl_from_T_RH(T, RH):
-    '''
-    Calculates temperature at LCL (K) from temperature (K) and relative
-    humidity (%) using Bolton (1980) equation 22.
-
-    Tlcl = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    '''
     return 1./((1./(T-55.))-(np.log(RH/100.)/2840.)) + 55.
 
 
+@autodoc(equation='Tlcl = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.',
+         references=ref['Bolton 1980'],
+         notes='Uses Bolton (1980) equation 15.')
 @assumes('bolton')
 def Tlcl_from_T_Td(T, Td):
-    '''
-    Calculates temperature at LCL (K) from temperature (K) and dewpoint
-    temperature (K) using Bolton (1980) equation 15.
-
-    Tlcl = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    '''
     return 1./((1./(Td-56.))+(np.log(T/Td)/800.)) + 56.
 
 
+@autodoc(equation='Tlcl = 2840./(3.5*log(T)-log(e)-4.805) + 55.',
+         references=ref['Bolton 1980'],
+         notes='Uses Bolton(1980) equation 21.')
 @assumes('bolton')
 def Tlcl_from_T_e(T, e):
-    '''
-    Calculates temperature at LCL (K) from temperature (K) and water vapor
-    partial pressure (Pa) using Bolton (1980) equation 21.
-
-    Tlcl = 2840./(3.5*log(T)-log(e)-4.805) + 55.
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    '''
     return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
 
 
 @autodoc(
     equation='Tae = T*exp(Lv0*rv/(Cpd*T))',
-    references='''
-American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Equivalent_temperature
-    Retrieved March 25, 2015
-''')
+    references=ref['AMS Glossary thetae'])
 @assumes('constant Lv')
 def Tae_from_T_rv(T, rv):
     return T*np.exp(Lv0*rv/(Cpd*T))
@@ -644,11 +578,7 @@ def Tae_from_T_rv(T, rv):
 
 @autodoc(
     equation='Tie = T*(1.+Lv0*rv/(Cpd*T))',
-    references='''
-American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Equivalent_temperature
-    Retrieved March 25, 2015
-''')
+    references=ref['AMS Glossary thetae'])
 @assumes('constant Lv')
 def Tie_from_T_rv(T, rv):
     return T*(1.+Lv0*rv/(Cpd*T))
@@ -666,17 +596,11 @@ def Tv_from_T_qv(T, qv):
     return T*(1+0.608*qv)
 
 
+@autodoc(equation='Tv = T',
+         notes='''
+This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def Tv_from_T_assuming_Tv_equals_T(T):
-    '''
-    Calculates virtual temperature from temperature assuming no moisture.
-    That is to say, it returns the input back.
-
-    This function exists to allow using temperature as virtual temperature with
-    a "dry" assumption.
-
-    Tv = T
-    '''
     return 1.*T
 
 
@@ -686,34 +610,20 @@ def Tv_from_p_rho_ideal_gas(p, rho):
     return p/(rho*Rd)
 
 
+@autodoc(references=ref['Stull 2011'],
+         notes='Uses the empirical inverse solution from Stull (2011).')
 @assumes('stull')
 def Tw_from_T_RH_Stull(T, RH):
-    '''
-    Calculates wet bulb temperature (K) from temperature (K) and relative
-    humidity (%) using Stull's empirical inverse solution.
-
-    References
-    ----------
-    Roland Stull, 2011: Wet-Bulb Temperature from Relative Humidity and Air
-        Temperature. J. Appl. Meteor. Climatol., 50, 2267–2269.
-        doi: http://dx.doi.org/10.1175/JAMC-D-11-0143.1
-    '''
     return ((T-273.15)*np.arctan(0.151977*(RH + 8.313659)**0.5)
             + np.arctan(T-273.15+RH) - np.arctan(RH - 1.676331)
             + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
 
 
+@autodoc(equation='T = Tv',
+         notes='''
+This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def T_from_Tv_assuming_Tv_equals_T(Tv):
-    '''
-    Calculates temperature from virtual temperature assuming no moisture.
-    That is to say, it returns the input back.
-
-    This function exists to allow using temperature as virtual temperature with
-    a "dry" assumption.
-
-    T = Tv
-    '''
     return 1.*Tv
 
 
@@ -723,35 +633,20 @@ def theta_from_p_T(p, T):
     return T*(1e5/p)**(Rd/Cpd)
 
 
+@autodoc(equation='theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))',
+         references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
+         notes='''
+This is one of the most accurate ways of computing thetae, with an
+error of less than 0.2K due mainly to assuming Cp does not vary with
+temperature or pressure.''')
 @assumes('bolton', 'constant Cp')
 def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
-    '''
-    Calculates equivalent potential temperature (K) from potential
-    temperature (K), temperature at LCL (K), and water vapor mixing ratio
-    (kg/kg) using Bolton's formula (1980).
-
-    This is one of the most accurate ways of computing thetae, with an
-    error of less than 0.2K due mainly to assuming Cp does not vary with
-    temperature or pressure.
-
-    References
-    ----------
-    David Bolton, 1980: The Computation of Equivalent Potential Temperature.
-        Mon. Wea. Rev., 108, 1046–1053.
-        doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
-    Robert Davies-Jones, 2009: On Formulas for Equivalent Potential
-        Temperature. Mon. Wea. Rev., 137, 3137–3148.
-        doi: http://dx.doi.org/10.1175/2009MWR2774.1
-    '''
     return theta*np.exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))
 
 
 @autodoc(
     equation='thetaie = theta*(1+Lv0*rv/(Cpd*T))',
-    references='''
-Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
-    Sundog Publishing, pg. 203
-''')
+    references=ref['Petty 2008'] + ' pg. 203')
 @assumes('constant Lv')
 def thetaie_from_T_theta_rv(T, theta, rv):
     return theta*(1+Lv0*rv/(Cpd*T))
@@ -759,10 +654,7 @@ def thetaie_from_T_theta_rv(T, theta, rv):
 
 @autodoc(
     equation='thetaie = Tie*(1e5/p)**(Rd/Cpd)',
-    references='''
-Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics,
-    Sundog Publishing, pg. 203
-''')
+    references=ref['Petty 2008'] + ' pg. 203')
 @assumes('constant Cp')
 def thetaie_from_p_Tie_rv(p, Tie, rv):
     return Tie*(1e5/p)**(Rd/Cpd)

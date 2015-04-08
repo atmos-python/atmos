@@ -20,7 +20,7 @@ def assumes(*args):
 
 
 def equation_docstring(quantity_dict, assumption_dict,
-                       equation=None, references=None):
+                       equation=None, references=None, notes=None):
     def quantity_string(name):
         '''Takes in an abbreviation for a quantity, and returns a more
            descriptive string of the quantity as "name (units)"
@@ -84,6 +84,11 @@ def equation_docstring(quantity_dict, assumption_dict,
         docstring += 'Returns\n'
         docstring += '-------\n'
         docstring += quantity_spec_string(out_quantity)
+        if notes is not None:
+            docstring += '\n\n'
+            docstring += 'Notes\n'
+            docstring += '-----\n'
+            docstring += notes.strip()
         if references is not None:
             func.func_dict['references'] = references
             docstring += '\n\n'
