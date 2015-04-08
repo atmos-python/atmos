@@ -36,6 +36,8 @@ This temporary script file is located here:
 #
 # Need an equation or two for Td
 #
+# Need some more "shortcut" equations
+#
 # Equivalent potential temperature... What even.
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
@@ -491,16 +493,22 @@ def qv_from_rv(rv):
     return rv/(1.+rv)
 
 
-@autodoc(equation='qv = 0.622*e/(p-e)')
+@autodoc(equation='qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)')
 @assumes()
 def qv_from_p_e(p, e):
-    return 0.622*e/(p-e)
+    return 0.622*e/(p-0.378*e)
 
 
 @autodoc(equation='qvs = rvs/(1+rvs)')
 @assumes()
 def qvs_from_rvs(rvs):
     return rvs/(1+rvs)
+
+
+@autodoc(equation='qv = qv_from_p_e(p, es)')
+@assumes()
+def qvs_from_p_es(p, es):
+    return qv_from_p_e(p, es)
 
 
 @autodoc(equation='RH = qv/qvs*100.')
@@ -533,16 +541,22 @@ def rv_from_qv(qv):
     return qv/(1-qv)
 
 
-@autodoc(equation='rvs = Rd/Rv*es/(p-es)')
+@autodoc(equation='(Rd/Rv)*e/(p-e)')
+@assumes()
+def rv_from_p_e(p, e):
+    return 0.622*e/(p-e)
+
+
+@autodoc(equation='rvs = rv_from_p_e(p, es)')
 @assumes()
 def rvs_from_p_es(p, es):
-    return Rd/Rv*es/(p-es)
+    return rv_from_p_e(p, es)
 
 
-@autodoc(equation='rv = qvs/(1-qvs)')
+@autodoc(equation='rv = rv_from_qv(qvs)')
 @assumes()
 def rvs_from_qvs(qvs):
-    return qvs/(1-qvs)
+    return rv_from_qv(qvs)
 
 
 @assumes('bolton')

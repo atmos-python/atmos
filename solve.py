@@ -4,24 +4,25 @@ Created on Wed Apr  1 14:31:40 2015
 
 @author: mcgibbon
 """
-from util import ddx
-import re
 import inspect
 import equations
 
 default_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
-                       'constant Cp', 'no liquid water', 'no solid water')
+                       'constant Cp', 'no liquid water', 'no solid water',
+                       'bolton',)
 all_assumptions = tuple(set([]).union(*[f[1].func_dict['assumptions']
-                                    for f in inspect.getmembers(equations)
-                                    if hasattr(f[1], 'func_dict') and
-                                    'assumptions' in
-                                    f[1].func_dict.keys()]))
+                                        for f in inspect.getmembers(equations)
+                                        if hasattr(f[1], 'func_dict') and
+                                        'assumptions' in
+                                        f[1].func_dict.keys()]))
 # all_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
 #                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
 #                'stipanuk', 'dry', 'Tv equals T')
 
+
 class ExcludeError(Exception):
     pass
+
 
 def _get_relevant_methods(inputs, methods):
     '''
