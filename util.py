@@ -551,6 +551,7 @@ def integrate(base, x, dvardx, coord_index, base_at_start=True):
         if True, assumes base corresponds to the value of var before the first
         index of 
     '''
+    pass
 
 
 def d_x(data, axis, boundary='forward-backward'):
