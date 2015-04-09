@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr  1 14:31:40 2015
+solve.py: Utilities that use equations to solve for quantities, given other
+    quantities and a set of assumptions.
 
-@author: mcgibbon
+@author: Jeremy McGibbon
 """
 import inspect
 import equations
@@ -15,9 +16,6 @@ all_assumptions = tuple(set([]).union(*[f[1].func_dict['assumptions']
                                         if hasattr(f[1], 'func_dict') and
                                         'assumptions' in
                                         f[1].func_dict.keys()]))
-# all_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
-#                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
-#                'stipanuk', 'dry', 'Tv equals T')
 
 
 class ExcludeError(Exception):
@@ -124,6 +122,18 @@ def _get_methods(module):
     '''
     Returns a methods dictionary corresponding to the equations in the given
     module.
+
+    The methods dictionary is in this form:
+    {'output': [(args, assumptions, function),
+                (args, assumptions, function), ...]
+     'another output': [...]
+     ...
+    }
+
+    Where args is a list of arguments that get passed into the function,
+    assumptions are strings indicating the assumptions of the equation on
+    which the function is based, and function is the function itself that
+    computes the output.
     '''
     # Set up the methods dict we will eventually return
     methods = {}
@@ -151,6 +161,8 @@ def _get_methods(module):
 
 class _BaseSolver(object):
     '''
+    Base class for solving systems of equations. Should not be instantiated,
+    as it is not associated with any equations.
     '''
 
     _methods = {}
@@ -161,45 +173,7 @@ class _BaseSolver(object):
                             'subclass.')
         return object.__new__(cls, *args, **kwargs)
 
-    def __init__(self, assumptions=(), derivative=None,
-                 axis_coords=None, override_coord_axes=None,
-                 coords_own_axis=None, **kwargs):
-        '''
-        Initializes with the given assumptions enabled, and variables passed as
-        keyword arguments stored.
-
-        Parameters
-        ----------
-        assumptions : tuple, optional
-            Strings specifying which assumptions to enable.
-        derivative : str, optional
-            Which spatial derivative calculation to use. Set to 'centered' for
-            second-order centered finite difference with first-order
-            forward and backward differencing at boundaries, or None to disable
-            derivatives.
-        axis_coords : iterable, optional
-            Defines the default coordinate to assume for each axis. Should
-            contain 't' to denote a time-like coordinate, 'z' to denote a
-            vertical-like coordinate, 'y' to denote a meridional-like
-            component, and 'x' to denote a zonal-like component.
-            Only required for calculations that require this knowledge.
-        override_coord_axes : mapping, optional
-            A mapping of quantity strings to tuples defining the axes of those
-            quantities, overriding the default of axis_coords.
-        coords_own_axis : mapping, optional
-            A mapping of quantity strings for coordinate-like quantities to
-            their index which corresponds to their own axis. For example, if
-            lon is given as an array in [lat, lon], its value would be 1,
-            whereas if it is a 1-D array its value would be 0. This is assumed
-            to be 0 by default.
-
-        Notes
-        -----
-        y and x defined in axis_coords need not be meridional and longitudinal,
-        so long as it is understood that any zonal or meridional quantities
-        calculated by this object (such as u and v) were done so under this
-        assumption.
-        '''
+    def __init__(self, assumptions=(), **kwargs):
         if 'debug' in kwargs.keys():
             self._debug = kwargs['debug']
         else:
@@ -332,6 +306,30 @@ class _BaseSolver(object):
 
 
 class FluidSolver(_BaseSolver):
+    '''
+    Initializes with the given assumptions enabled, and variables passed as
+    keyword arguments stored.
+
+    Parameters
+    ----------
+    assumptions : tuple, optional
+        Strings specifying which assumptions to enable.
+
+    Returns
+    -------
+    out : FluidSolver
+        A FluidSolver object with the specified assumptions and variables.
+
+    Examples
+    --------
+    >>> solver = FluidSolver(rho=array1, p=array2)
+    >>> Tv = solver.calculate('Tv')
+
+    Non-default assumptions:
+
+    >>> solver = FluidSolver(assumptions=('Tv equals T'), rho=array1, p=array2)
+    >>> T = solver.calculate('T')
+    '''
 
     _methods = _get_methods(equations)
 
@@ -365,7 +363,7 @@ class FluidSolver(_BaseSolver):
 
         Returns
         -------
-        quantity : ndarray or iris Cube
+        quantity : ndarray
             Calculated quantity.
             Return type is the same as quantity parameter types.
 
