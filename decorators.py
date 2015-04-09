@@ -20,7 +20,7 @@ def assumes(*args):
 def equation_docstring(quantity_dict, assumption_dict,
                        equation=None, references=None):
     '''
-Creates a docstring generating function decorator for equations.
+Creates a decorator that adds a docstring to an equation function.
 
 Parameters
 ----------
@@ -87,20 +87,22 @@ references : string, optional
     def quantity_spec_string(name):
         '''Returns a quantity specification for docstrings. Example:
            >>> quantity_spec_string('Tv')
-           >>> '    Tv : ndarray
-                Data for virtual temperature.'
+           >>> 'Tv : ndarray\n    Data for virtual temperature.'
         '''
         s = '{} : ndarray\n'.format(name)
-        s += '    ' + doc_paragraph('Data for {}.'.format(
-            quantity_string(name)))
+        s += doc_paragraph('Data for {}.'.format(
+            quantity_string(name)), indent=4)
         return s
 
-    def doc_paragraph(s):
+    def doc_paragraph(s, indent=0):
         '''Takes in a string without wrapping corresponding to a paragraph,
            and returns a version of that string wrapped to be at most 80
            characters in length on each line.
+           If indent is given, ensures each line is indented to that number
+           of spaces.
         '''
-        return '\n'.join(wrap(s, width=80))
+
+        return '\n'.join([' '*indent + l for l in wrap(s, width=80-indent)])
 
     # Now we have our utility functions, let's define the decorator itself
     def decorator(func):

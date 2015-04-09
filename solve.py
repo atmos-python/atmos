@@ -181,21 +181,14 @@ def _fill_doc(s, module, default_assumptions):
 # We need to define a MetaClass in order to have dynamic docstrings for our
 # Solver objects, generated based on the equations module
 class SolverMeta(type):
+    '''
+Metaclass for BaseSolver to automatically generate docstrings and assumption
+lists for subclasses of BaseSolver.
+    '''
 
     def __new__(cls, name, parents, dct):
-        # we want to see if calculate_method stays None
-        calculate_method = None
         if dct['_equation_module'] is not None:
-            # create a calculate function that calls calculate on the
-            # parent class
-            def calculate_func(self, *args):
-                return parents[0].calculate(self, *args)
-            # fill in the calculate docstring with the correct values for the
-            # equation module
-            calculate_func.__doc__ = _fill_doc(
-                parents[0].calculate.__doc__, dct['_equation_module'],
-                dct['default_assumptions'])
-            # also update the class docstring itself
+            # Update the class docstring
             if '__doc__' in dct.keys():
                 dct['__doc__'] = _fill_doc(
                     dct['__doc__'], dct['_equation_module'],
@@ -210,9 +203,6 @@ class SolverMeta(type):
 
         # we need to call type.__new__ to complete the initialization
         instance = super(SolverMeta, cls).__new__(cls, name, parents, dct)
-        if calculate_method is not None:
-            # calculate_method was set, attach it to the instance
-            instance.calculate = MethodType(calculate_func, instance, cls)
         return instance
 
 
@@ -236,7 +226,7 @@ as it is not associated with any equations.
 
     def __init__(self, **kwargs):
         if 'debug' in kwargs.keys():
-            self._debug = kwargs['debug']
+            self._debug = kwargs.pop('debug')
         else:
             self._debug = False
         # See if an assumption set was given
@@ -247,7 +237,7 @@ as it is not associated with any equations.
                     'remove_assumptions' in kwargs.keys()):
                 raise ValueError('cannot give kwarg assumptions with '
                                  'add_assumptions or remove_assumptions')
-            assumptions = kwargs['assumptions']
+            assumptions = kwargs.pop('assumptions')
         else:
             # if it wasn't, modify the default assumptions
             assumptions = self.default_assumptions
@@ -261,16 +251,41 @@ as it is not associated with any equations.
                                          'remove_assumptions')
                 # add assumptions, avoiding duplicates
                 assumptions = assumptions + tuple(
-                    [a for a in kwargs['add_assumptions'] if a not in
+                    [a for a in kwargs.pop('add_assumptions') if a not in
                      assumptions])
             if 'remove_assumptions' in kwargs.keys():
                 # remove assumptions if present
+                remove_assumptions = kwargs.pop('remove_assumptions')
+                self._ensure_assumptions(*assumptions)
                 assumptions = tuple([a for a in assumptions if a not in
-                                     kwargs['remove_assumptions']])
+                                     remove_assumptions])
+        # Make sure all set assumptions are valid (not misspelt, for instance)
+        self._ensure_assumptions(*assumptions)
         # now that we have our assumptions, use them to set the methods
         self.methods = self._get_methods(assumptions)
+        # make sure the remaining variables are quantities
+        self._ensure_quantities(*kwargs.keys())
         # also store the quantities
         self.vars = kwargs
+
+    def _ensure_assumptions(self, *args):
+        '''Raises ValueError if any of the args are not strings corresponding
+           to short forms of assumptions for this Solver.
+        '''
+        for arg in args:
+            if arg not in self.all_assumptions:
+                raise ValueError('{} does not correspond to a valid '
+                                 'assumption.'.format(arg))
+
+    def _ensure_quantities(self, *args):
+        '''Raises ValueError if any of the args are not strings corresponding
+           to quantity abbreviations for this Solver.
+        '''
+        for arg in args:
+            if arg not in self._equation_module.quantities.keys():
+                raise ValueError('{} does not correspond to a valid '
+                                 'quantity.'.format(arg))
+
 
     def calculate(self, *args):
         '''
@@ -297,6 +312,7 @@ ValueError:
     If the output quantity cannot be determined from the input
     quantities.
         '''
+        self._ensure_quantities(*args)
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
                                    self.methods)
@@ -319,12 +335,6 @@ ValueError:
                 return self.vars[args[0]]
             else:
                 return [self.vars[arg] for arg in args]
-
-    def _get_quantity_parameter_list(self):
-        return '\n'.join([
-            '        {}: {} ({})'.format(q, info['name'], info['units'])
-            for q, info in self._equation_module.quantities.items()
-        ])
 
     def _get_methods(self, assumptions):
         '''
@@ -381,6 +391,22 @@ ValueError
         return methods
 
 
+def _fill_calculate_docstring(subclass):
+    calculate_func = None
+    if subclass._equation_module is not None:
+        # create a calculate function that calls calculate on the
+        # parent class
+        def calculate_func(self, *args):
+            return BaseSolver.calculate(self, *args)
+        # fill in the calculate docstring with the correct values for the
+        # equation module
+        calculate_func.__doc__ = _fill_doc(
+            BaseSolver.calculate.__doc__, subclass._equation_module,
+            subclass.default_assumptions)
+
+    subclass.calculate = MethodType(calculate_func, None, subclass)
+
+
 class FluidSolver(BaseSolver):
     '''
 Initializes with the given assumptions enabled, and variables passed as
@@ -389,8 +415,15 @@ keyword arguments stored.
 Parameters
 ----------
 assumptions : tuple, optional
-    Strings specifying which assumptions to enable. See below for options.
-<default assumptions list goes here>
+    Strings specifying which assumptions to enable. Overrides the default
+    assumptions. See below for a list of default assumptions.
+add_assumptions : tuple, optional
+    Strings specifying assumptions to use in addition to the default
+    assumptions. May not be given in combination with the assumptions kwarg.
+remove_assumptions : tuple, optional
+    Strings specifying assumptions not to use from the default assumptions.
+    May not be given in combination with the assumptions kwarg. May not
+    contain strings that are contained in add_assumptions, if given.
 
 Returns
 -------
@@ -399,6 +432,9 @@ out : FluidSolver
 
 Assumptions
 -----------
+<default assumptions list goes here>
+
+Assumption descriptions:
 <assumptions list goes here>
 
 Examples
@@ -407,8 +443,7 @@ Examples
 
 Non-default assumptions:
 
->>> solver = FluidSolver(assumptions=('Tv equals T'), rho=array1, p=array2)
->>> T = solver.calculate('T')
+>>> solver = FluidSolver(add_assumptions=('Tv equals T'), rho=array1, p=array2)
     '''
 
     # module containing fluid dynamics equations
@@ -417,6 +452,8 @@ Non-default assumptions:
     default_assumptions = (
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
         'no liquid water', 'no solid water', 'bolton',)
+
+_fill_calculate_docstring(FluidSolver)
 
 
 def calculate(*args, **kwargs):
