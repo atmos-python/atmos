@@ -7,15 +7,9 @@ solve.py: Utilities that use equations to solve for quantities, given other
 """
 import inspect
 import equations
-
-default_assumptions = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
-                       'constant Cp', 'no liquid water', 'no solid water',
-                       'bolton',)
-all_assumptions = tuple(set([]).union(*[f[1].func_dict['assumptions']
-                                        for f in inspect.getmembers(equations)
-                                        if hasattr(f[1], 'func_dict') and
-                                        'assumptions' in
-                                        f[1].func_dict.keys()]))
+from types import MethodType
+from six import add_metaclass
+from textwrap import wrap
 
 
 class ExcludeError(Exception):
@@ -118,7 +112,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     return best_option
 
 
-def _get_methods(module):
+def _get_module_methods(module):
     '''
     Returns a methods dictionary corresponding to the equations in the given
     module.
@@ -159,89 +153,131 @@ def _get_methods(module):
     return methods
 
 
-class _BaseSolver(object):
+def _fill_doc(s, module, default_assumptions):
+        assumptions = module.assumptions
+        s = s.replace(
+            '<assumptions list goes here>',
+            '\n'.join(sorted(
+                ["'{}': {}".format(a, desc) for a, desc in
+                 assumptions.items()],
+                key=lambda x: x.lower())))
+        s = s.replace(
+            '<default assumptions list goes here>',
+            '\n'.join(
+                wrap('Default assumptions are ' +
+                     ', '.join(["'{}'".format(a) for a in
+                                default_assumptions]) + '.', width=80)))
+        s = s.replace(
+            '<quantity parameter list goes here>',
+            '\n'.join(sorted([
+                '{} {} ({})'.format(
+                    (q + ' :').ljust(9), info['name'], info['units'])
+                for q, info in
+                module.quantities.items()
+                ], key=lambda x: x.lower())))
+        return s
+
+
+class SolverMeta(type):
+
+    def __new__(cls, name, parents, dct):
+        # create a class_id if it's not specified
+        calculate_method = None
+        if dct['_equation_module'] is not None:
+            def calculate_func(self, *args):
+                return parents[0].calculate(self, *args)
+            calculate_func.__doc__ = _fill_doc(
+                parents[0].calculate.__doc__, dct['_equation_module'],
+                dct['default_assumptions'])
+            if '__doc__' in dct.keys():
+                dct['__doc__'] = _fill_doc(
+                    dct['__doc__'], dct['_equation_module'],
+                    dct['default_assumptions'])
+            dct['all_assumptions'] = tuple(
+                set([]).union(*[f[1].func_dict['assumptions']
+                                for f in inspect.getmembers(equations)
+                                if hasattr(f[1], 'func_dict') and
+                                'assumptions' in
+                                f[1].func_dict.keys()]))
+
+        # we need to call type.__new__ to complete the initialization
+        instance = super(SolverMeta, cls).__new__(cls, name, parents, dct)
+        if calculate_method is not None:
+            instance.calculate = MethodType(calculate_func, instance, cls)
+        return instance
+
+
+@add_metaclass(SolverMeta)
+class BaseSolver(object):
     '''
-    Base class for solving systems of equations. Should not be instantiated,
-    as it is not associated with any equations.
+Base class for solving systems of equations. Should not be instantiated,
+as it is not associated with any equations.
     '''
 
-    _methods = {}
+    _equation_module = None
 
     def __new__(cls, *args, **kwargs):
-        if cls is _BaseSolver:
+        if cls is BaseSolver:
             raise TypeError('BaseDeriver may not be instantiated. Use a '
                             'subclass.')
+        if cls._equation_module is None:
+            raise NotImplementedError('Class must have _equation_module '
+                                      'defined')
         return object.__new__(cls, *args, **kwargs)
 
-    def __init__(self, assumptions=(), **kwargs):
+    def __init__(self, **kwargs):
         if 'debug' in kwargs.keys():
             self._debug = kwargs['debug']
         else:
             self._debug = False
-        if axis_coords is not None and any([coord not in
-                                            self.coord_types.keys()
-                                            for coord in axis_coords]):
-            raise ValueError('Invalid value given in axis_coords')
+        if 'assumptions' in kwargs.keys():
+            if ('add_assumptions' in kwargs.keys() or
+                    'remove_assumptions' in kwargs.keys()):
+                raise ValueError('cannot give kwarg assumptions with '
+                                 'add_assumptions or remove_assumptions')
+            assumptions = kwargs['assumptions']
+        else:
+            assumptions = self.default_assumptions
+            if 'add_assumptions' in kwargs.keys():
+                if 'remove_assumptions' in kwargs.keys():
+                    if any([a in kwargs['remove_assumptions']
+                            for a in kwargs['add_assumptions']]):
+                        raise ValueError('assumption may not be present in '
+                                         'both add_assumptions and '
+                                         'remove_assumptions')
+                assumptions = assumptions + tuple(
+                    [a for a in kwargs['add_assumptions'] if a not in
+                     assumptions])
+            if 'remove_assumptions' in kwargs.keys():
+                assumptions = tuple([a for a in assumptions if a not in
+                                     kwargs['remove_assumptions']])
         self.methods = self._get_methods(assumptions)
         self.vars = kwargs
-        if axis_coords is not None:
-            coord_axes = {}
-            for i in range(len(axis_coords)):
-                coord_axes[self.coord_types[axis_coords[i]]] = i
-            self.coord_axes = coord_axes
-        else:
-            self.coord_axes = {}
-        if override_coord_axes is not None:
-            self.override_coord_axes = override_coord_axes
-        else:
-            self.override_coords = {}
-        self.coords_own_axis = {'t': 0, 'z': 0, 'y': 0, 'x': 0}
-        if coords_own_axis is not None:
-            self.coords_own_axis.update(coords_own_axis)
-        if derivative not in ('centered', None):
-            raise ValueError('invalid value given for derivative')
-        self._derivative = derivative
 
     def calculate(self, *args):
         '''
-        Calculates and returns a requested quantity from quantities passed in
-        as keyword arguments.
+Calculates and returns a requested quantity from quantities passed in
+as keyword arguments.
 
-        Parameters
-        ----------
-        varname_out : string
-            Name of quantity to be calculated.
+Parameters
+----------
+varname_out : string
+    Name of quantity to be calculated.
 
-        Quantity Parameters
-        -------------------
-        All quantity parameters are optional, and must be of the same type,
-        either ndarray or iris Cube. If ndarrays are used, then units must
-        match the units specified below. If iris Cube is used, any units may
-        be used for input and the output will be given in the units specified
-        below.
+Quantity Parameters
+-------------------
+<quantity parameter list goes here>
 
+Returns
+-------
+quantity : ndarray
+    Calculated quantity, in units listed under quantity parameters.
 
-        Returns
-        -------
-        quantity : ndarray or iris Cube
-            Calculated quantity.
-            Return type is the same as quantity parameter types.
-
-        Raises
-        ------
-        ValueError:
-            If the output quantity cannot be determined from the input
-            quantities.
-
-        See Also
-        --------
-
-        Notes
-        -----
-
-        Examples
-        --------
-        >>>
+Raises
+------
+ValueError:
+    If the output quantity cannot be determined from the input
+    quantities.
         '''
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
@@ -264,31 +300,46 @@ class _BaseSolver(object):
             else:
                 return [self.vars[arg] for arg in args]
 
+    def _get_quantity_parameter_list(self):
+        return '\n'.join([
+            '        {}: {} ({})'.format(q, info['name'], info['units'])
+            for q, info in self._equation_module.quantities.items()
+        ])
+
     def _get_methods(self, method_options):
         '''
-        Returns a dictionary of methods including the default methods of the
-        class and specified optional methods. Will override a default method
-        if an optional method is given that takes the same inputs and produces
-        the same output.
+Returns a dictionary of methods including the default methods of the
+class and specified optional methods. Will override a default method
+if an optional method is given that takes the same inputs and produces
+the same output.
 
-        Parameters
-        ----------
-        methods: iterable
-            Strings referring to optional methods in self.optional_methods.
+Parameters
+----------
+methods: iterable
+    Strings referring to optional methods in self.optional_methods.
 
-        Raises
-        ------
-        ValueError
-            If a method given is not present in self.optional_methods
-            If multiple optional methods are selected which calculate the same
-                output quantity from the same input quantities
+Returns
+-------
+methods : dict
+    A dictionary whose keys are strings indicating output variables,
+    and values are dictionaries indicating equations for that output. The
+    equation dictionary's keys are strings indicating variables to use
+    as function arguments, and its values are the functions themselves.
+
+Raises
+------
+ValueError
+    If a method given is not present in self.optional_methods.
+    If multiple optional methods are selected which calculate the same
+    output quantity from the same input quantities.
         '''
         for m in method_options:
-            if m not in all_assumptions:
+            if m not in self.all_assumptions:
                 raise ValueError('method {} matches no equations'.format(m))
         methods = {}
+        module_methods = _get_module_methods(self._equation_module)
         # Go through each output variable
-        for output, L in self._methods.items():
+        for output, L in module_methods.items():
             # Go through each potential equation
             for args, assumptions, func in L:
                 # See if we're using the equation's assumptions
@@ -305,156 +356,84 @@ class _BaseSolver(object):
         return methods
 
 
-class FluidSolver(_BaseSolver):
+class FluidSolver(BaseSolver):
     '''
-    Initializes with the given assumptions enabled, and variables passed as
-    keyword arguments stored.
+Initializes with the given assumptions enabled, and variables passed as
+keyword arguments stored.
 
-    Parameters
-    ----------
-    assumptions : tuple, optional
-        Strings specifying which assumptions to enable.
+Parameters
+----------
+assumptions : tuple, optional
+    Strings specifying which assumptions to enable. See below for options.
+<default assumptions list goes here>
 
-    Returns
-    -------
-    out : FluidSolver
-        A FluidSolver object with the specified assumptions and variables.
+Returns
+-------
+out : FluidSolver
+    A FluidSolver object with the specified assumptions and variables.
 
-    Examples
-    --------
-    >>> solver = FluidSolver(rho=array1, p=array2)
-    >>> Tv = solver.calculate('Tv')
+Assumptions
+-----------
+<assumptions list goes here>
 
-    Non-default assumptions:
+Examples
+--------
+>>> solver = FluidSolver(rho=array1, p=array2)
 
-    >>> solver = FluidSolver(assumptions=('Tv equals T'), rho=array1, p=array2)
-    >>> T = solver.calculate('T')
+Non-default assumptions:
+
+>>> solver = FluidSolver(assumptions=('Tv equals T'), rho=array1, p=array2)
+>>> T = solver.calculate('T')
     '''
 
-    _methods = _get_methods(equations)
-
-    def calculate(self, quantity_out, **kwargs):
-        '''
-        Calculates and returns a requested quantity from quantities passed in
-        as keyword arguments.
-
-        Parameters
-        ----------
-        varname_out : string
-            Name of quantity to be calculated.
-        methods : tuple, optional
-            Names of methods that can be used for calculation, as strings.
-
-        Quantity Parameters
-        -------------------
-        All quantity parameters are optional, and must be of the same type,
-        either ndarray or iris Cube. If ndarrays are used, then units must
-        match the units specified below. If iris Cube is used, any units may
-        be used for input and the output will be given in the units specified
-        below.
-
-        q: Specific humidity (kg/kg)
-        T: Temperature (K)
-        p: Pressure (Pa)
-        RH: Relative humidity (%)
-        Tw: Wet bulb temperature (K)
-        Tv: Virtual temperature (K)
-        rho: Air density (kg/m^3)
-
-        Returns
-        -------
-        quantity : ndarray
-            Calculated quantity.
-            Return type is the same as quantity parameter types.
-
-        Raises
-        ------
-
-        See Also
-        --------
-
-        Notes
-        -----
-
-        Examples
-        --------
-        >>>
-        '''
-        return super(FluidSolver, self).calculate(quantity_out, **kwargs)
+    _equation_module = equations
+    default_assumptions = (
+        'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
+        'no liquid water', 'no solid water', 'bolton',)
 
 
 def calculate(*args, **kwargs):
     '''
-    Calculates and returns a requested quantity from quantities passed in as
-    keyword arguments.
+Calculates and returns a requested quantity from quantities passed in as
+keyword arguments.
 
-    Parameters
-    ----------
-    args : string
-        Names of quantities to be calculated.
-    methods : tuple, optional
-        Names of methods that can be used for calculation, as strings.
-    derivative : str, optional
-        Which spatial derivative calculation to use. Set to 'centered' for
-        second-order centered finite difference, or None to disable
-        derivatives.
-    periodic : bool, optional
-        Whether the domain is periodic in space. Used when calculating
-        spatial derivatives.
-    axis_coords : iterable, optional
-        Defines the default coordinate to assume for each axis. Should
-        contain 't' to denote a time-like coordinate, 'z' to denote a
-        vertical-like coordinate, 'y' to denote a meridional-like
-        component, and 'x' to denote a zonal-like component.
-        Only required for calculations that require this knowledge.
-    override_coord_axes : mapping, optional
-        A mapping of quantity strings to tuples defining the axes of those
-        quantities, overriding the default of axis_coords.
-    coords_own_axis : mapping, optional
-        A mapping of quantity strings for coordinate-like quantities to
-        their index which corresponds to their own axis. For example, if
-        lon is given as an array in [lat, lon], its value would be 1,
-        whereas if it is a 1-D array its value would be 0. This is assumed
-        to be 0 by default.
+Parameters
+----------
+args : string
+    Names of quantities to be calculated.
+assumptions : tuple, optional
+    Names of assumptions that can be used for calculation, as strings.
+<default assumptions list goes here>
 
-    Quantity Parameters
-    -------------------
-    All quantity parameters are optional, and must be of the same type,
-    either ndarray or iris Cube. If ndarrays are used, then units must match
-    the units specified below. If iris Cube is used, any units may be used
-    for input and the output will be given in the units specified below.
+Assumptions
+-----------
+<assumptions list goes here>
 
-    T: Temperature (K)
-    p: Pressure (Pa)
-    q: Specific humidity (kg/kg)
-    RH: Relative humidity (%)
-    AH: Absolute humidity (kg/m^3)
-    wvap: Water vapor mixing ratio (kg/kg)
-    Tw: Wet bulb temperature (K)
-    Tv: Virtual temperature (K)
-    rho: Air density (kg/m^3)
+Quantity Parameters
+-------------------
+All quantity parameters are optional, and must be of the same type,
+either ndarray or iris Cube. If ndarrays are used, then units must match
+the units specified below. If iris Cube is used, any units may be used
+for input and the output will be given in the units specified below.
 
-    Returns
-    -------
-    quantity : ndarray or iris Cube
-        Calculated quantity.
-        Return type is the same as quantity parameter types.
-        If multiple quantities are requested, returns a tuple containing the
-        quantities.
+<quantity parameter list goes here>
 
-    See Also
-    --------
+Returns
+-------
+quantity : ndarray or iris Cube
+    Calculated quantity.
+    Return type is the same as quantity parameter types.
+    If multiple quantities are requested, returns a tuple containing the
+    quantities.
 
-    Notes
-    -----
-    y and x defined in axis_coords need not be meridional and longitudinal,
-    so long as it is understood that any zonal or meridional quantities
-    calculated by this object (such as u and v) were done so under this
-    assumption.
+Notes
+-----
+Calculating multiple quantities at once can avoid re-computing intermediate
+quantities, but requires more memory.
 
-    Examples
-    --------
-    >>>
+Examples
+--------
+>>>
     '''
     def get_arg(name, kwargs):
         try:
@@ -462,19 +441,12 @@ def calculate(*args, **kwargs):
         except:
             arg = None
         return arg
-    try:
-        assumptions = kwargs.pop('assumptions')
-    except KeyError:
-        assumptions = default_assumptions
-    derivative = get_arg('derivative', kwargs)
-    axis_coords = get_arg('axis_coords', kwargs)
-    override_coord_axes = get_arg('override_coord_axes', kwargs)
-    coords_own_axis = get_arg('coords_own_axis', kwargs)
-    solver = FluidSolver(assumptions, derivative,
-                         axis_coords, override_coord_axes,
-                         coords_own_axis, **kwargs)
+    solver = FluidSolver(**kwargs)
     result = [solver.calculate(var) for var in args]
     if len(result) == 1:
         return result[0]
     else:
         return result
+
+calculate.__doc__ = _fill_doc(calculate.__doc__, equations,
+                              FluidSolver.default_assumptions)

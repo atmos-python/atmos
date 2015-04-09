@@ -11,13 +11,13 @@ import equations
 import util
 from nose.tools import raises
 from constants import Rd
-from solve import _BaseSolver, FluidSolver, calculate, \
-    _get_methods, default_assumptions, all_assumptions, _get_relevant_methods,\
+from solve import BaseSolver, FluidSolver, calculate, \
+    _get_module_methods, _get_relevant_methods,\
     _get_shortest_solution
 
 
 def test_quantities_dict_complete():
-    names = _get_methods(equations).keys()
+    names = _get_module_methods(equations).keys()
     for name in names:
         if name not in equations.quantities.keys():
             try:
@@ -26,14 +26,14 @@ def test_quantities_dict_complete():
                 raise AssertionError('{} not in quantities dict'.format(name))
 
 
-def test_get_methods_nonempty():
-    result = _get_methods(equations)
+def test_get_module_methods_nonempty():
+    result = _get_module_methods(equations)
     assert len(result) > 0
 
 
 def test_default_assumptions_exist():
-    for m in default_assumptions:
-        if m not in all_assumptions:
+    for m in FluidSolver.default_assumptions:
+        if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid method'.format(m))
 
 
@@ -96,7 +96,7 @@ class BaseSolverTests(unittest.TestCase):
 
     @raises(TypeError)
     def test_cannot_instantiate(self):
-        _BaseSolver()
+        BaseSolver()
 
 
 class FluidSolverTests(unittest.TestCase):
@@ -115,9 +115,9 @@ class FluidSolverTests(unittest.TestCase):
     def test_creation_no_arguments(self):
         FluidSolver()
 
-    def test_is_instance_of_BaseDeriver(self):
+    def test_is_instance_of_BaseSolver(self):
         deriv = FluidSolver()
-        assert isinstance(deriv, _BaseSolver)
+        assert isinstance(deriv, BaseSolver)
 
     def test_creation_one_method(self):
         FluidSolver(assumptions=('hydrostatic',))
@@ -144,14 +144,14 @@ class FluidSolverTests(unittest.TestCase):
         FluidSolver(assumptions=('Tv equals T',), **self.vars1)
 
     def test_simple_calculation(self):
-        deriver = FluidSolver(assumptions=default_assumptions, **self.vars1)
+        deriver = FluidSolver(**self.vars1)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        deriver = FluidSolver(assumptions=default_assumptions + ('Tv equals T',),
-                              **self.vars2)
+        deriver = FluidSolver(assumptions=FluidSolver.default_assumptions +
+                              ('Tv equals T',), **self.vars2)
         rho = deriver.calculate('rho')
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
@@ -177,15 +177,14 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
 
     def test_depth_2_calculation(self):
-        rho = calculate('rho', assumptions=default_assumptions +
-                        ('Tv equals T',), **self.vars2)
+        rho = calculate('rho', add_assumptions=('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
     def test_double_calculation(self):
-        Tv, rho = calculate('Tv', 'rho', assumptions=default_assumptions +
-                            ('Tv equals T',), **self.vars2)
+        Tv, rho = calculate('Tv', 'rho', add_assumptions=('Tv equals T',),
+                            **self.vars2)
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
@@ -193,21 +192,16 @@ class calculateTests(unittest.TestCase):
         assert isinstance(Tv, np.ndarray)
 
     def test_double_reverse_calculation(self):
-        rho, Tv = calculate('rho', 'Tv', assumptions=default_assumptions +
-                            ('Tv equals T',), **self.vars2)
+        rho, Tv = calculate('rho', 'Tv', add_assumptions=('Tv equals T',),
+                            **self.vars2)
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
         assert isinstance(Tv, np.ndarray)
 
- 
+
 class TestSolveValuesNearSkewT(unittest.TestCase):
 
     def setUp(self):
-        #self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 17.9+273.15,
-        #                   'rv': 6e-3, 'Tlcl': 4.+273.15, 'thetae': 36.+273.15,
-        #                   'Tw': 7.+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
-        #                   'thetaae': 36.+273.15, 'thetaie': 36.+273.15,
-        #                   }
         self.quantities = {'p': 8.9e4, 'Tv': 4.5+273.15, 'theta': 14.+273.15,
                            'rv': 1e-3, 'Tlcl': -22.5+273.15,
                            'thetae': 17.+273.15, 'Tw': -2.5+273.15,
@@ -220,8 +214,8 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
     def _generator(self, quantity, tolerance):
         skew_T_value = self.quantities.pop(quantity)
         calculated_value, funcs = calculate(
-            quantity, assumptions=default_assumptions +
-            ('bolton', 'unfrozen bulb'), debug=True, **self.quantities)
+            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
+            debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
             err_msg = ('Value {:.2f} is too far away from '
@@ -259,8 +253,8 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         quantity = 'Tw'
         skew_T_value = self.quantities.pop(quantity)
         calculated_value, funcs = calculate(
-            quantity, assumptions=default_assumptions +
-            ('bolton', 'unfrozen bulb', 'stull'), debug=True,
+            quantity, add_assumptions=('bolton', 'unfrozen bulb', 'stull'),
+            debug=True,
             **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > 1.:
