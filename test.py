@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 24 11:44:56 2015
-
-@author: mcgibbon
+test.py: Testing suite for other modules.
 """
 import unittest
 import nose

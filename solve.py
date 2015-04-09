@@ -2,12 +2,9 @@
 """
 solve.py: Utilities that use equations to solve for quantities, given other
     quantities and a set of assumptions.
-
-@author: Jeremy McGibbon
 """
 import inspect
 import equations
-from types import MethodType
 from six import add_metaclass
 from textwrap import wrap
 
@@ -286,25 +283,26 @@ as it is not associated with any equations.
                 raise ValueError('{} does not correspond to a valid '
                                  'quantity.'.format(arg))
 
-
     def calculate(self, *args):
         '''
-Calculates and returns a requested quantity from quantities passed in
-as keyword arguments.
+Calculates and returns a requested quantity from quantities stored in this
+object at initialization.
 
 Parameters
 ----------
 varname_out : string
     Name of quantity to be calculated.
 
-Quantity Parameters
--------------------
-<quantity parameter list goes here>
 
 Returns
 -------
 quantity : ndarray
     Calculated quantity, in units listed under quantity parameters.
+
+Notes
+-----
+See the documentation for this object for a complete list of quantities
+that may be calculated, in the "Quantity Parameters" section.
 
 Raises
 ------
@@ -391,22 +389,6 @@ ValueError
         return methods
 
 
-def _fill_calculate_docstring(subclass):
-    calculate_func = None
-    if subclass._equation_module is not None:
-        # create a calculate function that calls calculate on the
-        # parent class
-        def calculate_func(self, *args):
-            return BaseSolver.calculate(self, *args)
-        # fill in the calculate docstring with the correct values for the
-        # equation module
-        calculate_func.__doc__ = _fill_doc(
-            BaseSolver.calculate.__doc__, subclass._equation_module,
-            subclass.default_assumptions)
-
-    subclass.calculate = MethodType(calculate_func, None, subclass)
-
-
 class FluidSolver(BaseSolver):
     '''
 Initializes with the given assumptions enabled, and variables passed as
@@ -424,6 +406,14 @@ remove_assumptions : tuple, optional
     Strings specifying assumptions not to use from the default assumptions.
     May not be given in combination with the assumptions kwarg. May not
     contain strings that are contained in add_assumptions, if given.
+quantity : ndarray, optional
+    Keyword arguments used to pass in arrays of data that correspond to
+    quantities used for calculations. For a complete list of kwargs that
+    may be used, see the Quantity Parameters section below.
+
+Quantity Parameters
+-------------------
+<quantity parameter list goes here>
 
 Returns
 -------
@@ -453,8 +443,6 @@ Non-default assumptions:
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
         'no liquid water', 'no solid water', 'bolton',)
 
-_fill_calculate_docstring(FluidSolver)
-
 
 def calculate(*args, **kwargs):
     '''
@@ -466,20 +454,29 @@ Parameters
 args : string
     Names of quantities to be calculated.
 assumptions : tuple, optional
-    Names of assumptions that can be used for calculation, as strings.
-<default assumptions list goes here>
+    Strings specifying which assumptions to enable. Overrides the default
+    assumptions. See below for a list of default assumptions.
+add_assumptions : tuple, optional
+    Strings specifying assumptions to use in addition to the default
+    assumptions. May not be given in combination with the assumptions kwarg.
+remove_assumptions : tuple, optional
+    Strings specifying assumptions not to use from the default assumptions.
+    May not be given in combination with the assumptions kwarg. May not
+    contain strings that are contained in add_assumptions, if given.
+quantity : ndarray, optional
+    Keyword arguments used to pass in arrays of data that correspond to
+    quantities used for calculations. For a complete list of kwargs that
+    may be used, see the Quantity Parameters section below.
 
 Assumptions
 -----------
+<default assumptions list goes here>
+
+Assumption descriptions:
 <assumptions list goes here>
 
 Quantity Parameters
 -------------------
-All quantity parameters are optional, and must be of the same type,
-either ndarray or iris Cube. If ndarrays are used, then units must match
-the units specified below. If iris Cube is used, any units may be used
-for input and the output will be given in the units specified below.
-
 <quantity parameter list goes here>
 
 Returns
