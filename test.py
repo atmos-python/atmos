@@ -251,7 +251,7 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         quantity = 'Tw'
         skew_T_value = self.quantities.pop(quantity)
         calculated_value, funcs = calculate(
-            quantity, add_assumptions=('bolton', 'unfrozen bulb', 'stull'),
+            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
             debug=True,
             **self.quantities)
         diff = abs(skew_T_value - calculated_value)

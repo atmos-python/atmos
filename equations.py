@@ -617,7 +617,7 @@ def Tv_from_p_rho_ideal_gas(p, rho):
 
 @autodoc(references=ref['Stull 2011'],
          notes='Uses the empirical inverse solution from Stull (2011).')
-@assumes('stull')
+@assumes()
 def Tw_from_T_RH_Stull(T, RH):
     return ((T-273.15)*np.arctan(0.151977*(RH + 8.313659)**0.5)
             + np.arctan(T-273.15+RH) - np.arctan(RH - 1.676331)
