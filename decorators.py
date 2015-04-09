@@ -19,6 +19,28 @@ def assumes(*args):
 
 def equation_docstring(quantity_dict, assumption_dict,
                        equation=None, references=None):
+    '''
+Creates a docstring generating function decorator for equations.
+
+Parameters
+----------
+quantity_dict : dict
+    A dictionary describing the quantities used in the equations. Its keys
+    should be abbreviations for the quantities, and its values should be a
+    dictionary of the form {'name': string, 'units': string}.
+assumption_dict : dict
+    A dictionary describing the assumptions used by the equations. Its keys
+    should be short forms of the assumptions, and its values should be long
+    forms of the assumptions, as you would insert into the sentence
+    'Calculates (quantity) assuming (assumption 1), (assumption 2), and
+    (assumption 3).'
+equation : string, optional
+    A string describing the equation the function uses. Should be wrapped
+    to be no more than 80 characters in length.
+references : string, optional
+    A string providing references for the function. Should be wrapped to be
+    no more than 80 characters in length.
+    '''
     def quantity_string(name):
         '''Takes in an abbreviation for a quantity, and returns a more
            descriptive string of the quantity as "name (units)"
