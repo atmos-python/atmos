@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This temporary script file is located here:
-/home/disk/p/mcgibbon/.spyder2/.temp.py
+equations.py: Fluid dynamics equations for atmospheric sciences.
 """
 # Note that in this module, if multiple equations are defined that compute
 # the same output quantity given the same input quantities, they must take
@@ -85,6 +82,9 @@ Davies-Jones, R. 2009: On Formulas for Equivalent Potential
     doi: http://dx.doi.org/10.1175/2009MWR2774.1'''
        }
 
+# A dictionary describing the quantities used for and computed by the equations
+# in this module. This makes it possible to automatically list these in
+# documentation.
 quantities = {
     'AH': {
         'name': 'absolute humidity',
@@ -243,10 +243,10 @@ quantities = {
         'units': 'm',
     }
 }
-# all_methods = ('ideal gas', 'hydrostatic', 'constant g', 'constant Lv',
-#                'bolton', 'goff-gratch', 'frozen bulb', 'unfrozen bulb',
-#                'stipanuk', 'dry', 'Tv equals T')
 
+
+# A dict of assumptions used by equations in this module. This helps allow
+# automatic docstring generation.
 assumptions = {
     'hydrostatic': 'hydrostatic balance',
     'constant g': 'g is constant',
@@ -263,10 +263,15 @@ assumptions = {
 }
 
 
+# particularize the docstring decorator for this module's quantities and
+# assumptions.
 def autodoc(**kwargs):
     return equation_docstring(quantities, assumptions, **kwargs)
 
 
+# Note that autodoc() must always be placed *above* assumes(), so that it
+# has information about the assumptions (each decorator decorates the result
+# of what is below it).
 @autodoc(equation='AH = qv*rho')
 @assumes()
 def AH_from_qv_rho(qv, rho):
