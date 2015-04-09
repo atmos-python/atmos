@@ -178,21 +178,29 @@ def _fill_doc(s, module, default_assumptions):
         return s
 
 
+# We need to define a MetaClass in order to have dynamic docstrings for our
+# Solver objects, generated based on the equations module
 class SolverMeta(type):
 
     def __new__(cls, name, parents, dct):
-        # create a class_id if it's not specified
+        # we want to see if calculate_method stays None
         calculate_method = None
         if dct['_equation_module'] is not None:
+            # create a calculate function that calls calculate on the
+            # parent class
             def calculate_func(self, *args):
                 return parents[0].calculate(self, *args)
+            # fill in the calculate docstring with the correct values for the
+            # equation module
             calculate_func.__doc__ = _fill_doc(
                 parents[0].calculate.__doc__, dct['_equation_module'],
                 dct['default_assumptions'])
+            # also update the class docstring itself
             if '__doc__' in dct.keys():
                 dct['__doc__'] = _fill_doc(
                     dct['__doc__'], dct['_equation_module'],
                     dct['default_assumptions'])
+            # set a dynamic list of the assumptions in the equations module
             dct['all_assumptions'] = tuple(
                 set([]).union(*[f[1].func_dict['assumptions']
                                 for f in inspect.getmembers(equations)
@@ -203,6 +211,7 @@ class SolverMeta(type):
         # we need to call type.__new__ to complete the initialization
         instance = super(SolverMeta, cls).__new__(cls, name, parents, dct)
         if calculate_method is not None:
+            # calculate_method was set, attach it to the instance
             instance.calculate = MethodType(calculate_func, instance, cls)
         return instance
 
@@ -230,28 +239,37 @@ as it is not associated with any equations.
             self._debug = kwargs['debug']
         else:
             self._debug = False
+        # See if an assumption set was given
         if 'assumptions' in kwargs.keys():
+            # If it was, make sure it wasn't given with other ways of
+            # setting assumptions (by modifying the default assumptions)
             if ('add_assumptions' in kwargs.keys() or
                     'remove_assumptions' in kwargs.keys()):
                 raise ValueError('cannot give kwarg assumptions with '
                                  'add_assumptions or remove_assumptions')
             assumptions = kwargs['assumptions']
         else:
+            # if it wasn't, modify the default assumptions
             assumptions = self.default_assumptions
             if 'add_assumptions' in kwargs.keys():
                 if 'remove_assumptions' in kwargs.keys():
+                    # make sure there is no overlap
                     if any([a in kwargs['remove_assumptions']
                             for a in kwargs['add_assumptions']]):
                         raise ValueError('assumption may not be present in '
                                          'both add_assumptions and '
                                          'remove_assumptions')
+                # add assumptions, avoiding duplicates
                 assumptions = assumptions + tuple(
                     [a for a in kwargs['add_assumptions'] if a not in
                      assumptions])
             if 'remove_assumptions' in kwargs.keys():
+                # remove assumptions if present
                 assumptions = tuple([a for a in assumptions if a not in
                                      kwargs['remove_assumptions']])
+        # now that we have our assumptions, use them to set the methods
         self.methods = self._get_methods(assumptions)
+        # also store the quantities
         self.vars = kwargs
 
     def calculate(self, *args):
@@ -290,11 +308,13 @@ ValueError:
             # Add it to our dictionary of quantities for successive functions
             self.vars[extra_values[i]] = value
         if self._debug:
+            # We should return a list of funcs as the last item returned
             if len(args) == 1:
                 return self.vars[args[0]], funcs
             else:
                 return [self.vars[arg] for arg in args] + [funcs, ]
         else:
+            # no function debugging, just return the quantities
             if len(args) == 1:
                 return self.vars[args[0]]
             else:
@@ -306,7 +326,7 @@ ValueError:
             for q, info in self._equation_module.quantities.items()
         ])
 
-    def _get_methods(self, method_options):
+    def _get_methods(self, assumptions):
         '''
 Returns a dictionary of methods including the default methods of the
 class and specified optional methods. Will override a default method
@@ -333,17 +353,22 @@ ValueError
     If multiple optional methods are selected which calculate the same
     output quantity from the same input quantities.
         '''
-        for m in method_options:
-            if m not in self.all_assumptions:
-                raise ValueError('method {} matches no equations'.format(m))
+        # make sure all assumptions actually apply to equations
+        # this will warn the user of typos
+        for a in assumptions:
+            if a not in self.all_assumptions:
+                raise ValueError('assumption {} matches no '
+                                 'equations'.format(a))
+        # create a dictionary to which we will add methods
         methods = {}
+        # get a set of all the methods in the module
         module_methods = _get_module_methods(self._equation_module)
         # Go through each output variable
         for output, L in module_methods.items():
             # Go through each potential equation
-            for args, assumptions, func in L:
+            for args, func_assumptions, func in L:
                 # See if we're using the equation's assumptions
-                if all(item in method_options for item in assumptions):
+                if all(item in assumptions for item in func_assumptions):
                     # At this point, we want to add the equation
                     # Make sure we have a dict to add it to
                     if output not in methods.keys():
@@ -386,7 +411,9 @@ Non-default assumptions:
 >>> T = solver.calculate('T')
     '''
 
+    # module containing fluid dynamics equations
     _equation_module = equations
+    # which assumptions to use by default
     default_assumptions = (
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
         'no liquid water', 'no solid water', 'bolton',)
@@ -435,18 +462,17 @@ Examples
 --------
 >>>
     '''
-    def get_arg(name, kwargs):
-        try:
-            arg = kwargs.pop(name)
-        except:
-            arg = None
-        return arg
+    # initialize a solver to do the work
     solver = FluidSolver(**kwargs)
+    # get the output
     result = [solver.calculate(var) for var in args]
     if len(result) == 1:
+        # return a single value if there is only one value
         return result[0]
     else:
+        # otherwise return a list of values
         return result
 
+# autocomplete some sections of the docstring for calculate
 calculate.__doc__ = _fill_doc(calculate.__doc__, equations,
                               FluidSolver.default_assumptions)
