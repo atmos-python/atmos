@@ -123,7 +123,7 @@ quantities = {
         'units': 'J',
     },
     'N2': {
-        'name': 'squared Brunt-Väisälä frequency',
+        'name': 'squared Brunt-Vaisala frequency',
         'units': 'Hz^2',
     },
     'omega': {
