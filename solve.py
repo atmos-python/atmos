@@ -13,6 +13,16 @@ class ExcludeError(Exception):
     pass
 
 
+def _get_first_pass_methods(inputs, outputs, methods):
+    '''
+    Given iterables of input variable names, output variable names,
+    and a methods dictionary, returns the subset of the methods dictionary
+    that can be calculated, doesn't calculate something we already have,
+    and only contains equations that might help calculate the outputs from
+    the inputs.
+    '''
+    pass
+
 def _get_relevant_methods(inputs, methods):
     '''
     Given an iterable of input variable names and a methods dictionary,
