@@ -154,6 +154,23 @@ class FluidSolverTests(unittest.TestCase):
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
+    def test_double_calculation(self):
+        deriver = FluidSolver(add_assumptions=('Tv equals T',), **self.vars2)
+        Tv = deriver.calculate('Tv')
+        rho = deriver.calculate('rho')
+        assert (rho == 1/Rd).all()
+        assert isinstance(rho, np.ndarray)
+        assert isinstance(Tv, np.ndarray)
+
+    def test_double_reverse_calculation(self):
+        deriver = FluidSolver(add_assumptions=('Tv equals T',), **self.vars2)
+        rho = deriver.calculate('rho')
+        print('now Tv')
+        Tv = deriver.calculate('Tv')
+        assert (rho == 1/Rd).all()
+        assert isinstance(rho, np.ndarray)
+        assert isinstance(Tv, np.ndarray)
+
 
 class calculateTests(unittest.TestCase):
 

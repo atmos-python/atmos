@@ -13,6 +13,28 @@ class ExcludeError(Exception):
     pass
 
 
+def get_calculatable_quantities(inputs, methods):
+    '''
+    Given an interable of input quantity names and a methods dictionary,
+    returns a list of output quantities that can be calculated.
+    '''
+    output_quantities = []
+    updated = True
+    while updated:
+        updated = False
+        for output in methods.keys():
+            if output in output_quantities or output in inputs:
+                # we already know we can calculate this
+                continue
+            for args, func in methods[output].items():
+                if all([arg in inputs or arg in output_quantities
+                        for arg in args]):
+                    output_quantities.append(output)
+                    updated = True
+                    break
+    return tuple(output_quantities) + tuple(inputs)
+
+
 def _get_first_pass_methods(inputs, outputs, methods):
     '''
     Given iterables of input variable names, output variable names,
@@ -21,7 +43,57 @@ def _get_first_pass_methods(inputs, outputs, methods):
     and only contains equations that might help calculate the outputs from
     the inputs.
     '''
-    pass
+    # Get a list of everything that we can possibly calculate
+    # This is useful in figuring out whether we can calculate arguments
+    intermediates = get_calculatable_quantities(inputs, methods)
+    # Initialize our return dictionary
+    return_methods = {}
+    # list so that we can append arguments that need to be output for
+    # some of the paths
+    outputs = list(outputs)
+    # keep track of when to exit the while loop
+    keep_going = True
+    while keep_going:
+        # If there are no updates in a pass, the loop will exit
+        keep_going = False
+        for output in outputs:
+            try:
+                output_dict = return_methods[output]
+            except:
+                output_dict = {}
+            for args, func in methods[output].items():
+                # only check the method if we're not already returning it
+                if args not in output_dict.keys():
+                    # Initialize a list of intermediates needed to use
+                    # this method, to add to outputs if we find we can
+                    # use it.
+                    needed = []
+                    for arg in args:
+                        if arg in inputs:
+                            # we have this argument
+                            pass
+                        elif arg in outputs:
+                            # we may need to calculate one output using
+                            # another output
+                            pass
+                        elif arg in intermediates:
+                            if arg not in outputs:
+                                # don't need to add to needed if it's already
+                                # been put in outputs
+                                needed.append(arg)
+                        else:
+                            # Can't do this func
+                            break
+                    else:  # did not break, can calculate this
+                        output_dict[args] = func
+                        if len(needed) > 0:
+                            # We added an output, so need another loop
+                            outputs.extend(needed)
+                            keep_going = True
+            if len(output_dict) > 0:
+                return_methods[output] = output_dict
+    return return_methods
+
 
 def _get_relevant_methods(inputs, methods):
     '''
@@ -37,7 +109,7 @@ def _get_relevant_methods(inputs, methods):
     for var in methods.keys():
         # See if we already have this output
         if var in inputs:
-            pass  # if we have it, we don't need to calculate it!
+            continue  # if we have it, we don't need to calculate it!
         else:
             # Initialize a dict for this output variable
             var_dict = {}
@@ -48,7 +120,7 @@ def _get_relevant_methods(inputs, methods):
                     var_dict[args] = func
             if len(var_dict) == 0:
                 # No methods for this variable, keep going
-                pass
+                continue
             elif len(var_dict) == 1:
                 # Exactly one method, perfect.
                 relevant_methods[var] = var_dict
@@ -77,9 +149,8 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     '''
     relevant_methods = _get_relevant_methods(inputs, methods)
     # Check if we can already directly compute the outputs
-    if len(relevant_methods) == 0:
-        raise ValueError('cannot calculate outputs from inputs')
-    if all([(o in relevant_methods.keys()) or (o in inputs) for o in outputs]):
+    if all([(o in relevant_methods.keys()) or (o in inputs)
+            for o in outputs]):
         funcs = []
         args = []
         extra_values = []
@@ -90,6 +161,9 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
                 args.append(o_args)
                 extra_values.append(o)
         return tuple(funcs), tuple(args), tuple(extra_values)
+    # Check if there's nothing left to try to calculate
+    if len(relevant_methods) == 0:
+        raise ValueError('cannot calculate outputs from inputs')
     next_variables = [key for key in relevant_methods.keys()
                       if key not in exclude]
     if len(next_variables) == 0:
@@ -303,7 +377,6 @@ Parameters
 varname_out : string
     Name of quantity to be calculated.
 
-
 Returns
 -------
 quantity : ndarray
@@ -321,9 +394,17 @@ ValueError:
     quantities.
         '''
         self._ensure_quantities(*args)
+        possible_quantities = get_calculatable_quantities(self.vars.keys(),
+                                                          self.methods)
+        for arg in args:
+            if arg not in possible_quantities:
+                raise ValueError('cannot calculate {} from inputs'.format(
+                    arg))
+        first_methods = _get_first_pass_methods(self.vars.keys(), args,
+                                                self.methods)
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
-                                   self.methods)
+                                   first_methods)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
         for i, func in enumerate(funcs):
@@ -506,16 +587,12 @@ Examples
 --------
 >>>
     '''
+    if len(args) == 0:
+        raise ValueError('must specify quantities to calculate')
     # initialize a solver to do the work
     solver = FluidSolver(**kwargs)
     # get the output
-    result = [solver.calculate(var) for var in args]
-    if len(result) == 1:
-        # return a single value if there is only one value
-        return result[0]
-    else:
-        # otherwise return a list of values
-        return result
+    return solver.calculate(*args)
 
 # autocomplete some sections of the docstring for calculate
 calculate.__doc__ = _fill_doc(calculate.__doc__, equations,
