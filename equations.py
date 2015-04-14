@@ -206,6 +206,10 @@ quantities = {
         'name': 'equivalent temperature',
         'units': 'K',
     },
+    'thetaes': {
+        'name': 'saturation equivalent temperature',
+        'units': 'K',
+    },
     'thetaae': {
         'name': 'adiabatic equivalent temperature',
         'units': 'K',
@@ -638,15 +642,25 @@ def theta_from_p_T(p, T):
     return T*(1e5/p)**(Rd/Cpd)
 
 
-@autodoc(equation='theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))',
-         references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
-         notes='''
+@autodoc(
+    equation='thetae = theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))',
+    references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
+    notes='''
 This is one of the most accurate ways of computing thetae, with an
 error of less than 0.2K due mainly to assuming Cp does not vary with
 temperature or pressure.''')
 @assumes('bolton', 'constant Cp')
 def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
     return theta*np.exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))
+
+
+@autodoc(equation='thetaes = thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)',
+         references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
+         notes='''
+See thetae_from_theta_Tlcl_rv_Bolton for more information.''')
+@assumes('bolton', 'constant Cp')
+def thetaes_from_theta_T_rvs_Bolton(theta, T, rvs):
+    return thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)
 
 
 @autodoc(
