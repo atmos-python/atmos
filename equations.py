@@ -263,7 +263,7 @@ assumptions = {
     'Tv equals T': 'the virtual temperature correction can be neglected',
     'constant Cp': 'Cp is constant and equal to Cp for dry air at 0C',
     'no liquid water': 'liquid water can be neglected',
-    'no solid water': 'ice can be neglected',
+    'no ice': 'ice can be neglected',
 }
 
 
@@ -294,7 +294,7 @@ def DSE_from_T_Phi(T, Phi):
     return Cpd*T + Phi
 
 
-@autodoc(equation=' p*qv/(0.622+qv)')
+@autodoc(equation='p*qv/(0.622+qv)')
 @assumes()
 def e_from_p_qv(p, qv):
     return p*qv/(0.622+qv)
@@ -577,30 +577,14 @@ def Tlcl_from_T_e(T, e):
     return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
 
 
-@autodoc(
-    equation='Tae = T*exp(Lv0*rv/(Cpd*T))',
-    references=ref['AMS Glossary thetae'])
-@assumes('constant Lv')
-def Tae_from_T_rv(T, rv):
-    return T*np.exp(Lv0*rv/(Cpd*T))
-
-
-@autodoc(
-    equation='Tie = T*(1.+Lv0*rv/(Cpd*T))',
-    references=ref['AMS Glossary thetae'])
-@assumes('constant Lv')
-def Tie_from_T_rv(T, rv):
-    return T*(1.+Lv0*rv/(Cpd*T))
-
-
 @autodoc(equation='Tv/(1+0.608*qv)')
-@assumes('no liquid water', 'no solid water')
+@assumes('no liquid water', 'no ice')
 def T_from_Tv_qv(Tv, qv):
     return Tv/(1+0.608*qv)
 
 
 @autodoc(equation='T*(1+0.608*qv)')
-@assumes('no liquid water', 'no solid water')
+@assumes('no liquid water', 'no ice')
 def Tv_from_T_qv(T, qv):
     return T*(1+0.608*qv)
 
@@ -661,28 +645,6 @@ See thetae_from_theta_Tlcl_rv_Bolton for more information.''')
 @assumes('bolton', 'constant Cp')
 def thetaes_from_theta_T_rvs_Bolton(theta, T, rvs):
     return thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)
-
-
-@autodoc(
-    equation='thetaie = theta*(1+Lv0*rv/(Cpd*T))',
-    references=ref['Petty 2008'] + ' pg. 203')
-@assumes('constant Lv')
-def thetaie_from_T_theta_rv(T, theta, rv):
-    return theta*(1+Lv0*rv/(Cpd*T))
-
-
-@autodoc(
-    equation='thetaie = Tie*(1e5/p)**(Rd/Cpd)',
-    references=ref['Petty 2008'] + ' pg. 203')
-@assumes('constant Cp')
-def thetaie_from_p_Tie_rv(p, Tie, rv):
-    return Tie*(1e5/p)**(Rd/Cpd)
-
-
-@autodoc(equation='thetaae = Tae*(1e5/p)**(Rd/Cpd)')
-@assumes('constant Cp')
-def thetaae_from_p_Tae_rv(p, Tae, rv):
-    return Tae*(1e5/p)**(Rd/Cpd)
 
 
 @autodoc(equation='w = -omega/(rho*g0)')
