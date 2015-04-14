@@ -420,7 +420,7 @@ def MSE_from_DSE_qv(DSE, qv):
 
 
 @autodoc(equation='omega = -rho*g0*w')
-@assumes('hydrostatic')
+@assumes('hydrostatic', 'constant g')
 def omega_from_w_rho_hydrostatic(w, rho):
     return -rho*g0*w
 
@@ -686,7 +686,7 @@ def thetaae_from_p_Tae_rv(p, Tae, rv):
 
 
 @autodoc(equation='w = -omega/(rho*g0)')
-@assumes('constant g')
+@assumes('constant g', 'hydrostatic')
 def w_from_omega_rho_hydrostatic(omega, rho):
     return -omega/(rho*g0)
 
