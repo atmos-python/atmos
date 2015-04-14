@@ -344,4 +344,3 @@ class GetShortestSolutionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     nose.run()
-    #unittest.main(verbosity=2)
