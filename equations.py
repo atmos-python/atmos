@@ -186,14 +186,6 @@ quantities = {
         'name': 'virtual temperature',
         'units': 'K',
     },
-    'Tae': {
-        'name': 'adiabatic equivalent temperature',
-        'units': 'K',
-    },
-    'Tie': {
-        'name': 'isobaric equivalent temperature',
-        'units': 'K',
-    },
     'Tw': {
         'name': 'wet bulb temperature',
         'units': 'K',
@@ -208,14 +200,6 @@ quantities = {
     },
     'thetaes': {
         'name': 'saturation equivalent temperature',
-        'units': 'K',
-    },
-    'thetaae': {
-        'name': 'adiabatic equivalent temperature',
-        'units': 'K',
-    },
-    'thetaie': {
-        'name': 'isentropic equivalent temperature',
         'units': 'K',
     },
     'u': {
