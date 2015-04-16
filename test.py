@@ -221,7 +221,6 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
                            'rv': 1e-3, 'Tlcl': -22.5+273.15,
                            'thetae': 17.+273.15, 'Tw': -2.5+273.15,
                            'Td': -18.5+273.15, 'plcl': 62500.,
-                           'thetaae': 17.+273.15, 'thetaie': 17.+273.15,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
@@ -286,12 +285,6 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
     def test_calculate_plcl(self):
         self._generator('plcl', 10000.)
 
-    def test_calculate_thetaae(self):
-        self._generator('thetaae', 1.)
-
-    def test_calculate_thetaie(self):
-        self._generator('thetaie', 1.)
-
 
 class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
@@ -299,16 +292,9 @@ class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
         self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 18.4+273.15,
                            'rv': 6e-3, 'Tlcl': 4.+273.15, 'thetae': 36.+273.15,
                            'Tw': 6.5+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
-                           'thetaae': 36.+273.15, 'thetaie': 36.+273.15,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
-
-    def test_calculate_thetaae(self):
-        self._generator('thetaae', 3.)
-
-    def test_calculate_thetaie(self):
-        self._generator('thetaie', 3.)
 
 
 class GetShortestSolutionTests(unittest.TestCase):

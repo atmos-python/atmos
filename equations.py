@@ -39,6 +39,8 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
 import numpy as np
+import numexpr as ne
+from numpy import pi
 from constants import g0, Omega, Rd, Rv, Cpd, Lv0
 from decorators import assumes, equation_docstring
 
@@ -50,12 +52,6 @@ American Meteorological Society Glossary of Meteorology
 American Meteorological Society Glossary of Meteorology
     http://glossary.ametsoc.org/wiki/Equivalent_temperature
     Retrieved March 25, 2015''',
-       'Wong 1989': '''
-Wong, W.T. 1989: Comparison of Algorithms for the Computation of the
-    Thermodynamic Properties of Moist Air, Technical Note (Local) No. 51,
-    Royal Observatory, Hong Kong. Retrieved March 25, 2015 from
-    http://www.weather.gov.hk/publica/tnl/tnl051.pdf
-    ''',
        'Petty 2008': '''
 Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics. 1st Ed.
     Sundog Publishing.''',
@@ -263,47 +259,25 @@ def autodoc(**kwargs):
 @autodoc(equation='AH = qv*rho')
 @assumes()
 def AH_from_qv_rho(qv, rho):
-    return qv*rho
+    return ne.evaluate('qv*rho')
 
 
 @autodoc(equation='DSE = Cpd*T + g0*z')
 @assumes('constant g')
 def DSE_from_T_z(T, z):
-    return Cpd*T + g0*z
+    return ne.evaluate('Cpd*T + g0*z')
 
 
 @autodoc(equation='DSE = Cpd*T + Phi')
 @assumes()
 def DSE_from_T_Phi(T, Phi):
-    return Cpd*T + Phi
+    return ne.evaluate('Cpd*T + Phi')
 
 
 @autodoc(equation='p*qv/(0.622+qv)')
 @assumes()
 def e_from_p_qv(p, qv):
-    return p*qv/(0.622+qv)
-
-
-@autodoc(equation='e = es(Tw) - 0.799e-3*p*(T-Tw)',
-         references=ref['Wong 1989'] + ref['Goff-Gratch'],
-         notes='''
-Approximates saturation vapor pressure at the wet bulb temperature
-using the Goff-Gratch equation. Uses an approximation from the Royal
-Observatory outlined in the referenced document.''')
-@assumes('goff-gratch')
-def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
-    return es_from_T_Goff_Gratch(Tw) - 0.799e-3*p*(T-Tw)
-
-
-@autodoc(equation='e = es(Tw) - 0.799e-3*p*(T-Tw)',
-         references=ref['Wong 1989'] + ref['Bolton 1980'],
-         notes='''
-Approximates saturation vapor pressure at the wet bulb temperature
-using Bolton's approximation to Wexler's formula. Uses an approximation from
-the Royal Observatory outlined in the referenced document.''')
-@assumes('bolton')
-def e_from_p_T_Tw_Bolton(p, T, Tw):
-    return es_from_T_Bolton(Tw) - 0.799e-3*p*(T-Tw)
+    return ne.evaluate('p*qv/(0.622+qv)')
 
 
 @autodoc(equation='e = es(Td)', references=ref['Goff-Gratch'])
@@ -322,14 +296,14 @@ def e_from_Td_Bolton(Td):
          references=ref['Petty 2008'])
 @assumes('unfrozen bulb')
 def e_from_p_es_T_Tw(p, es, T, Tw):
-    return es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p
+    return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
 
 @autodoc(equation='e = es - 5.82e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p',
          references=ref['Petty 2008'])
 @assumes('frozen bulb')
 def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
-    return es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p
+    return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
 
 
 @autodoc(references=ref['Goff-Gratch'] + '''
@@ -367,10 +341,10 @@ This formula is accurate but computationally intensive. For most purposes,
 a more approximate formula is appropriate.''')
 @assumes('goff-gratch')
 def es_from_T_Goff_Gratch(T):
-    ratio = 373.16/T
-    return 101325.*10.**(-1.90298*((ratio-1.) + 5.02808*np.log10(ratio)
-                         - 1.3816e-7 * (10.**(11.344*(1.-1./ratio))-1.)
-                         + 8.1328e-3*(10.**(-3.49149*(ratio-1.))-1.)))
+    return ne.evaluate(
+        '''101325.*10.**(-1.90298*((373.16/T-1.) + 5.02808*log10(373.16/T)
+        - 1.3816e-7 * (10.**(11.344*(1.-1./373.16/T))-1.)
+        + 8.1328e-3*(10.**(-3.49149*(373.16/T-1.))-1.)))''')
 
 
 @autodoc(equation='es(T) = 611.2*exp(17.67*(T-273.15)/(T-29.65))',
@@ -380,13 +354,13 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 -35C and 35C.''')
 @assumes('bolton')
 def es_from_T_Bolton(T):
-    return 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
+    return ne.evaluate('611.2*exp(17.67*(T-273.15)/(T-29.65))')
 
 
 @autodoc(equation='f = 2.*Omega*sin(pi/180.*lat)')
 @assumes()
 def f_from_lat(lat):
-    return 2.*Omega*np.sin(np.pi/180.*lat)
+    return ne.evaluate('2.*Omega*sin(pi/180.*lat)')
 
 
 @autodoc(
@@ -394,125 +368,97 @@ def f_from_lat(lat):
     references=ref['AMS Glossary Gammam'])
 @assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
-    return g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))
+    return ne.evaluate('g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))')
 
 
 @autodoc(equation='MSE = DSE + Lv0*qv')
 @assumes('constant Lv')
 def MSE_from_DSE_qv(DSE, qv):
-    return DSE + Lv0*qv
+    return ne.evaluate('DSE + Lv0*qv')
 
 
 @autodoc(equation='omega = -rho*g0*w')
 @assumes('hydrostatic', 'constant g')
 def omega_from_w_rho_hydrostatic(w, rho):
-    return -rho*g0*w
+    return ne.evaluate('-rho*g0*w')
 
 
 @autodoc(equation='p = rho*Rd*Tv')
 @assumes('ideal gas')
 def p_from_rho_Tv_ideal_gas(rho, Tv):
-    return rho*Rd*Tv
+    return ne.evaluate('rho*Rd*Tv')
 
 
 @autodoc(equation='plcl = p*(Tlcl/T)**(Cpd/Rd)')
 @assumes('constant Cp')
 def plcl_from_p_T_Tlcl(p, T, Tlcl):
-    return p*(Tlcl/T)**(Cpd/Rd)
-
-
-# =============================================================================
-# @assumes('stipanuk')
-# def plcl_from_p_T_Td(p, T, Td):
-#     '''
-#     Calculates LCL pressure level (Pa) from pressure (Pa), temperature (K),
-#     and dew point temperature (K).
-#
-#     Calculates the pressure of the lifting condensation level computed by an
-#     iterative procedure described by equations 8-12 (pp 13-14) of:
-#
-#     Stipanuk, G.S., (1973) original version.
-#     "Algorithms for generating a skew-t, log p diagram and computing selected
-#     meteorological quantities."
-#
-#     Atmospheric sciences laboratory
-#     U.S. Army Electronics Command
-#     White Sands Missile Range, New Mexico 88002
-#     '''
-#     raise NotImplementedError()
-# =============================================================================
+    return ne.evaluate('p*(Tlcl/T)**(Cpd/Rd)')
 
 
 @autodoc(equation='Phi = g0*z')
 @assumes('constant g')
 def Phi_from_z(z):
-    return g0*z
+    return ne.evaluate('g0*z')
 
 
 @autodoc(equation='qv = AH/rho')
 @assumes()
 def qv_from_AH_rho(AH, rho):
-    return AH/rho
+    return ne.evaluate('AH/rho')
 
 
 @autodoc(equation='qv = rv/(1+rv)')
 @assumes()
 def qv_from_rv(rv):
-    return rv/(1.+rv)
+    return ne.evaluate('rv/(1.+rv)')
 
 
 @autodoc(equation='qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)')
 @assumes()
 def qv_from_p_e(p, e):
-    return 0.622*e/(p-0.378*e)
+    return ne.evaluate('0.622*e/(p-0.378*e)')
 
 
 @autodoc(equation='qvs = rvs/(1+rvs)')
 @assumes()
 def qvs_from_rvs(rvs):
-    return rvs/(1+rvs)
+    return ne.evaluate('rvs/(1+rvs)')
 
 
 @autodoc(equation='qv = qv_from_p_e(p, es)')
 @assumes()
 def qvs_from_p_es(p, es):
-    return qv_from_p_e(p, es)
-
-
-@autodoc(equation='RH = qv/qvs*100.')
-@assumes()
-def RH_from_qv_qvs(qv, qvs):
-    return qv/qvs*100.
+    return ne.evaluate('qv_from_p_e(p, es)')
 
 
 @autodoc(equation='RH = rv/rvs*100.')
 @assumes()
 def RH_from_rv_rvs(rv, rvs):
-    return rv/rvs*100.
+    return ne.evaluate('rv/rvs*100.')
 
 
 @autodoc(equation='rho = AH/qv')
 @assumes()
 def rho_from_qv_AH(qv, AH):
-    return AH/qv
+    return ne.evaluate('AH/qv')
 
 
 @autodoc(equation='rho = p/(Rd*Tv)')
 @assumes('ideal gas')
 def rho_from_p_Tv_ideal_gas(p, Tv):
-    return p/(Rd*Tv)
+    return ne.evaluate('p/(Rd*Tv)')
 
 
 @autodoc(equation='rv = qv/(1-qv)')
 @assumes()
 def rv_from_qv(qv):
-    return qv/(1-qv)
+    return ne.evaluate('qv/(1-qv)')
 
 
 @autodoc(equation='(Rd/Rv)*e/(p-e)')
 @assumes()
 def rv_from_p_e(p, e):
-    return 0.622*e/(p-e)
+    return ne.evaluate('0.622*e/(p-e)')
 
 
 @autodoc(equation='rvs = rv_from_p_e(p, es)')
@@ -534,7 +480,7 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 -35C and 35C.''')
 @assumes('bolton')
 def T_from_es_Bolton(es):
-    return (29.65*np.log(es)-4880.16)/(np.log(es)-19.48)
+    return ne.evaluate('(29.65*log(es)-4880.16)/(log(es)-19.48)')
 
 
 @autodoc(equation='Tlcl = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.',
@@ -542,7 +488,7 @@ def T_from_es_Bolton(es):
          notes='Uses Bolton (1980) equation 22.')
 @assumes('bolton')
 def Tlcl_from_T_RH(T, RH):
-    return 1./((1./(T-55.))-(np.log(RH/100.)/2840.)) + 55.
+    return ne.evaluate('1./((1./(T-55.))-(log(RH/100.)/2840.)) + 55.')
 
 
 @autodoc(equation='Tlcl = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.',
@@ -550,7 +496,7 @@ def Tlcl_from_T_RH(T, RH):
          notes='Uses Bolton (1980) equation 15.')
 @assumes('bolton')
 def Tlcl_from_T_Td(T, Td):
-    return 1./((1./(Td-56.))+(np.log(T/Td)/800.)) + 56.
+    return ne.evaluate('1./((1./(Td-56.))+(log(T/Td)/800.)) + 56.')
 
 
 @autodoc(equation='Tlcl = 2840./(3.5*log(T)-log(e)-4.805) + 55.',
@@ -558,19 +504,19 @@ def Tlcl_from_T_Td(T, Td):
          notes='Uses Bolton(1980) equation 21.')
 @assumes('bolton')
 def Tlcl_from_T_e(T, e):
-    return 2840./(3.5*np.log(T)-np.log(e)-4.805) + 55.
+    return ne.evaluate('2840./(3.5*log(T)-log(e)-4.805) + 55.')
 
 
 @autodoc(equation='Tv/(1+0.608*qv)')
 @assumes('no liquid water', 'no ice')
 def T_from_Tv_qv(Tv, qv):
-    return Tv/(1+0.608*qv)
+    return ne.evaluate('Tv/(1+0.608*qv)')
 
 
 @autodoc(equation='T*(1+0.608*qv)')
 @assumes('no liquid water', 'no ice')
 def Tv_from_T_qv(T, qv):
-    return T*(1+0.608*qv)
+    return ne.evaluate('T*(1+0.608*qv)')
 
 
 @autodoc(equation='Tv = T',
@@ -584,16 +530,16 @@ def Tv_from_T_assuming_Tv_equals_T(T):
 @autodoc(equation='Tv = p/(rho*Rd)')
 @assumes('ideal gas')
 def Tv_from_p_rho_ideal_gas(p, rho):
-    return p/(rho*Rd)
+    return ne.evaluate('p/(rho*Rd)')
 
 
 @autodoc(references=ref['Stull 2011'],
          notes='Uses the empirical inverse solution from Stull (2011).')
 @assumes()
 def Tw_from_T_RH_Stull(T, RH):
-    return ((T-273.15)*np.arctan(0.151977*(RH + 8.313659)**0.5)
-            + np.arctan(T-273.15+RH) - np.arctan(RH - 1.676331)
-            + 0.00391838*RH**1.5*np.arctan(0.023101*RH) - 4.686035 + 273.15)
+    return ne.evaluate('''((T-273.15)*arctan(0.151977*(RH + 8.313659)**0.5)
+        + arctan(T-273.15+RH) - arctan(RH - 1.676331)
+        + 0.00391838*RH**1.5*arctan(0.023101*RH) - 4.686035 + 273.15)''')
 
 
 @autodoc(equation='T = Tv',
@@ -607,7 +553,7 @@ def T_from_Tv_assuming_Tv_equals_T(Tv):
 @autodoc(equation='theta = T*(1e5/p)**(Rd/Cpd)')
 @assumes('constant Cp')
 def theta_from_p_T(p, T):
-    return T*(1e5/p)**(Rd/Cpd)
+    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)')
 
 
 @autodoc(
@@ -619,7 +565,7 @@ error of less than 0.2K due mainly to assuming Cp does not vary with
 temperature or pressure.''')
 @assumes('bolton', 'constant Cp')
 def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
-    return theta*np.exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))
+    return ne.evaluate('theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))')
 
 
 @autodoc(equation='thetaes = thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)',
@@ -634,10 +580,10 @@ def thetaes_from_theta_T_rvs_Bolton(theta, T, rvs):
 @autodoc(equation='w = -omega/(rho*g0)')
 @assumes('constant g', 'hydrostatic')
 def w_from_omega_rho_hydrostatic(omega, rho):
-    return -omega/(rho*g0)
+    return ne.evaluate('-omega/(rho*g0)')
 
 
 @autodoc(equation='z = Phi/g0')
 @assumes('constant g')
 def z_from_Phi(Phi):
-    return Phi/g0
+    return ne.evaluate('Phi/g0')

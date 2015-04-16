@@ -532,7 +532,7 @@ Non-default assumptions:
     # which assumptions to use by default
     default_assumptions = (
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
-        'no liquid water', 'no solid water', 'bolton',)
+        'no liquid water', 'no ice', 'bolton',)
 
 
 def calculate(*args, **kwargs):
