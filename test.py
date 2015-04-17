@@ -15,7 +15,7 @@ from solve import BaseSolver, FluidSolver, calculate, \
 
 
 def test_quantities_dict_complete():
-    names = _get_module_methods(equations).keys()
+    names = [item['output'] for item in _get_module_methods(equations)]
     for name in names:
         if name not in equations.quantities.keys():
             try:

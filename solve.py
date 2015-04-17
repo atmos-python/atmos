@@ -211,26 +211,30 @@ def _get_module_methods(module):
     computes the output.
     '''
     # Set up the methods dict we will eventually return
-    methods = {}
-    # Get functions and their outputs from our equation module
+    methods = []
     funcs = []
-    outputs = []
     for item in inspect.getmembers(equations):
         if (item[0][0] != '_' and '_from_' in item[0]):
-            funcs.append(item[1])
-            outputs.append(item[0][:item[0].find('_from_')])
-    # Store our funcs in methods
-    for i in range(len(funcs)):
-        if outputs[i] not in methods.keys():
-            methods[outputs[i]] = []
-        args = tuple(inspect.getargspec(funcs[i]).args)
+            func = item[1]
+            output = item[0][:item[0].find('_from_')]
+        # avoid returning duplicates
+        if func in funcs:
+            continue
+        else:
+            funcs.append(func)
+        args = tuple(inspect.getargspec(func).args)
         try:
-            assumptions = tuple(funcs[i].assumptions)
+            assumptions = tuple(func.assumptions)
         except AttributeError:
             raise NotImplementedError('function {} in equations module has no '
                                       'assumption '
-                                      'definition'.format(funcs[i].__name__))
-        methods[outputs[i]].append((args, assumptions, funcs[i]))
+                                      'definition'.format(func.__name__))
+        methods.append({
+            'func': func,
+            'args': args,
+            'output': output,
+            'assumptions': assumptions
+        })
     return methods
 
 
@@ -463,20 +467,16 @@ ValueError
         # get a set of all the methods in the module
         module_methods = _get_module_methods(self._equation_module)
         # Go through each output variable
-        for output, L in module_methods.items():
-            # Go through each potential equation
-            for args, func_assumptions, func in L:
-                # See if we're using the equation's assumptions
-                if all(item in assumptions for item in func_assumptions):
-                    # At this point, we want to add the equation
-                    # Make sure we have a dict to add it to
-                    if output not in methods.keys():
-                        methods[output] = {}
-                    # Check if this is a duplicate equation
-                    if args in methods[output].keys():
-                        raise ValueError('methods given define duplicate '
-                                         'equations')
-                    methods[output][args] = func
+        for dct in module_methods:
+            if all(item in assumptions for item in dct['assumptions']):
+                if dct['output'] not in methods.keys():
+                    methods[dct['output']] = {}
+                if dct['args'] in methods[dct['output']].keys():
+                    print(dct)
+                    print(methods[dct['output']][dct['args']])
+                    raise ValueError('methods given define duplicate '
+                                     'equations')
+                methods[dct['output']][dct['args']] = dct['func']
         return methods
 
 
