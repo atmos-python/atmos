@@ -468,14 +468,26 @@ ValueError
         module_methods = _get_module_methods(self._equation_module)
         # Go through each output variable
         for dct in module_methods:
+            try:
+                # Make sure this method isn't overridden by an assumption
+                if any(item in assumptions for item in
+                       dct['overridden_by_assumptions']):
+                    continue
+            except KeyError:
+                # If the key isn't there, it is never overridden
+                pass
+            # Make sure all assumptions of the method are satisfied
             if all(item in assumptions for item in dct['assumptions']):
+                # Make sure we have a dict entry for this output quantity
                 if dct['output'] not in methods.keys():
                     methods[dct['output']] = {}
+                # Make sure we aren't defining methods with same signature
                 if dct['args'] in methods[dct['output']].keys():
                     print(dct)
                     print(methods[dct['output']][dct['args']])
                     raise ValueError('methods given define duplicate '
                                      'equations')
+                # Add the method to the methods dict
                 methods[dct['output']][dct['args']] = dct['func']
         return methods
 

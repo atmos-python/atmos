@@ -12,7 +12,17 @@ def assumes(*args):
     args = tuple(args)
 
     def decorator(func):
-        func.assumptions = args
+        func.assumptions = tuple(args)
+        return func
+    return decorator
+
+
+def overridden_by_assumptions(*args):
+    '''Stores what assumptions a function is overridden by as an attribute.'''
+    args = tuple(args)
+
+    def decorator(func):
+        func.overridden_by_assumptions = tuple(args)
         return func
     return decorator
 

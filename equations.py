@@ -42,7 +42,7 @@ import numpy as np
 import numexpr as ne
 from numpy import pi
 from constants import g0, Omega, Rd, Rv, Cpd, Lv0
-from decorators import assumes, equation_docstring
+from decorators import assumes, overridden_by_assumptions, equation_docstring
 
 ref = {'AMS Glossary Gammam': '''
 American Meteorological Society Glossary of Meteorology
@@ -509,12 +509,14 @@ def Tlcl_from_T_e(T, e):
 
 @autodoc(equation='Tv/(1+0.608*qv)')
 @assumes('no liquid water', 'no ice')
+@overridden_by_assumptions('Tv equals T')
 def T_from_Tv_qv(Tv, qv):
     return ne.evaluate('Tv/(1+0.608*qv)')
 
 
 @autodoc(equation='T*(1+0.608*qv)')
 @assumes('no liquid water', 'no ice')
+@overridden_by_assumptions('Tv equals T')
 def Tv_from_T_qv(T, qv):
     return ne.evaluate('T*(1+0.608*qv)')
 
