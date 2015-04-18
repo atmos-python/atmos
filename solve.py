@@ -476,10 +476,11 @@ ValueError
                     methods[dct['output']] = {}
                 # Make sure we aren't defining methods with same signature
                 if dct['args'] in methods[dct['output']].keys():
-                    print(dct)
-                    print(methods[dct['output']][dct['args']])
-                    raise ValueError('methods given define duplicate '
-                                     'equations')
+                    raise ValueError(
+                        'assumptions given define duplicate '
+                        'equations {} and {}'.format(
+                            str(dct['func']),
+                            str(methods[dct['output']][dct['args']])))
                 # Add the method to the methods dict
                 methods[dct['output']][dct['args']] = dct['func']
         return methods
