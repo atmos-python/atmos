@@ -10,7 +10,7 @@ import util
 from nose.tools import raises
 from constants import Rd
 from solve import BaseSolver, FluidSolver, calculate, \
-    _get_module_methods, _get_relevant_methods,\
+    _get_module_methods, _get_calculatable_methods_dict,\
     _get_shortest_solution
 
 
@@ -35,59 +35,57 @@ def test_default_assumptions_exist():
             raise AssertionError('{} not a valid method'.format(m))
 
 
-def test_get_relevant_methods_empty():
-    methods = {}
-    out_methods = _get_relevant_methods((), methods)
-    assert isinstance(out_methods, dict)
-    assert len(out_methods) == 0
+class GetCalculatableMethodsDictTests(unittest.TestCase):
 
+    def test_get_calculatable_methods_dict_empty(self):
+        methods = {}
+        out_methods = _get_calculatable_methods_dict((), methods)
+        assert isinstance(out_methods, dict)
+        assert len(out_methods) == 0
 
-def test_get_relevant_methods_returns_correct_type():
-    methods = {'a': {('b',): lambda x: x}}
-    out_methods = _get_relevant_methods(('b',), methods)
-    assert isinstance(out_methods, dict)
+    def test_get_calculatable_methods_dict_returns_correct_type(self):
+        methods = {'a': {('b',): lambda x: x}}
+        out_methods = _get_calculatable_methods_dict(('b',), methods)
+        assert isinstance(out_methods, dict)
 
+    def test_get_calculatable_methods_dict_gets_single_method(self):
+        methods = {'a': {('b',): lambda x: x}}
+        out_methods = _get_calculatable_methods_dict(('b',), methods)
+        assert 'a' in out_methods.keys()
 
-def test_get_relevant_methods_gets_single_method():
-    methods = {'a': {('b',): lambda x: x}}
-    out_methods = _get_relevant_methods(('b',), methods)
-    assert 'a' in out_methods.keys()
+    def test_get_calculatable_methods_dict_removes_correct_second_method(
+            self):
+        methods = {'a': {('b',): lambda x: x,
+                         ('c', 'b'): lambda x: x}}
+        out_methods = _get_calculatable_methods_dict(('b', 'c'), methods)
+        assert 'a' in out_methods.keys()
+        assert ('b',) in out_methods['a'].keys()
+        assert len(out_methods['a']) == 1
 
+    def test_get_calculatable_methods_dict_removes_irrelevant_second_method(
+            self):
+        methods = {'a': {('b', 'd'): lambda x, y: x,
+                         ('c',): lambda x: x}}
+        out_methods = _get_calculatable_methods_dict(('b', 'd'), methods)
+        assert 'a' in out_methods.keys()
+        assert ('b', 'd') in out_methods['a'].keys()
+        assert len(out_methods['a']) == 1
 
-def test_get_relevant_methods_removes_correct_second_method():
-    methods = {'a': {('b',): lambda x: x,
-                     ('c', 'b'): lambda x: x}}
-    out_methods = _get_relevant_methods(('b', 'c'), methods)
-    assert 'a' in out_methods.keys()
-    assert ('b',) in out_methods['a'].keys()
-    assert len(out_methods['a']) == 1
+    def test_get_calculatable_methods_dict_gets_no_methods(self):
+        methods = {'a': {('b',): lambda x: x},
+                   'x': {('y', 'z'): lambda y, z: y*z}
+                   }
+        out_methods = _get_calculatable_methods_dict(('q',), methods)
+        assert isinstance(out_methods, dict)
+        assert len(out_methods) == 0
 
-
-def test_get_relevant_methods_removes_irrelevant_second_method():
-    methods = {'a': {('b', 'd'): lambda x, y: x,
-                     ('c',): lambda x: x}}
-    out_methods = _get_relevant_methods(('b', 'd'), methods)
-    assert 'a' in out_methods.keys()
-    assert ('b', 'd') in out_methods['a'].keys()
-    assert len(out_methods['a']) == 1
-
-
-def test_get_relevant_methods_gets_no_methods():
-    methods = {'a': {('b',): lambda x: x},
-               'x': {('y', 'z'): lambda y, z: y*z}
-               }
-    out_methods = _get_relevant_methods(('q',), methods)
-    assert isinstance(out_methods, dict)
-    assert len(out_methods) == 0
-
-
-def test_get_relevant_methods_doesnt_calculate_input():
-    methods = {'a': {('b',): lambda x: x},
-               'x': {('y', 'z'): lambda y, z: y*z}
-               }
-    out_methods = _get_relevant_methods(('b', 'a'), methods)
-    assert isinstance(out_methods, dict)
-    assert len(out_methods) == 0
+    def test_get_calculatable_methods_dict_doesnt_calculate_input(self):
+        methods = {'a': {('b',): lambda x: x},
+                   'x': {('y', 'z'): lambda y, z: y*z}
+                   }
+        out_methods = _get_calculatable_methods_dict(('b', 'a'), methods)
+        assert isinstance(out_methods, dict)
+        assert len(out_methods) == 0
 
 
 class BaseSolverTests(unittest.TestCase):
