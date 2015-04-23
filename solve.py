@@ -35,7 +35,7 @@ def get_calculatable_quantities(inputs, methods):
     return tuple(output_quantities) + tuple(inputs)
 
 
-def _get_first_pass_methods(inputs, outputs, methods):
+def _get_methods_that_calculate_outputs(inputs, outputs, methods):
     '''
     Given iterables of input variable names, output variable names,
     and a methods dictionary, returns the subset of the methods dictionary
@@ -95,7 +95,7 @@ def _get_first_pass_methods(inputs, outputs, methods):
     return return_methods
 
 
-def _get_relevant_methods(inputs, methods):
+def _get_calculatable_methods_dict(inputs, methods):
     '''
     Given an iterable of input variable names and a methods dictionary,
     returns the subset of that methods dictionary that can be calculated and
@@ -104,7 +104,7 @@ def _get_relevant_methods(inputs, methods):
     with the fewest possible arguments.
     '''
     # Initialize a return dictionary
-    relevant_methods = {}
+    calculatable_methods = {}
     # Iterate through each potential method output
     for var in methods.keys():
         # See if we already have this output
@@ -123,12 +123,12 @@ def _get_relevant_methods(inputs, methods):
                 continue
             elif len(var_dict) == 1:
                 # Exactly one method, perfect.
-                relevant_methods[var] = var_dict
+                calculatable_methods[var] = var_dict
             else:
                 # More than one method, find the one with the least arguments
                 min_args = min(var_dict.keys(), key=lambda x: len(x))
-                relevant_methods[var] = {min_args: var_dict[min_args]}
-    return relevant_methods
+                calculatable_methods[var] = {min_args: var_dict[min_args]}
+    return calculatable_methods
 
 
 def _get_shortest_solution(outputs, inputs, exclude, methods):
@@ -147,24 +147,26 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
 
     Returns (funcs, func_args, extra_values).
     '''
-    relevant_methods = _get_relevant_methods(inputs, methods)
+    methods = _get_methods_that_calculate_outputs(inputs, outputs,
+                                                  methods)
+    calculatable_methods = _get_calculatable_methods_dict(inputs, methods)
     # Check if we can already directly compute the outputs
-    if all([(o in relevant_methods.keys()) or (o in inputs)
+    if all([(o in calculatable_methods.keys()) or (o in inputs)
             for o in outputs]):
         funcs = []
         args = []
         extra_values = []
         for o in outputs:
             if o not in inputs:
-                o_args, o_func = relevant_methods[o].items()[0]
+                o_args, o_func = calculatable_methods[o].items()[0]
                 funcs.append(o_func)
                 args.append(o_args)
                 extra_values.append(o)
         return tuple(funcs), tuple(args), tuple(extra_values)
     # Check if there's nothing left to try to calculate
-    if len(relevant_methods) == 0:
+    if len(calculatable_methods) == 0:
         raise ValueError('cannot calculate outputs from inputs')
-    next_variables = [key for key in relevant_methods.keys()
+    next_variables = [key for key in calculatable_methods.keys()
                       if key not in exclude]
     if len(next_variables) == 0:
         raise ExcludeError
@@ -187,7 +189,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     best_result = min(results, key=option_key)
     best_index = results.index(best_result)
     best_intermediate = intermediates[best_index]
-    args, func = relevant_methods[best_intermediate].items()[0]
+    args, func = calculatable_methods[best_intermediate].items()[0]
     best_option = ((func,) + best_result[0], (args,) + best_result[1],
                    (best_intermediate,) + best_result[2])
     return best_option
@@ -195,20 +197,13 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
 
 def _get_module_methods(module):
     '''
-    Returns a methods dictionary corresponding to the equations in the given
-    module.
-
-    The methods dictionary is in this form:
-    {'output': [(args, assumptions, function),
-                (args, assumptions, function), ...]
-     'another output': [...]
-     ...
-    }
-
-    Where args is a list of arguments that get passed into the function,
-    assumptions are strings indicating the assumptions of the equation on
-    which the function is based, and function is the function itself that
-    computes the output.
+    Returns a methods list corresponding to the equations in the given
+    module. Each entry is a dictionary with keys 'output', 'args', and
+    'func' corresponding to the output, arguments, and function of the
+    method. The entries may optionally include 'assumptions' and
+    'overridden_by_assumptions' as keys, stating which assumptions are
+    required to use the method, and which assumptions mean the method
+    should not be used because it is overridden.
     '''
     # Set up the methods dict we will eventually return
     methods = []
@@ -404,11 +399,9 @@ ValueError:
             if arg not in possible_quantities:
                 raise ValueError('cannot calculate {} from inputs'.format(
                     arg))
-        first_methods = _get_first_pass_methods(self.vars.keys(), args,
-                                                self.methods)
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
-                                   first_methods)
+                                   self.methods)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
         for i, func in enumerate(funcs):
@@ -483,10 +476,11 @@ ValueError
                     methods[dct['output']] = {}
                 # Make sure we aren't defining methods with same signature
                 if dct['args'] in methods[dct['output']].keys():
-                    print(dct)
-                    print(methods[dct['output']][dct['args']])
-                    raise ValueError('methods given define duplicate '
-                                     'equations')
+                    raise ValueError(
+                        'assumptions given define duplicate '
+                        'equations {} and {}'.format(
+                            str(dct['func']),
+                            str(methods[dct['output']][dct['args']])))
                 # Add the method to the methods dict
                 methods[dct['output']][dct['args']] = dct['func']
         return methods

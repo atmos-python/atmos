@@ -268,6 +268,8 @@ assumptions = {
     'constant Cp': 'Cp is constant and equal to Cp for dry air at 0C',
     'no liquid water': 'liquid water can be neglected',
     'no ice': 'ice can be neglected',
+    'low water vapor': ('terms that are second-order in moisture quantities '
+                        'can be neglected (eg. qv == rv)')
 }
 
 
@@ -433,26 +435,53 @@ def qv_from_AH_rho(AH, rho):
 
 @autodoc(equation='qv = rv/(1+rv)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def qv_from_rv(rv):
     return ne.evaluate('rv/(1.+rv)')
 
 
+@autodoc(equation='qv = rv')
+@assumes('low water vapor')
+def qv_from_rv_lwv(rv):
+    return 1.*rv
+
+
 @autodoc(equation='qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def qv_from_p_e(p, e):
     return ne.evaluate('0.622*e/(p-0.378*e)')
 
 
+@autodoc(equation='qv = (Rd/Rv)*e/p')
+@assumes('low water vapor')
+def qv_from_p_e_lwv(p, e):
+    return ne.evaluate('0.622*e/p')
+
+
 @autodoc(equation='qvs = rvs/(1+rvs)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def qvs_from_rvs(rvs):
-    return ne.evaluate('rvs/(1+rvs)')
+    return qv_from_rv(rvs)
+
+
+@autodoc(equation='qv = rv')
+@assumes('low water vapor')
+def qvs_from_rvs_lwv(rvs):
+    return 1.*rvs
 
 
 @autodoc(equation='qv = qv_from_p_e(p, es)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def qvs_from_p_es(p, es):
-    return ne.evaluate('qv_from_p_e(p, es)')
+    return qv_from_p_e(p, es)
+
+
+@assumes('low water vapor')
+def qvs_from_p_es_lwv(p, es):
+    return qv_from_p_e_lwv(p, es)
 
 
 @autodoc(equation='qt = qi+qv+ql')
@@ -543,6 +572,12 @@ def RH_from_rv_rvs(rv, rvs):
     return ne.evaluate('rv/rvs*100.')
 
 
+@autodoc(equation='RH = qv/qvs*100.')
+@assumes('low water vapor')
+def RH_from_qv_qvs(qv, qvs):
+    return ne.evaluate('qv/qvs*100.')
+
+
 @autodoc(equation='rho = AH/qv')
 @assumes()
 def rho_from_qv_AH(qv, AH):
@@ -557,8 +592,15 @@ def rho_from_p_Tv_ideal_gas(p, Tv):
 
 @autodoc(equation='rv = qv/(1-qv)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def rv_from_qv(qv):
     return ne.evaluate('qv/(1-qv)')
+
+
+@autodoc(equation='rv = qv')
+@assumes('low water vapor')
+def rv_from_qv_lwv(qv):
+    return 1.*qv
 
 
 @autodoc(equation='rv = (Rd/Rv)*e/(p-e)')
@@ -659,6 +701,12 @@ def rvs_from_p_es(p, es):
 @assumes()
 def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
+
+
+@autodoc(equation='rv = rv_from_qv(qvs)')
+@assumes('low water vapor')
+def rvs_from_qvs_lwv(qvs):
+    return rv_from_qv_lwv(qvs)
 
 
 @autodoc(equation='T = (29.65*log(es)-4880.16)/(log(es)-19.48)',
