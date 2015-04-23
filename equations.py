@@ -41,7 +41,7 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 import numpy as np
 import numexpr as ne
 from numpy import pi
-from constants import g0, Omega, Rd, Rv, Cpd, Lv0
+from constants import g0, Omega, Rd, Rv, Cpd, Lv0, Cl
 from decorators import assumes, overridden_by_assumptions, equation_docstring
 
 ref = {'AMS Glossary Gammam': '''
@@ -443,7 +443,7 @@ def qv_from_rv(rv):
 @autodoc(equation='qv = rv')
 @assumes('low water vapor')
 def qv_from_rv_lwv(rv):
-    return 1.*rv
+    return rv.copy()
 
 
 @autodoc(equation='qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)')
@@ -469,7 +469,7 @@ def qvs_from_rvs(rvs):
 @autodoc(equation='qv = rv')
 @assumes('low water vapor')
 def qvs_from_rvs_lwv(rvs):
-    return 1.*rvs
+    return rvs.copy()
 
 
 @autodoc(equation='qv = qv_from_p_e(p, es)')
@@ -501,7 +501,7 @@ def qt_from_qv_ql(qv, ql):
 @autodoc(equation='qt = qv')
 @assumes('no liquid water', 'no ice')
 def qt_from_qv(qv):
-    return 1.*qv
+    return qv.copy()
 
 
 @autodoc(equation='qt = qv+ql')
@@ -514,7 +514,7 @@ def qt_from_qv_qi(qv, qi):
 @autodoc(equation='qv = qt')
 @assumes('no liquid water', 'no ice')
 def qv_from_qt(qt):
-    return 1.*qt
+    return qt.copy()
 
 
 @autodoc(equation='qv = qt-ql-qi')
@@ -600,7 +600,7 @@ def rv_from_qv(qv):
 @autodoc(equation='rv = qv')
 @assumes('low water vapor')
 def rv_from_qv_lwv(qv):
-    return 1.*qv
+    return qv.copy()
 
 
 @autodoc(equation='rv = (Rd/Rv)*e/(p-e)')
@@ -626,7 +626,7 @@ def rt_from_rv_rl(rv, rl):
 @autodoc(equation='rt = rv')
 @assumes('no liquid water', 'no ice')
 def rt_from_rv(rv):
-    return 1.*rv
+    return rv.copy()
 
 
 @autodoc(equation='rt = rv+rl')
@@ -639,7 +639,7 @@ def rt_from_rv_ri(rv, ri):
 @autodoc(equation='rv = rt')
 @assumes('no liquid water', 'no ice')
 def rv_from_rt(rt):
-    return 1.*rt
+    return rt.copy()
 
 
 @autodoc(equation='rv = rt-rl-ri')
@@ -762,7 +762,7 @@ def Tv_from_T_qv(T, qv):
 This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def Tv_from_T_assuming_Tv_equals_T(T):
-    return 1.*T
+    return T.copy()
 
 
 @autodoc(equation='Tv = p/(rho*Rd)')
@@ -785,7 +785,7 @@ def Tw_from_T_RH_Stull(T, RH):
 This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def T_from_Tv_assuming_Tv_equals_T(Tv):
-    return 1.*Tv
+    return Tv.copy()
 
 
 @autodoc(equation='theta = T*(1e5/p)**(Rd/Cpd)')
@@ -795,15 +795,33 @@ def theta_from_p_T(p, T):
 
 
 @autodoc(
-    equation='thetae = theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))',
+    equation='thetae = T*(1e5/p)**((Rd/Cpd)*(1-0.28*rv))*exp((3.376/Tlcl-'
+    '0.00254)*rv*1e3*(1+0.81*rv))',
     references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
     notes='''
 This is one of the most accurate ways of computing thetae, with an
 error of less than 0.2K due mainly to assuming Cp does not vary with
 temperature or pressure.''')
-@assumes('bolton', 'constant Cp')
-def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
-    return ne.evaluate('theta*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))')
+@assumes('bolton', 'constant Cp', 'no liquid water')
+def thetae_from_T_Tlcl_rv_Bolton(T, Tlcl, rv):
+    return ne.evaluate('T*(1e5/p)**((Rd/Cpd)*(1-0.28*rv))*exp((3.376/Tlcl-'
+                       '0.00254)*rv*1e3*(1+0.81*rv))')
+
+
+@autodoc(equation='thetae = T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd +'
+         'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def thetae_from_T_RH_rv_rt(T, RH, rv, rt):
+    return ne.evaluate('T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd + '
+                       'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
+
+
+@autodoc(equation='thetae = T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)'
+         'exp(Lv*rv/Cpd)')
+@assumes('low water vapor')
+def thetae_from_T_RH_rv_lwv(T, RH, rv):
+    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)*exp(Lv*rv/Cpd)')
 
 
 @autodoc(equation='thetaes = thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)',
@@ -811,8 +829,8 @@ def thetae_from_theta_Tlcl_rv_Bolton(theta, Tlcl, rv):
          notes='''
 See thetae_from_theta_Tlcl_rv_Bolton for more information.''')
 @assumes('bolton', 'constant Cp')
-def thetaes_from_theta_T_rvs_Bolton(theta, T, rvs):
-    return thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)
+def thetaes_from_T_rvs_Bolton(T, rvs):
+    return thetae_from_T_Tlcl_rv_Bolton(T, T, rvs)
 
 
 @autodoc(equation='w = -omega/(rho*g0)')

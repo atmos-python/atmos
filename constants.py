@@ -13,7 +13,8 @@ Omega = 2*np.pi/86400.  # Angular velocity of Earth (Rad/s)
 
 Rd = 287.04  # R for dry air (J/kg/K)
 Rv = 461.50  # R for water vapor
-Cpd = 1005.7  # Specific heat of dry air (J/kg/K)
+Cpd = 1005.7  # Specific heat of dry air at constant pressure (J/kg/K)
+Cl = 4186.  # Specific heat of liquid water (J/kg/K)
 Gammad = g0/Cpd  # Dry adabatic lapse rate (K/m)
 
 # Cpv = 1870. # Specific heat of water vapor (J/kg/K)
