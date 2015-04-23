@@ -288,7 +288,7 @@ class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
     def setUp(self):
         self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 18.4+273.15,
-                           'rv': 6e-3, 'Tlcl': 4.+273.15, 'thetae': 36.+273.15,
+                           'rv': 6e-3, 'Tlcl': 3.8+273.15, 'thetae': 36.5+273.15,
                            'Tw': 6.5+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)

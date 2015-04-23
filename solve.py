@@ -5,6 +5,7 @@ solve.py: Utilities that use equations to solve for quantities, given other
 """
 import inspect
 import equations
+import numpy as np
 from six import add_metaclass
 from textwrap import wrap
 
@@ -258,6 +259,17 @@ def _fill_doc(s, module, default_assumptions):
         return s
 
 
+def _check_scalar(value):
+    '''If value is a 0-dimensional array, returns the contents of value.
+       Otherwise, returns value.
+    '''
+    if isinstance(value, np.ndarray):
+        if value.ndim == 0:
+            # We have a 0-dimensional array
+            return value[None][0]
+    return value
+
+
 # We need to define a MetaClass in order to have dynamic docstrings for our
 # Solver objects, generated based on the equations module
 class SolverMeta(type):
@@ -412,15 +424,16 @@ ValueError:
         if self._debug:
             # We should return a list of funcs as the last item returned
             if len(args) == 1:
-                return self.vars[args[0]], funcs
+                return _check_scalar(self.vars[args[0]]), funcs
             else:
-                return [self.vars[arg] for arg in args] + [funcs, ]
+                return ([_check_scalar(self.vars[arg]) for arg in args] +
+                        [funcs, ])
         else:
             # no function debugging, just return the quantities
             if len(args) == 1:
-                return self.vars[args[0]]
+                return _check_scalar(self.vars[args[0]])
             else:
-                return [self.vars[arg] for arg in args]
+                return [_check_scalar(self.vars[arg]) for arg in args]
 
     def _get_methods(self, assumptions):
         '''

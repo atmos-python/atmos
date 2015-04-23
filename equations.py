@@ -524,7 +524,7 @@ def qv_from_qt_ql_qi(qt, ql, qi):
     return ne.evaluate('qt-ql-qi')
 
 
-@autodoc('qv = qt-ql')
+@autodoc(equation='qv = qt-ql')
 @assumes('no ice')
 @overridden_by_assumptions('no liquid water')
 def qv_from_qt_ql(qt, ql):
@@ -649,7 +649,7 @@ def rv_from_rt_rl_ri(rt, rl, ri):
     return ne.evaluate('rt-rl-ri')
 
 
-@autodoc('rv = rt-rl')
+@autodoc(equation='rv = rt-rl')
 @assumes('no ice')
 @overridden_by_assumptions('no liquid water')
 def rv_from_rt_rl(rt, rl):
@@ -803,7 +803,7 @@ This is one of the most accurate ways of computing thetae, with an
 error of less than 0.2K due mainly to assuming Cp does not vary with
 temperature or pressure.''')
 @assumes('bolton', 'constant Cp', 'no liquid water')
-def thetae_from_T_Tlcl_rv_Bolton(T, Tlcl, rv):
+def thetae_from_p_T_Tlcl_rv_Bolton(p, T, Tlcl, rv):
     return ne.evaluate('T*(1e5/p)**((Rd/Cpd)*(1-0.28*rv))*exp((3.376/Tlcl-'
                        '0.00254)*rv*1e3*(1+0.81*rv))')
 
@@ -812,7 +812,7 @@ def thetae_from_T_Tlcl_rv_Bolton(T, Tlcl, rv):
          'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
 @assumes()
 @overridden_by_assumptions('low water vapor')
-def thetae_from_T_RH_rv_rt(T, RH, rv, rt):
+def thetae_from_p_T_RH_rv_rt(p, T, RH, rv, rt):
     return ne.evaluate('T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd + '
                        'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
 
@@ -824,13 +824,13 @@ def thetae_from_T_RH_rv_lwv(T, RH, rv):
     return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)*exp(Lv*rv/Cpd)')
 
 
-@autodoc(equation='thetaes = thetae_from_theta_Tlcl_rv_Bolton(theta, T, rvs)',
+@autodoc(equation='thetaes = thetae_from_p_T_Tlcl_rv_Bolton(p, T, T, rvs)',
          references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
          notes='''
 See thetae_from_theta_Tlcl_rv_Bolton for more information.''')
 @assumes('bolton', 'constant Cp')
-def thetaes_from_T_rvs_Bolton(T, rvs):
-    return thetae_from_T_Tlcl_rv_Bolton(T, T, rvs)
+def thetaes_from_p_T_rvs_Bolton(p, T, rvs):
+    return thetae_from_p_T_Tlcl_rv_Bolton(p, T, T, rvs)
 
 
 @autodoc(equation='w = -omega/(rho*g0)')
