@@ -146,6 +146,18 @@ quantities = {
         'name': 'saturation specific humidity',
         'units': 'kg/kg',
     },
+    'qi': {
+        'name': 'specific humidity with respect to ice',
+        'units': 'kg/kg',
+    },
+    'ql': {
+        'name': 'specific humidity with respect to liquid water',
+        'units': 'kg/kg',
+    },
+    'qt': {
+        'name': 'specific humidity with respect to total water',
+        'units': 'kg/kg',
+    },
     'RB': {
         'name': 'bulk Richardson number',
         'units': 'unitless',
@@ -164,6 +176,18 @@ quantities = {
     },
     'rvs': {
         'name': 'saturation water vapor mixing ratio',
+        'units': 'kg/kg',
+    },
+    'ri': {
+        'name': 'ice mixing ratio',
+        'units': 'kg/kg',
+    },
+    'rl': {
+        'name': 'liquid water mixing ratio',
+        'units': 'kg/kg',
+    },
+    'rt': {
+        'name': 'total water mixing ratio',
         'units': 'kg/kg',
     },
     'T': {
@@ -431,6 +455,88 @@ def qvs_from_p_es(p, es):
     return ne.evaluate('qv_from_p_e(p, es)')
 
 
+@autodoc(equation='qt = qi+qv+ql')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def qt_from_qi_qv_ql(qi, qv, ql):
+    return ne.evaluate('qi+qv+ql')
+
+
+@autodoc(equation='qt = qv+ql')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def qt_from_qv_ql(qv, ql):
+    return ne.evaluate('qv+ql')
+
+
+@autodoc(equation='qt = qv')
+@assumes('no liquid water', 'no ice')
+def qt_from_qv(qv):
+    return 1.*qv
+
+
+@autodoc(equation='qt = qv+ql')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def qt_from_qv_qi(qv, qi):
+    return ne.evaluate('qv+qi')
+
+
+@autodoc(equation='qv = qt')
+@assumes('no liquid water', 'no ice')
+def qv_from_qt(qt):
+    return 1.*qt
+
+
+@autodoc(equation='qv = qt-ql-qi')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def qv_from_qt_ql_qi(qt, ql, qi):
+    return ne.evaluate('qt-ql-qi')
+
+
+@autodoc('qv = qt-ql')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def qv_from_qt_ql(qt, ql):
+    return ne.evaluate('qt-ql')
+
+
+@autodoc(equation='qv = qt - qi')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def qv_from_qt_qi(qt, qi):
+    return ne.evaluate('qt-qi')
+
+
+@autodoc(equation='qi = qt-qv-ql')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def qi_from_qt_qv_ql(qt, qv, ql):
+    return ne.evaluate('qt-qv-ql')
+
+
+@autodoc(equation='qi = qt-qv')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def qi_from_qt_qv(qt, qv):
+    return ne.evaluate('qt-qv')
+
+
+@autodoc(equation='ql = qt-qv-qi')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def ql_from_qt_qv_qi(qt, qv, qi):
+    return ne.evaluate('qt-qv-qi')
+
+
+@autodoc(equation='ql = qt-qv')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def ql_from_qt_qv(qt, qv):
+    return ne.evaluate('qt-qv')
+
+
 @autodoc(equation='RH = rv/rvs*100.')
 @assumes()
 def RH_from_rv_rvs(rv, rvs):
@@ -455,10 +561,92 @@ def rv_from_qv(qv):
     return ne.evaluate('qv/(1-qv)')
 
 
-@autodoc(equation='(Rd/Rv)*e/(p-e)')
+@autodoc(equation='rv = (Rd/Rv)*e/(p-e)')
 @assumes()
 def rv_from_p_e(p, e):
     return ne.evaluate('0.622*e/(p-e)')
+
+
+@autodoc(equation='rt = ri+rv+rl')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def rt_from_ri_rv_rl(ri, rv, rl):
+    return ne.evaluate('ri+rv+rl')
+
+
+@autodoc(equation='rt = rv+rl')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def rt_from_rv_rl(rv, rl):
+    return ne.evaluate('rv+rl')
+
+
+@autodoc(equation='rt = rv')
+@assumes('no liquid water', 'no ice')
+def rt_from_rv(rv):
+    return 1.*rv
+
+
+@autodoc(equation='rt = rv+rl')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def rt_from_rv_ri(rv, ri):
+    return ne.evaluate('rv+ri')
+
+
+@autodoc(equation='rv = rt')
+@assumes('no liquid water', 'no ice')
+def rv_from_rt(rt):
+    return 1.*rt
+
+
+@autodoc(equation='rv = rt-rl-ri')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def rv_from_rt_rl_ri(rt, rl, ri):
+    return ne.evaluate('rt-rl-ri')
+
+
+@autodoc('rv = rt-rl')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def rv_from_rt_rl(rt, rl):
+    return ne.evaluate('rt-rl')
+
+
+@autodoc(equation='rv = rt - ri')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def rv_from_rt_ri(rt, ri):
+    return ne.evaluate('rt-ri')
+
+
+@autodoc(equation='ri = rt-rv-rl')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def ri_from_rt_rv_rl(rt, rv, rl):
+    return ne.evaluate('rt-rv-rl')
+
+
+@autodoc(equation='ri = rt-rv')
+@assumes('no liquid water')
+@overridden_by_assumptions('no ice')
+def ri_from_rt_rv(rt, rv):
+    return ne.evaluate('rt-rv')
+
+
+@autodoc(equation='rl = rt-rv-ri')
+@assumes()
+@overridden_by_assumptions('no liquid water', 'no ice')
+def rl_from_rt_rv_ri(rt, rv, ri):
+    return ne.evaluate('rt-rv-ri')
+
+
+@autodoc(equation='rl = rt-rv')
+@assumes('no ice')
+@overridden_by_assumptions('no liquid water')
+def rl_from_rt_rv(rt, rv):
+    return ne.evaluate('rt-rv')
 
 
 @autodoc(equation='rvs = rv_from_p_e(p, es)')
