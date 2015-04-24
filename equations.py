@@ -443,7 +443,7 @@ def qv_from_rv(rv):
 @autodoc(equation='qv = rv')
 @assumes('low water vapor')
 def qv_from_rv_lwv(rv):
-    return rv.copy()
+    return 1.*rv
 
 
 @autodoc(equation='qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)')
@@ -469,7 +469,7 @@ def qvs_from_rvs(rvs):
 @autodoc(equation='qv = rv')
 @assumes('low water vapor')
 def qvs_from_rvs_lwv(rvs):
-    return rvs.copy()
+    return 1.*rvs
 
 
 @autodoc(equation='qv = qv_from_p_e(p, es)')
@@ -501,7 +501,7 @@ def qt_from_qv_ql(qv, ql):
 @autodoc(equation='qt = qv')
 @assumes('no liquid water', 'no ice')
 def qt_from_qv(qv):
-    return qv.copy()
+    return 1.*qv
 
 
 @autodoc(equation='qt = qv+ql')
@@ -514,7 +514,7 @@ def qt_from_qv_qi(qv, qi):
 @autodoc(equation='qv = qt')
 @assumes('no liquid water', 'no ice')
 def qv_from_qt(qt):
-    return qt.copy()
+    return 1.*qt
 
 
 @autodoc(equation='qv = qt-ql-qi')
@@ -600,7 +600,7 @@ def rv_from_qv(qv):
 @autodoc(equation='rv = qv')
 @assumes('low water vapor')
 def rv_from_qv_lwv(qv):
-    return qv.copy()
+    return 1.*qv
 
 
 @autodoc(equation='rv = (Rd/Rv)*e/(p-e)')
@@ -626,7 +626,7 @@ def rt_from_rv_rl(rv, rl):
 @autodoc(equation='rt = rv')
 @assumes('no liquid water', 'no ice')
 def rt_from_rv(rv):
-    return rv.copy()
+    return 1.*rv
 
 
 @autodoc(equation='rt = rv+rl')
@@ -639,7 +639,7 @@ def rt_from_rv_ri(rv, ri):
 @autodoc(equation='rv = rt')
 @assumes('no liquid water', 'no ice')
 def rv_from_rt(rt):
-    return rt.copy()
+    return 1.*rt
 
 
 @autodoc(equation='rv = rt-rl-ri')
@@ -762,7 +762,7 @@ def Tv_from_T_qv(T, qv):
 This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def Tv_from_T_assuming_Tv_equals_T(T):
-    return T.copy()
+    return 1.*T
 
 
 @autodoc(equation='Tv = p/(rho*Rd)')
@@ -785,7 +785,7 @@ def Tw_from_T_RH_Stull(T, RH):
 This function exists to allow using temperature as virtual temperature.''')
 @assumes('Tv equals T')
 def T_from_Tv_assuming_Tv_equals_T(Tv):
-    return Tv.copy()
+    return 1.*Tv
 
 
 @autodoc(equation='theta = T*(1e5/p)**(Rd/Cpd)')
@@ -813,15 +813,15 @@ def thetae_from_p_T_Tlcl_rv_Bolton(p, T, Tlcl, rv):
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def thetae_from_p_T_RH_rv_rt(p, T, RH, rv, rt):
-    return ne.evaluate('T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd + '
-                       'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
+    return ne.evaluate('T*(1e5/p)**(Rd/(Cpd + rt*Cl))*RH**(-rv*Rv/(Cpd + '
+                       'rt*Cl))*exp(Lv0*rv/(Cpd+rt*Cl))')
 
 
 @autodoc(equation='thetae = T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)'
          'exp(Lv*rv/Cpd)')
 @assumes('low water vapor')
 def thetae_from_T_RH_rv_lwv(T, RH, rv):
-    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)*exp(Lv*rv/Cpd)')
+    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*RH**(-rv*Rv/Cpd)*exp(Lv0*rv/Cpd)')
 
 
 @autodoc(equation='thetaes = thetae_from_p_T_Tlcl_rv_Bolton(p, T, T, rvs)',
