@@ -361,5 +361,23 @@ class GetShortestSolutionTests(unittest.TestCase):
     def test_depth_3_calculation(self):
         _get_shortest_solution(('w',), ('a', 'b'), (), self.methods)
 
+
+class EquationTest(unittest.TestCase):
+
+    in_values = []
+    out_values = []
+    tols = []
+    func = None
+
+    def test_accurate_values(self):
+        for i, args in enumerate(self.in_values):
+            out_calc = self.func(*args)
+            if abs(out_calc - self.out_values[i]) > self.tols[i]:
+                raise AssertionError(
+                    'Calculated value {} from inputs {} is more than {}'
+                    'away from {}'.format(out_calc, args, self.tols[i],
+                                          self.out_values[i]))
+
+
 if __name__ == '__main__':
     nose.run()
