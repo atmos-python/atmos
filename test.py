@@ -236,6 +236,16 @@ class calculateTests(unittest.TestCase):
         assert isinstance(rho, np.ndarray)
         assert isinstance(Tv, np.ndarray)
 
+    def test_T_from_Tv(self):
+        assert calculate('T', Tv=1., add_assumptions=('Tv equals T',)) == 1.
+        assert calculate('T', Tv=5., add_assumptions=('Tv equals T',)) == 5.
+
+    def test_rv_from_qv(self):
+        assert np.isclose(calculate('rv', qv=0.005), 0.005025125628140704)
+
+    def test_qv_from_rv(self):
+        assert np.isclose(calculate('qv', rv=0.005), 0.0049751243781094535)
+
 
 class TestSolveValuesNearSkewT(unittest.TestCase):
 
