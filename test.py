@@ -7,6 +7,7 @@ import nose
 import numpy as np
 import equations
 import util
+import decorators
 from nose.tools import raises
 from constants import Rd
 from solve import BaseSolver, FluidSolver, calculate, \
@@ -33,6 +34,26 @@ def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid assumption'.format(m))
+
+
+class OverriddenByAssumptionsTests(unittest.TestCase):
+    def test_overridden_by_assumptions_empty(self):
+        @decorators.overridden_by_assumptions()
+        def foo():
+            return None
+        assert foo.overridden_by_assumptions == ()
+
+    def test_overridden_by_assumptions_single(self):
+        @decorators.overridden_by_assumptions('test assumption')
+        def foo():
+            return None
+        assert foo.overridden_by_assumptions == ('test assumption',)
+
+    def test_overridden_by_assumptions_multiple(self):
+        @decorators.overridden_by_assumptions('test assumption', 'a2')
+        def foo():
+            return None
+        assert foo.overridden_by_assumptions == ('test assumption', 'a2')
 
 
 class GetCalculatableMethodsDictTests(unittest.TestCase):
@@ -226,11 +247,12 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
+        self.add_assumptions = ('bolton', 'unfrozen bulb')
 
     def _generator(self, quantity, tolerance):
         skew_T_value = self.quantities.pop(quantity)
         calculated_value, funcs = calculate(
-            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
+            quantity, add_assumptions=self.add_assumptions,
             debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
@@ -288,6 +310,13 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         self._generator('plcl', 10000.)
 
 
+class TestSolveValuesNearSkewTAssumingLowMoisture(TestSolveValuesNearSkewT):
+
+    def setUp(self):
+        super(TestSolveValuesNearSkewTAssumingLowMoisture, self).setUp()
+        self.add_assumptions = ('bolton', 'unfrozen bulb', 'low water vapor')
+
+
 class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
     def setUp(self):
@@ -298,6 +327,7 @@ class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
+        self.add_assumptions = ('bolton', 'unfrozen bulb')
 
 
 class GetShortestSolutionTests(unittest.TestCase):

@@ -225,11 +225,16 @@ def _get_module_methods(module):
             raise NotImplementedError('function {} in equations module has no '
                                       'assumption '
                                       'definition'.format(func.__name__))
+        try:
+            overridden_by_assumptions = func.overridden_by_assumptions
+        except AttributeError:
+            overridden_by_assumptions = ()
         methods.append({
             'func': func,
             'args': args,
             'output': output,
-            'assumptions': assumptions
+            'assumptions': assumptions,
+            'overridden_by_assumptions': overridden_by_assumptions,
         })
     return methods
 
@@ -474,16 +479,12 @@ ValueError
         module_methods = _get_module_methods(self._equation_module)
         # Go through each output variable
         for dct in module_methods:
-            try:
-                # Make sure this method isn't overridden by an assumption
-                if any(item in assumptions for item in
-                       dct['overridden_by_assumptions']):
-                    continue
-            except KeyError:
-                # If the key isn't there, it is never overridden
-                pass
+            # Make sure this method is not overridden
+            if any(item in assumptions for item in
+                    dct['overridden_by_assumptions']):
+                continue
             # Make sure all assumptions of the method are satisfied
-            if all(item in assumptions for item in dct['assumptions']):
+            elif all(item in assumptions for item in dct['assumptions']):
                 # Make sure we have a dict entry for this output quantity
                 if dct['output'] not in methods.keys():
                     methods[dct['output']] = {}

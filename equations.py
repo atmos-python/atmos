@@ -50,8 +50,8 @@ American Meteorological Society Glossary of Meteorology
     Retrieved March 25, 2015''',
        'AMS Glossary thetae': '''
 American Meteorological Society Glossary of Meteorology
-    http://glossary.ametsoc.org/wiki/Equivalent_temperature
-    Retrieved March 25, 2015''',
+    http://glossary.ametsoc.org/wiki/Equivalent_potential_temperature
+    Retrieved April 23, 2015''',
        'Petty 2008': '''
 Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics. 1st Ed.
     Sundog Publishing.''',
@@ -699,6 +699,7 @@ def rvs_from_p_es(p, es):
 
 @autodoc(equation='rv = rv_from_qv(qvs)')
 @assumes()
+@overridden_by_assumptions('low water vapor')
 def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
 
@@ -809,19 +810,21 @@ def thetae_from_p_T_Tlcl_rv_Bolton(p, T, Tlcl, rv):
 
 
 @autodoc(equation='thetae = T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd +'
-         'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))')
+         'rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))',
+         references=ref['AMS Glossary thetae'])
 @assumes()
 @overridden_by_assumptions('low water vapor')
-def thetae_from_p_T_RH_rv_rt(p, T, RH, rv, rt):
-    return ne.evaluate('T*(1e5/p)**(Rd/(Cpd + rt*Cl))*RH**(-rv*Rv/(Cpd + '
-                       'rt*Cl))*exp(Lv0*rv/(Cpd+rt*Cl))')
+def thetae_from_p_e_T_RH_rv_rt(p, e, T, RH, rv, rt):
+    return ne.evaluate('T*(1e5/(p-e))**(Rd/(Cpd + rt*Cl))*RH**(-rv*Rv/(Cpd + '
+                       'rt*Cl))*exp(Lv0*rv/((Cpd+rt*Cl)*T))')
 
 
 @autodoc(equation='thetae = T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)'
          'exp(Lv*rv/Cpd)')
 @assumes('low water vapor')
 def thetae_from_T_RH_rv_lwv(T, RH, rv):
-    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*RH**(-rv*Rv/Cpd)*exp(Lv0*rv/Cpd)')
+    return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*RH**(-rv*Rv/Cpd)*'
+                       'exp(Lv0*rv/(Cpd*T)')
 
 
 @autodoc(equation='thetaes = thetae_from_p_T_Tlcl_rv_Bolton(p, T, T, rvs)',
