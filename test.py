@@ -32,7 +32,7 @@ def test_get_module_methods_nonempty():
 def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
-            raise AssertionError('{} not a valid method'.format(m))
+            raise AssertionError('{} not a valid assumption'.format(m))
 
 
 class GetCalculatableMethodsDictTests(unittest.TestCase):
@@ -189,6 +189,10 @@ class calculateTests(unittest.TestCase):
         assert (rho == 1/Rd).all()
         assert isinstance(rho, np.ndarray)
 
+    def test_returns_float(self):
+        rho = calculate('rho', Tv=1., p=1.)
+        assert isinstance(rho, float)
+
     def test_depth_2_calculation(self):
         rho = calculate('rho', add_assumptions=('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
@@ -288,7 +292,8 @@ class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
     def setUp(self):
         self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 18.4+273.15,
-                           'rv': 6e-3, 'Tlcl': 3.8+273.15, 'thetae': 36.5+273.15,
+                           'rv': 6e-3, 'Tlcl': 3.8+273.15,
+                           'thetae': 36.5+273.15,
                            'Tw': 6.5+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
