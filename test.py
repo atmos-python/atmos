@@ -295,7 +295,21 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         self._generator('Tlcl', 1.)
 
     def test_calculate_thetae(self):
-        self._generator('thetae', 1.)
+        quantity = 'Tw'
+        skew_T_value = self.quantities.pop(quantity)
+        self.quantities.pop('Tlcl') # let us calculate this ourselves
+        calculated_value, funcs = calculate(
+            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
+            debug=True,
+            **self.quantities)
+        diff = abs(skew_T_value - calculated_value)
+        if diff > 1.:
+            err_msg = ('Value {:.2f} is too far away from '
+                       '{:.2f} for {}.'.format(
+                           calculated_value, skew_T_value, quantity))
+            err_msg += '\nfunctions used:\n'
+            err_msg += '\n'.join([f.__name__ for f in funcs])
+            raise AssertionError(err_msg)
 
     def test_calculate_Tw(self):
         quantity = 'Tw'
