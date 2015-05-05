@@ -27,15 +27,9 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 
 # To implement:
 #
-# Look at dimensions present in the data in order to:
-#   Calculate pressure from surface pressure and hydrostatic balance
-#   Similarly with thermal wind and surface winds
-#
 # Need an equation or two for Td
 #
 # Need some more "shortcut" equations
-#
-# Equivalent potential temperature... What even.
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
 import numpy as np
