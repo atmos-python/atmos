@@ -1,11 +1,11 @@
-*******
-atmospy
-*******
+*****
+atmos
+*****
 ---------------------------------------
 An atmospheric sciences utility library
 ---------------------------------------
 
-Atmospy is a library of Python programming utilities for the atmospheric
+**atmos** is a library of Python programming utilities for the atmospheric
 sciences. It is in ongoing development. If you have an idea for a feature or
 have found a bug, please post it on the `GitHub issue tracker`_.
 
@@ -53,13 +53,13 @@ This module can be installed with pip:
 
 .. code:: bash
 
-    $ pip install atmospy
+    $ pip install atmos
 
 If you use Anaconda, it is preferable to install with conda:
 
 .. code:: bash
 
-    $ conda install -c mcgibbon atmospy
+    $ conda install -c mcgibbon atmos
 
 Development version
 ===================
@@ -74,8 +74,8 @@ Calculating pressure from virtual temperature and air density:
 
 .. code:: python
 
-    >>> import atmospy
-    >>> atmospy.calculate('p', Tv=273., rho=1.27)
+    >>> import atmos
+    >>> atmos.calculate('p', Tv=273., rho=1.27)
         99519.638400000011
 
 
