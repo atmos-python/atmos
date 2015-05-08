@@ -222,8 +222,8 @@ def _get_module_methods(module):
         try:
             assumptions = tuple(func.assumptions)
         except AttributeError:
-            raise NotImplementedError('function {} in equations module has no '
-                                      'assumption '
+            raise NotImplementedError('function {0} in equations module has no'
+                                      ' assumption '
                                       'definition'.format(func.__name__))
         try:
             overridden_by_assumptions = func.overridden_by_assumptions
@@ -244,19 +244,19 @@ def _fill_doc(s, module, default_assumptions):
         s = s.replace(
             '<assumptions list goes here>',
             '\n'.join(sorted(
-                ["'{}': {}".format(a, desc) for a, desc in
+                ["'{0}': {1}".format(a, desc) for a, desc in
                  assumptions.items()],
                 key=lambda x: x.lower())))
         s = s.replace(
             '<default assumptions list goes here>',
             '\n'.join(
                 wrap('Default assumptions are ' +
-                     ', '.join(["'{}'".format(a) for a in
+                     ', '.join(["'{0}'".format(a) for a in
                                 default_assumptions]) + '.', width=80)))
         s = s.replace(
             '<quantity parameter list goes here>',
             '\n'.join(sorted([
-                '{} {} ({})'.format(
+                '{0} {1} ({2})'.format(
                     (q + ' :').ljust(9), info['name'], info['units'])
                 for q, info in
                 module.quantities.items()
@@ -371,7 +371,7 @@ as it is not associated with any equations.
         '''
         for arg in args:
             if arg not in self.all_assumptions:
-                raise ValueError('{} does not correspond to a valid '
+                raise ValueError('{0} does not correspond to a valid '
                                  'assumption.'.format(arg))
 
     def _ensure_quantities(self, *args):
@@ -380,7 +380,7 @@ as it is not associated with any equations.
         '''
         for arg in args:
             if arg not in self._equation_module.quantities.keys():
-                raise ValueError('{} does not correspond to a valid '
+                raise ValueError('{0} does not correspond to a valid '
                                  'quantity.'.format(arg))
 
     def calculate(self, *args):
@@ -414,7 +414,7 @@ ValueError:
                                                           self.methods)
         for arg in args:
             if arg not in possible_quantities:
-                raise ValueError('cannot calculate {} from inputs'.format(
+                raise ValueError('cannot calculate {0} from inputs'.format(
                     arg))
         funcs, func_args, extra_values = \
             _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
@@ -471,7 +471,7 @@ ValueError
         # this will warn the user of typos
         for a in assumptions:
             if a not in self.all_assumptions:
-                raise ValueError('assumption {} matches no '
+                raise ValueError('assumption {0} matches no '
                                  'equations'.format(a))
         # create a dictionary to which we will add methods
         methods = {}
@@ -492,7 +492,7 @@ ValueError
                 if dct['args'] in methods[dct['output']].keys():
                     raise ValueError(
                         'assumptions given define duplicate '
-                        'equations {} and {}'.format(
+                        'equations {0} and {1}'.format(
                             str(dct['func']),
                             str(methods[dct['output']][dct['args']])))
                 # Add the method to the methods dict

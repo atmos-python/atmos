@@ -134,7 +134,7 @@ references : string, optional
         docstring = doc_paragraph(docstring)
         docstring += '\n\n'
         if equation is not None:
-            func.func_dict['equation'] = equation
+            func.equation = equation
             docstring += equation.strip() + '\n\n'
         docstring += 'Parameters\n'
         docstring += '----------\n'
@@ -150,7 +150,7 @@ references : string, optional
             docstring += '-----\n'
             docstring += notes.strip()
         if references is not None:
-            func.func_dict['references'] = references
+            func.references = references
             docstring += '\n\n'
             docstring += 'References\n'
             docstring += '----------\n'
