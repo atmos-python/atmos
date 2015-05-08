@@ -27,6 +27,8 @@ Features
 
 * a simple calculate() interface function for accessing equations
 
+* no need to remember equation function names or argument order
+
 * fast calculation of quantities using numexpr
 
 Dependencies
