@@ -1,0 +1,5 @@
+atmospy
+six>=1.9.0
+numexpr>=2.0.1
+numpy>=1.6
+nose>=1.3

@@ -1,5 +1,5 @@
 *******
-Atmospy
+atmospy
 *******
 ---------------------------------------
 An atmospheric sciences utility library
@@ -41,8 +41,6 @@ Package dependencies:
 * numpy
 
 * numexpr
-
-* textwrap
 
 * six
 
