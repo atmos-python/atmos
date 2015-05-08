@@ -84,7 +84,7 @@ Calculating pressure from virtual temperature and air density:
 License
 =======
 
-Please see ``LICENSE.txt``.
+This module is available under an MIT license. Please see ``LICENSE.txt``.
 
 .. _`GitHub issue tracker`: https://github.com/mcgibbon/atmospy/issues
 .. _`GitHub develop branch`: https://github.com/mcgibbon/atmospy/tree/develop
