@@ -5,12 +5,12 @@ test.py: Testing suite for other modules.
 import unittest
 import nose
 import numpy as np
-from atmos import equations
-from atmos import util
-from atmos import decorators
+from atmospy import equations
+from atmospy import util
+import decorators
 from nose.tools import raises
-from atmos.constants import Rd
-from atmos.solve import BaseSolver, FluidSolver, calculate, \
+from atmospy.constants import Rd
+from atmospy.solve import BaseSolver, FluidSolver, calculate, \
     _get_module_methods, _get_calculatable_methods_dict,\
     _get_shortest_solution
 

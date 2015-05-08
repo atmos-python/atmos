@@ -4,7 +4,7 @@ solve.py: Utilities that use equations to solve for quantities, given other
     quantities and a set of assumptions.
 """
 import inspect
-from atmos import equations
+from atmospy import equations
 import numpy as np
 from six import add_metaclass
 from textwrap import wrap

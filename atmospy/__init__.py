@@ -1,1 +1,1 @@
-from solve import calculate, FluidSolver
+from atmospy.solve import calculate, FluidSolver
