@@ -7,7 +7,7 @@ import nose
 import numpy as np
 from atmos import equations
 from atmos import util
-import decorators
+from atmos import decorators
 from nose.tools import raises
 from atmos.constants import Rd
 from atmos.solve import BaseSolver, FluidSolver, calculate, \
