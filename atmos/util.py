@@ -5,7 +5,7 @@ Created on Fri Mar 27 13:11:26 2015
 @author: mcgibbon
 """
 import numpy as np
-from equations import quantities
+from atmos.equations import quantities
 import re
 
 derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
