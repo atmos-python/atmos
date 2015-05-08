@@ -55,8 +55,8 @@ references : string, optional
         '''Takes in an abbreviation for a quantity, and returns a more
            descriptive string of the quantity as "name (units)"
         '''
-        return '{} ({})'.format(quantity_dict[name]['name'],
-                                quantity_dict[name]['units'])
+        return '{0} ({1})'.format(quantity_dict[name]['name'],
+                                  quantity_dict[name]['units'])
 
     def strings_to_list_string(strings):
         '''Takes a list of strings presumably containing words and phrases,
@@ -75,8 +75,8 @@ references : string, optional
         elif len(strings) == 2:
             return ' and '.join(strings)
         else:
-            return '{}, and {}'.format(', '.join(strings[:-1]),
-                                       strings[-1])
+            return '{0}, and {1}'.format(', '.join(strings[:-1]),
+                                         strings[-1])
 
     def quantity_list_string(names):
         '''Takes in a list of quantity abbreviations, and returns a "list"
@@ -99,8 +99,8 @@ references : string, optional
            >>> quantity_spec_string('Tv')
            >>> 'Tv : ndarray\n    Data for virtual temperature.'
         '''
-        s = '{} : ndarray\n'.format(name)
-        s += doc_paragraph('Data for {}.'.format(
+        s = '{0} : ndarray\n'.format(name)
+        s += doc_paragraph('Data for {0}.'.format(
             quantity_string(name)), indent=4)
         return s
 
@@ -122,11 +122,11 @@ references : string, optional
                              'function whose name contains "_from_"')
         out_quantity = func.__name__[:out_name_end_index]
         in_quantities = inspect.getargspec(func).args
-        docstring = 'Calculates {}'.format(
+        docstring = 'Calculates {0}'.format(
             quantity_string(out_quantity))
         try:
             if len(func.assumptions) > 0:
-                docstring += ' assuming {}'.format(
+                docstring += ' assuming {0}'.format(
                     assumption_list_string(func.assumptions))
         except AttributeError:
             pass
