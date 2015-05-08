@@ -35,8 +35,9 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 import numpy as np
 import numexpr as ne
 from numpy import pi
-from constants import g0, Omega, Rd, Rv, Cpd, Lv0, Cl
-from decorators import assumes, overridden_by_assumptions, equation_docstring
+from atmospy.constants import g0, Omega, Rd, Rv, Cpd, Lv0, Cl
+from atmospy.decorators import assumes, overridden_by_assumptions
+from atmospy.decorators import equation_docstring
 
 ref = {'AMS Glossary Gammam': '''
 American Meteorological Society Glossary of Meteorology
