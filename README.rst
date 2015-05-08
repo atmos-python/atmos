@@ -76,8 +76,8 @@ Calculating pressure from virtual temperature and air density:
 
 .. code:: python
 
-    >>> import atmos
-    >>> atmos.calculate('p', Tv=273., rho=1.27)
+    >>> import atmospy
+    >>> atmospy.calculate('p', Tv=273., rho=1.27)
         99519.638400000011
 
 
