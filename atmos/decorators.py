@@ -3,7 +3,8 @@
 decorators.py: Function decorators used by the rest of this module.
 """
 import inspect
-from textwrap import wrap
+from atmos.util import quantity_string, assumption_list_string, \
+    quantity_spec_string, doc_paragraph
 
 
 # Define some decorators for our equations
@@ -49,69 +50,6 @@ references : string, optional
     A string providing references for the function. Should be wrapped to be
     no more than 80 characters in length.
     '''
-    def quantity_string(name):
-        '''Takes in an abbreviation for a quantity, and returns a more
-           descriptive string of the quantity as "name (units)"
-        '''
-        return '{0} ({1})'.format(quantity_dict[name]['name'],
-                                  quantity_dict[name]['units'])
-
-    def strings_to_list_string(strings):
-        '''Takes a list of strings presumably containing words and phrases,
-           and returns a "list" form of those strings, like:
-
-           >>> strings_to_list_string(('cats', 'dogs'))
-           >>> 'cats and dogs'
-
-           or
-
-           >>> strings_to_list_string(('pizza', 'pop', 'chips'))
-           >>> 'pizza, pop, and chips'
-        '''
-        if len(strings) == 1:
-            return strings[0]
-        elif len(strings) == 2:
-            return ' and '.join(strings)
-        else:
-            return '{0}, and {1}'.format(', '.join(strings[:-1]),
-                                         strings[-1])
-
-    def quantity_list_string(names):
-        '''Takes in a list of quantity abbreviations, and returns a "list"
-           form of those quantities expanded descriptively as name (units).
-           See quantity_string(name) and strings_to_list_string(strings).
-        '''
-        assert len(names) > 0
-        q_strings = [quantity_string(name) for name in names]
-        return strings_to_list_string(q_strings)
-
-    def assumption_list_string(assumptions):
-        '''Takes in a list of short forms of assumptions, and returns a "list"
-           form of the long form of the assumptions.
-        '''
-        assumption_strings = [assumption_dict[a] for a in assumptions]
-        return strings_to_list_string(assumption_strings)
-
-    def quantity_spec_string(name):
-        '''Returns a quantity specification for docstrings. Example:
-           >>> quantity_spec_string('Tv')
-           >>> 'Tv : ndarray\n    Data for virtual temperature.'
-        '''
-        s = '{0} : ndarray\n'.format(name)
-        s += doc_paragraph('Data for {0}.'.format(
-            quantity_string(name)), indent=4)
-        return s
-
-    def doc_paragraph(s, indent=0):
-        '''Takes in a string without wrapping corresponding to a paragraph,
-           and returns a version of that string wrapped to be at most 80
-           characters in length on each line.
-           If indent is given, ensures each line is indented to that number
-           of spaces.
-        '''
-
-        return '\n'.join([' '*indent + l for l in wrap(s, width=80-indent)])
-
     # Now we have our utility functions, let's define the decorator itself
     def decorator(func):
         out_name_end_index = func.__name__.find('_from_')
@@ -121,11 +59,11 @@ references : string, optional
         out_quantity = func.__name__[:out_name_end_index]
         in_quantities = inspect.getargspec(func).args
         docstring = 'Calculates {0}'.format(
-            quantity_string(out_quantity))
+            quantity_string(out_quantity, quantity_dict))
         try:
             if len(func.assumptions) > 0:
                 docstring += ' assuming {0}'.format(
-                    assumption_list_string(func.assumptions))
+                    assumption_list_string(func.assumptions, assumption_dict))
         except AttributeError:
             pass
         docstring += '.'
@@ -136,12 +74,12 @@ references : string, optional
             docstring += equation.strip() + '\n\n'
         docstring += 'Parameters\n'
         docstring += '----------\n'
-        docstring += '\n'.join([quantity_spec_string(q)
+        docstring += '\n'.join([quantity_spec_string(q, quantity_dict)
                                 for q in in_quantities])
         docstring += '\n\n'
         docstring += 'Returns\n'
         docstring += '-------\n'
-        docstring += quantity_spec_string(out_quantity)
+        docstring += quantity_spec_string(out_quantity, quantity_dict)
         if notes is not None:
             docstring += '\n\n'
             docstring += 'Notes\n'

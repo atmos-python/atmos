@@ -5,23 +5,94 @@ Created on Fri Mar 27 13:11:26 2015
 @author: mcgibbon
 """
 import numpy as np
-from atmos.equations import quantities
 import re
 
 derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
+from textwrap import wrap
 
 
-def parse_derivative_string(string):
+def quantity_string(name, quantity_dict):
+    '''Takes in an abbreviation for a quantity and a quantity dictionary,
+       and returns a more descriptive string of the quantity as "name (units)."
+    '''
+    return '{0} ({1})'.format(quantity_dict[name]['name'],
+                              quantity_dict[name]['units'])
+
+
+def strings_to_list_string(strings):
+    '''Takes a list of strings presumably containing words and phrases,
+       and returns a "list" form of those strings, like:
+
+       >>> strings_to_list_string(('cats', 'dogs'))
+       >>> 'cats and dogs'
+
+       or
+
+       >>> strings_to_list_string(('pizza', 'pop', 'chips'))
+       >>> 'pizza, pop, and chips'
+    '''
+    if len(strings) == 1:
+        return strings[0]
+    elif len(strings) == 2:
+        return ' and '.join(strings)
+    else:
+        return '{0}, and {1}'.format(', '.join(strings[:-1]),
+                                     strings[-1])
+
+
+def quantity_list_string(names):
+    '''Takes in a list of quantity abbreviations, and returns a "list"
+       form of those quantities expanded descriptively as name (units).
+       See quantity_string(name) and strings_to_list_string(strings).
+    '''
+    assert len(names) > 0
+    q_strings = [quantity_string(name) for name in names]
+    return strings_to_list_string(q_strings)
+
+
+def assumption_list_string(assumptions, assumption_dict):
+    '''Takes in a list of short forms of assumptions and an assumption
+       dictionary, and returns a "list" form of the long form of the
+       assumptions.
+    '''
+    assumption_strings = [assumption_dict[a] for a in assumptions]
+    return strings_to_list_string(assumption_strings)
+
+
+def quantity_spec_string(name, quantity_dict):
+    '''Returns a quantity specification for docstrings. Example:
+       >>> quantity_spec_string('Tv')
+       >>> 'Tv : ndarray\n    Data for virtual temperature.'
+    '''
+    s = '{0} : ndarray\n'.format(name)
+    s += doc_paragraph('Data for {0}.'.format(
+        quantity_string(name, quantity_dict)), indent=4)
+    return s
+
+
+def doc_paragraph(s, indent=0):
+    '''Takes in a string without wrapping corresponding to a paragraph,
+       and returns a version of that string wrapped to be at most 80
+       characters in length on each line.
+       If indent is given, ensures each line is indented to that number
+       of spaces.
+    '''
+    return '\n'.join([' '*indent + l for l in wrap(s, width=80-indent)])
+
+
+def parse_derivative_string(string, quantity_dict):
     '''
     Assuming the string is of the form d(var1)d(var2), returns var1, var2.
-    Raises ValueError if the string is not of this form.
+    Raises ValueError if the string is not of this form, or if the vars
+    are not keys in the quantity_dict.
     '''
     match = derivative_prog.match(string)
     if match is None:
         raise ValueError('string is not in the form of a derivative')
     varname = match.group(1)
     coordname = match.group(2)
-    if varname not in quantities.keys() or coordname not in quantities.keys():
+    if (varname not in quantity_dict.keys() or
+        coordname not in quantity_dict.keys()):
         raise ValueError('variable in string not a valid quantity')
     return varname, coordname
 
