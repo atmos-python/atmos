@@ -298,6 +298,14 @@ lists for subclasses of BaseSolver.
                                 'assumptions' in
                                 f[1].func_dict.keys()]))
 
+            #assumptions = set([])
+            #for f in inspect.getmembers(equations):
+            #    try:
+            #        assumptions.update(f[1].assumptions)
+            #    except AttributeError:
+            #        pass
+            #dct['all_assumptions'] = tuple(assumptions)
+
         # we need to call type.__new__ to complete the initialization
         instance = super(SolverMeta, cls).__new__(cls, name, parents, dct)
         return instance
@@ -319,7 +327,7 @@ as it is not associated with any equations.
         if cls._equation_module is None:
             raise NotImplementedError('Class must have _equation_module '
                                       'defined')
-        return object.__new__(cls, *args, **kwargs)
+        return super(BaseSolver, cls).__new__(cls, *args, **kwargs)
 
     def __init__(self, **kwargs):
         if 'debug' in kwargs.keys():
