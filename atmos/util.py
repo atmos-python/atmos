@@ -66,9 +66,11 @@ def assumption_list_string(assumptions, assumption_dict):
 def quantity_spec_string(name, quantity_dict):
     '''Returns a quantity specification for docstrings. Example:
        >>> quantity_spec_string('Tv')
-       >>> 'Tv : ndarray\n    Data for virtual temperature.'
+       >>> 'Tv : float or ndarray\n    Data for virtual temperature.'
     '''
-    s = '{0} : ndarray\n'.format(name)
+    if name not in quantity_dict.keys():
+        raise ValueError('{0} not present in quantity_dict'.format(name))
+    s = '{0} : float or ndarray\n'.format(name)
     s += doc_paragraph('Data for {0}.'.format(
         quantity_string(name, quantity_dict)), indent=4)
     return s

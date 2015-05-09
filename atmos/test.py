@@ -86,20 +86,55 @@ class StringUtilityTests(unittest.TestCase):
     def test_assumption_list_string_empty(self):
         assumption_list_string((), self.assumption_dict)
 
-    def test_assumption_list_single(self):
+    def test_assumption_list_string_single(self):
         string = assumption_list_string(('a1',), self.assumption_dict)
         assert string == 'a1_long'
 
-    def test_assumption_list_double(self):
+    def test_assumption_list_string_double(self):
         string = assumption_list_string(('a1', 'a2'), self.assumption_dict)
         assert string == 'a1_long and a2_long'
 
-    def test_assumption_list_triple(self):
+    def test_assumption_list_string_triple(self):
         string = assumption_list_string(('a1', 'a2', 'a3'),
                                         self.assumption_dict)
         assert string == 'a1_long, a2_long, and a3_long'
 
+    @raises(ValueError)
+    def test_quantity_spec_string_invalid(self):
+        quantity_spec_string('rv', self.quantity_dict)
 
+    def test_quantity_spec_string_valid(self):
+        string = quantity_spec_string('T', self.quantity_dict)
+        assert string == ('T : float or ndarray\n'
+                          '    Data for air temperature (K).')
+
+    def test_doc_paragraph_no_wrap_for_short_string(self):
+        string = doc_paragraph('The quick brown fox jumped over the yellow '
+                               'doge. The quick brown fox jumped over')
+        assert '\n' not in string
+
+    def test_doc_paragraph_wraps_on_word(self):
+        string = doc_paragraph('The quick brown fox jumped over the yellow '
+                               'doge. The quick brown fox jumped over.')
+        if (string != 'The quick brown fox jumped over the yellow doge. '
+            'The quick brown fox jumped\nover.'):
+            raise AssertionError('incorrect string "{0}"'.format(string))
+
+    def test_doc_paragraph_indent_wrap(self):
+        string = doc_paragraph('The quick brown fox jumped over the yellow '
+                               'doge. The quick brown fox jumped over',
+                               indent=1)
+        if (string != ' The quick brown fox jumped over the yellow doge. '
+            'The quick brown fox jumped\n over'):
+            raise AssertionError('incorrect string "{0}"'.format(string))
+
+    def test_doc_paragraph_zero_indent(self):
+        string = doc_paragraph('The quick brown fox jumped over the yellow '
+                               'doge. The quick brown fox jumped over.',
+                               indent=0)
+        if (string != 'The quick brown fox jumped over the yellow doge. '
+            'The quick brown fox jumped\nover.'):
+            raise AssertionError('incorrect string "{0}"'.format(string))
         
 
 
