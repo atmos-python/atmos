@@ -32,6 +32,7 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 # Need some more "shortcut" equations
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
+from __future__ import division
 import numpy as np
 import numexpr as ne
 from numpy import pi

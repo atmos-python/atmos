@@ -34,7 +34,7 @@ def strings_to_list_string(strings):
 
        >>> strings_to_list_string(('pizza', 'pop', 'chips'))
        >>> 'pizza, pop, and chips'
-       
+
        Raises ValueError if strings is empty.
     '''
     if isinstance(strings, six.string_types):
@@ -98,18 +98,9 @@ def parse_derivative_string(string, quantity_dict):
     varname = match.group(1)
     coordname = match.group(2)
     if (varname not in quantity_dict.keys() or
-        coordname not in quantity_dict.keys()):
+            coordname not in quantity_dict.keys()):
         raise ValueError('variable in string not a valid quantity')
     return varname, coordname
-
-
-def advect_var(dvardx, dvardy, u, v):
-    '''
-    Calculates the horizontal advective tendency of a variable in units/s
-    from the horizontal gradients of that variable in units/m and the
-    horizontal winds in m/s.
-    '''
-    return u*dvardx + v*dvardy
 
 
 def landsea_mask(lat, lon, basemap=None, basemap_lat=None, basemap_lon=None):
@@ -436,37 +427,6 @@ def isobaric_to_hybrid(data, p, ps, hybrid_a, hybrid_b, p0=1e5,
     raise NotImplementedError
 
 
-def Phi_from_p_Tv_Phisfc_hydrostatic(p, Tv, Phisfc, vertical_axis=None,
-                                     vertical_order='up'):
-    '''
-    Calculates geopotential height (m^2/s^2) from pressure (Pa), virtual
-    temperature (K), and surface geopotential height (m^2/s^2).
-
-    Parameters
-    ----------
-    p : ndarray
-        Pressure in Pa. If the array is not one-dimensional, it must have
-        the same shape as Tv and each axis must correspond to the same axis
-        as Tv.
-    Tv : ndarray
-        Virtual temperature in K.
-    Phisfc : ndarray
-        Surface geopotential height in m^2/s^2.
-    vertical_axis : int, optional
-        Index of Tv corresponding to the vertical. By default is 0 if Tv has 3
-        or fewer axes, and 1 otherwise.
-    vertical_order : str, optional
-        Order of the vertical axes of p and Tv. Must be 'up' or 'down' if
-        given.
-
-    Returns
-    -------
-    Phi: ndarray
-        Geopotential height values in m^2/s^2. Array has the same shape as Tv.
-    '''
-    raise NotImplementedError
-
-
 def area_poly_sphere(lat, lon, r_sphere):
     '''
     Calculates the area enclosed by an arbitrary polygon on the sphere.
@@ -605,30 +565,6 @@ def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
         raise ValueError('Invalid option {} for boundary '
                          'condition.'.format(boundary))
     return deriv
-
-
-def integrate(base, x, dvardx, coord_index, base_at_start=True):
-    '''
-    Calculates a variable from a boundary condition, a second field x, and its
-    derivative with respect to that field. Assumes the field x varies along
-    only one axis.
-
-    Parameters
-    ----------
-    base : ndarray
-        Boundary condition for var.
-    x : ndarray
-        Field from which to calculate var
-    dvardx : ndarray
-        Derivative of var with respect to the field
-    coord_index : int
-        Index in x that corresponds to the direction along which x is assumed
-        to vary. Differences along other axes are neglected.
-    base_at_start : bool
-        if True, assumes base corresponds to the value of var before the first
-        index of 
-    '''
-    pass
 
 
 def d_x(data, axis, boundary='forward-backward'):

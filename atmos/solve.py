@@ -3,6 +3,7 @@
 solve.py: Utilities that use equations to solve for quantities, given other
     quantities and a set of assumptions.
 """
+from __future__ import division
 import inspect
 from atmos import equations
 import numpy as np

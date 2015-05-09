@@ -2,6 +2,7 @@
 """
 test.py: Testing suite for other modules.
 """
+from __future__ import division
 import unittest
 import nose
 import numpy as np
@@ -16,7 +17,6 @@ from atmos.solve import BaseSolver, FluidSolver, calculate, \
 from atmos.util import quantity_string, assumption_list_string, \
     quantity_spec_string, doc_paragraph, \
     strings_to_list_string
-
 
 
 def test_quantities_dict_complete():
@@ -39,20 +39,21 @@ def test_default_assumptions_exist():
         if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid assumption'.format(m))
 
+
 class StringUtilityTests(unittest.TestCase):
-    
+
     def setUp(self):
         self.quantity_dict = {
             'T': {'name': 'air temperature', 'units': 'K'},
-            'qv': {'name':'specific humidity', 'units': 'kg/kg'},
-            'p': {'name':'air pressure', 'units': 'Pa'},
+            'qv': {'name': 'specific humidity', 'units': 'kg/kg'},
+            'p': {'name': 'air pressure', 'units': 'Pa'},
         }
         self.assumption_dict = {
             'a1': 'a1_long',
             'a2': 'a2_long',
             'a3': 'a3_long',
         }
-    
+
     def tearDown(self):
         self.quantity_dict = None
         self.assumption_dict = None
@@ -117,7 +118,7 @@ class StringUtilityTests(unittest.TestCase):
         string = doc_paragraph('The quick brown fox jumped over the yellow '
                                'doge. The quick brown fox jumped over.')
         if (string != 'The quick brown fox jumped over the yellow doge. '
-            'The quick brown fox jumped\nover.'):
+                'The quick brown fox jumped\nover.'):
             raise AssertionError('incorrect string "{0}"'.format(string))
 
     def test_doc_paragraph_indent_wrap(self):
@@ -125,7 +126,7 @@ class StringUtilityTests(unittest.TestCase):
                                'doge. The quick brown fox jumped over',
                                indent=1)
         if (string != ' The quick brown fox jumped over the yellow doge. '
-            'The quick brown fox jumped\n over'):
+                'The quick brown fox jumped\n over'):
             raise AssertionError('incorrect string "{0}"'.format(string))
 
     def test_doc_paragraph_zero_indent(self):
@@ -133,9 +134,8 @@ class StringUtilityTests(unittest.TestCase):
                                'doge. The quick brown fox jumped over.',
                                indent=0)
         if (string != 'The quick brown fox jumped over the yellow doge. '
-            'The quick brown fox jumped\nover.'):
+                'The quick brown fox jumped\nover.'):
             raise AssertionError('incorrect string "{0}"'.format(string))
-        
 
 
 class OverriddenByAssumptionsTests(unittest.TestCase):
