@@ -13,6 +13,10 @@ from atmos.constants import Rd
 from atmos.solve import BaseSolver, FluidSolver, calculate, \
     _get_module_methods, _get_calculatable_methods_dict,\
     _get_shortest_solution
+from atmos.util import quantity_string, assumption_list_string, \
+    quantity_spec_string, doc_paragraph, \
+    strings_to_list_string
+
 
 
 def test_quantities_dict_complete():
@@ -34,6 +38,69 @@ def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid assumption'.format(m))
+
+class StringUtilityTests(unittest.TestCase):
+    
+    def setUp(self):
+        self.quantity_dict = {
+            'T': {'name': 'air temperature', 'units': 'K'},
+            'qv': {'name':'specific humidity', 'units': 'kg/kg'},
+            'p': {'name':'air pressure', 'units': 'Pa'},
+        }
+        self.assumption_dict = {
+            'a1': 'a1_long',
+            'a2': 'a2_long',
+            'a3': 'a3_long',
+        }
+    
+    def tearDown(self):
+        self.quantity_dict = None
+        self.assumption_dict = None
+
+    def test_quantity_string(self):
+        string = quantity_string('T', self.quantity_dict)
+        assert string == 'air temperature (K)'
+
+    @raises(ValueError)
+    def test_quantity_string_invalid_quantity(self):
+        quantity_string('rhombus', self.quantity_dict)
+
+    @raises(ValueError)
+    def test_strings_to_list_string_empty(self):
+        string = strings_to_list_string(())
+        assert string == ''
+
+    def test_strings_to_list_string_single(self):
+        string = strings_to_list_string(('string1',))
+        assert string == 'string1'
+
+    def test_strings_to_list_string_double(self):
+        string = strings_to_list_string(('string1', 'string2'))
+        assert string == 'string1 and string2'
+
+    def test_strings_to_list_string_triple(self):
+        string = strings_to_list_string(('string1', 'string2', 'string3'))
+        assert string == 'string1, string2, and string3'
+
+    @raises(ValueError)
+    def test_assumption_list_string_empty(self):
+        assumption_list_string((), self.assumption_dict)
+
+    def test_assumption_list_single(self):
+        string = assumption_list_string(('a1',), self.assumption_dict)
+        assert string == 'a1_long'
+
+    def test_assumption_list_double(self):
+        string = assumption_list_string(('a1', 'a2'), self.assumption_dict)
+        assert string == 'a1_long and a2_long'
+
+    def test_assumption_list_triple(self):
+        string = assumption_list_string(('a1', 'a2', 'a3'),
+                                        self.assumption_dict)
+        assert string == 'a1_long, a2_long, and a3_long'
+
+
+        
 
 
 class OverriddenByAssumptionsTests(unittest.TestCase):

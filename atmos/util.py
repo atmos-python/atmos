@@ -6,6 +6,7 @@ Created on Fri Mar 27 13:11:26 2015
 """
 import numpy as np
 import re
+import six
 
 derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
 from textwrap import wrap
@@ -14,7 +15,10 @@ from textwrap import wrap
 def quantity_string(name, quantity_dict):
     '''Takes in an abbreviation for a quantity and a quantity dictionary,
        and returns a more descriptive string of the quantity as "name (units)."
+       Raises ValueError if the name is not in quantity_dict
     '''
+    if name not in quantity_dict.keys():
+        raise ValueError('{0} is not present in quantity_dict'.format(name))
     return '{0} ({1})'.format(quantity_dict[name]['name'],
                               quantity_dict[name]['units'])
 
@@ -30,8 +34,15 @@ def strings_to_list_string(strings):
 
        >>> strings_to_list_string(('pizza', 'pop', 'chips'))
        >>> 'pizza, pop, and chips'
+       
+       Raises ValueError if strings is empty.
     '''
-    if len(strings) == 1:
+    if isinstance(strings, six.string_types):
+        raise TypeError('strings must be an iterable of strings, not a string '
+                        'itself')
+    if len(strings) == 0:
+        raise ValueError('strings may not be empty')
+    elif len(strings) == 1:
         return strings[0]
     elif len(strings) == 2:
         return ' and '.join(strings)
@@ -40,21 +51,14 @@ def strings_to_list_string(strings):
                                      strings[-1])
 
 
-def quantity_list_string(names):
-    '''Takes in a list of quantity abbreviations, and returns a "list"
-       form of those quantities expanded descriptively as name (units).
-       See quantity_string(name) and strings_to_list_string(strings).
-    '''
-    assert len(names) > 0
-    q_strings = [quantity_string(name) for name in names]
-    return strings_to_list_string(q_strings)
-
-
 def assumption_list_string(assumptions, assumption_dict):
     '''Takes in a list of short forms of assumptions and an assumption
        dictionary, and returns a "list" form of the long form of the
        assumptions.
     '''
+    if isinstance(assumptions, six.string_types):
+        raise TypeError('assumptions must be an iterable of strings, not a '
+                        'string itself')
     assumption_strings = [assumption_dict[a] for a in assumptions]
     return strings_to_list_string(assumption_strings)
 
