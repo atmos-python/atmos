@@ -10,9 +10,8 @@ from textwrap import wrap
 def assumes(*args):
     '''Stores a function's assumptions as an attribute.'''
     args = tuple(args)
-
     def decorator(func):
-        func.assumptions = tuple(args)
+        func.assumptions = args
         return func
     return decorator
 
@@ -20,9 +19,8 @@ def assumes(*args):
 def overridden_by_assumptions(*args):
     '''Stores what assumptions a function is overridden by as an attribute.'''
     args = tuple(args)
-
     def decorator(func):
-        func.overridden_by_assumptions = tuple(args)
+        func.overridden_by_assumptions = args
         return func
     return decorator
 
@@ -156,7 +154,7 @@ references : string, optional
             docstring += '----------\n'
             docstring += references.strip()
         docstring += '\n'
-        func.func_doc = docstring
+        func.__doc__ = docstring
         return func
 
     return decorator
