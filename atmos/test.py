@@ -111,7 +111,7 @@ class GetCalculatableMethodsDictTests(unittest.TestCase):
 
 class BaseSolverTests(unittest.TestCase):
 
-    @raises(TypeError)
+    @raises(NotImplementedError)
     def test_cannot_instantiate(self):
         BaseSolver()
 

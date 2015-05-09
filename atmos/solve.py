@@ -159,7 +159,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
         extra_values = []
         for o in outputs:
             if o not in inputs:
-                o_args, o_func = calculatable_methods[o].items()[0]
+                o_args, o_func = list(calculatable_methods[o].items())[0]
                 funcs.append(o_func)
                 args.append(o_args)
                 extra_values.append(o)
@@ -190,7 +190,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
     best_result = min(results, key=option_key)
     best_index = results.index(best_result)
     best_intermediate = intermediates[best_index]
-    args, func = calculatable_methods[best_intermediate].items()[0]
+    args, func = list(calculatable_methods[best_intermediate].items())[0]
     best_option = ((func,) + best_result[0], (args,) + best_result[1],
                    (best_intermediate,) + best_result[2])
     return best_option
@@ -290,21 +290,14 @@ lists for subclasses of BaseSolver.
                 dct['__doc__'] = _fill_doc(
                     dct['__doc__'], dct['_equation_module'],
                     dct['default_assumptions'])
-            # set a dynamic list of the assumptions in the equations module
-            dct['all_assumptions'] = tuple(
-                set([]).union(*[f[1].func_dict['assumptions']
-                                for f in inspect.getmembers(equations)
-                                if hasattr(f[1], 'func_dict') and
-                                'assumptions' in
-                                f[1].func_dict.keys()]))
 
-            #assumptions = set([])
-            #for f in inspect.getmembers(equations):
-            #    try:
-            #        assumptions.update(f[1].assumptions)
-            #    except AttributeError:
-            #        pass
-            #dct['all_assumptions'] = tuple(assumptions)
+            assumptions = set([])
+            for f in inspect.getmembers(equations):
+                try:
+                    assumptions.update(f[1].assumptions)
+                except AttributeError:
+                    pass
+            dct['all_assumptions'] = tuple(assumptions)
 
         # we need to call type.__new__ to complete the initialization
         instance = super(SolverMeta, cls).__new__(cls, name, parents, dct)
@@ -320,16 +313,10 @@ as it is not associated with any equations.
 
     _equation_module = None
 
-    def __new__(cls, *args, **kwargs):
-        if cls is BaseSolver:
-            raise TypeError('BaseDeriver may not be instantiated. Use a '
-                            'subclass.')
-        if cls._equation_module is None:
-            raise NotImplementedError('Class must have _equation_module '
-                                      'defined')
-        return super(BaseSolver, cls).__new__(cls, *args, **kwargs)
-
     def __init__(self, **kwargs):
+        if self._equation_module is None:
+            raise NotImplementedError('Class needs _equation_module '
+                                      'defined')
         if 'debug' in kwargs.keys():
             self._debug = kwargs.pop('debug')
         else:
