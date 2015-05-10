@@ -6,6 +6,7 @@ from __future__ import division
 import unittest
 import nose
 import numpy as np
+import inspect
 from atmos import equations
 from atmos import util
 from atmos import decorators
@@ -38,6 +39,121 @@ def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid assumption'.format(m))
+
+
+class DecoratorTests(unittest.TestCase):
+
+    def setUp(self):
+        def dummyfunction(x):
+            '''Dummy docstring'''
+            return x
+        self.func = dummyfunction
+        self.func_name = dummyfunction.__name__
+        self.func_argspec = inspect.getargspec(dummyfunction)
+        self.quantity_dict = {
+            'T': {'name': 'air temperature', 'units': 'K'},
+            'qv': {'name': 'specific humidity', 'units': 'kg/kg'},
+            'p': {'name': 'air pressure', 'units': 'Pa'},
+        }
+        self.assumption_dict = {
+            'a1': 'a1_long',
+            'a2': 'a2_long',
+            'a3': 'a3_long',
+        }
+        self.func_argspec = inspect.getargspec(self.func)
+
+    def tearDown(self):
+        self.func = None
+        self.quantity_dict = None
+        self.assumption_dict = None
+
+    def test_assumes_empty(self, **kwargs):
+        func = decorators.assumes()(self.func)
+        assert func.assumptions == ()
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    def test_assumes_single(self, **kwargs):
+        func = decorators.assumes('a1')(self.func)
+        assert func.assumptions == ('a1',)
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    def test_assumes_triple(self, **kwargs):
+        func = decorators.assumes('a1', 'a2', 'a3')(self.func)
+        assert func.assumptions == ('a1', 'a2', 'a3',)
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    def test_overridden_by_assumptions_empty(self, **kwargs):
+        func = decorators.overridden_by_assumptions()(self.func)
+        assert func.overridden_by_assumptions == ()
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    def test_overridden_by_assumptions_single(self, **kwargs):
+        func = decorators.overridden_by_assumptions('a1')(self.func)
+        assert func.overridden_by_assumptions == ('a1',)
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    def test_overridden_by_assumptions_triple(self, **kwargs):
+        func = decorators.overridden_by_assumptions(
+            'a1', 'a2', 'a3')(self.func)
+        assert func.overridden_by_assumptions == ('a1', 'a2', 'a3',)
+        assert func.__name__ == self.func_name
+        assert inspect.getargspec(func) == self.func_argspec
+
+    @raises(ValueError)
+    def test_autodoc_invalid_no_extra_args(self):
+        def invalid_function(T, p):
+            return T
+        decorators.equation_docstring(
+            self.quantity_dict, self.assumption_dict)(invalid_function)
+
+    @raises(ValueError)
+    def test_autodoc_invalid_args_function(self):
+        def T_from_x_y(x, y):
+            return x
+        decorators.equation_docstring(
+            self.quantity_dict, self.assumption_dict)(T_from_x_y)
+
+    @raises(ValueError)
+    def test_autodoc_invalid_extra_args(self):
+        def invalid_function(T, p):
+            return T
+        decorators.equation_docstring(
+            self.quantity_dict, self.assumption_dict, equation='x=y',
+            references='reference here', notes='c sharp')(invalid_function)
+
+    def test_autodoc_valid(self):
+        def T_from_p_qv(p, qv):
+            return 1.
+        func = decorators.equation_docstring(
+            self.quantity_dict, self.assumption_dict, equation='x=y',
+            references='ref', notes='notes')(T_from_p_qv)
+        assert func.__doc__ == (
+            'Calculates air temperature (K).\n\nx=y\n\nPa'
+            'rameters\n----------\np : float or ndarray\n    Data for air pre'
+            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
+            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
+            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
+            '---------\nref\n')
+
+    def test_autodoc_valid_assumes(self):
+        @decorators.assumes('a1')
+        def T_from_p_qv(p, qv):
+            return 1.
+        func = decorators.equation_docstring(
+            self.quantity_dict, self.assumption_dict, equation='x=y',
+            references='ref', notes='notes')(T_from_p_qv)
+        assert func.__doc__ == (
+            'Calculates air temperature (K) assuming a1_long.\n\nx=y\n\nPa'
+            'rameters\n----------\np : float or ndarray\n    Data for air pre'
+            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
+            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
+            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
+            '---------\nref\n')
 
 
 class StringUtilityTests(unittest.TestCase):
@@ -86,6 +202,10 @@ class StringUtilityTests(unittest.TestCase):
     @raises(ValueError)
     def test_assumption_list_string_empty(self):
         assumption_list_string((), self.assumption_dict)
+
+    @raises(ValueError)
+    def test_assumption_list_string_invalid(self):
+        assumption_list_string(('ooglymoogly',), self.assumption_dict)
 
     def test_assumption_list_string_single(self):
         string = assumption_list_string(('a1',), self.assumption_dict)
@@ -399,7 +519,7 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
     def test_calculate_thetae(self):
         quantity = 'Tw'
         skew_T_value = self.quantities.pop(quantity)
-        self.quantities.pop('Tlcl') # let us calculate this ourselves
+        self.quantities.pop('Tlcl')  # let us calculate this ourselves
         calculated_value, funcs = calculate(
             quantity, add_assumptions=('bolton', 'unfrozen bulb'),
             debug=True,
@@ -488,7 +608,7 @@ class GetShortestSolutionTests(unittest.TestCase):
         _get_shortest_solution(('w',), ('a', 'b'), (), self.methods)
 
 
-class EquationTest(unittest.TestCase):
+class EquationTests(unittest.TestCase):
 
     def _assert_accurate_values(self, func, in_values, out_values, tols):
         for i, args in enumerate(in_values):

@@ -55,11 +55,16 @@ def assumption_list_string(assumptions, assumption_dict):
     '''Takes in a list of short forms of assumptions and an assumption
        dictionary, and returns a "list" form of the long form of the
        assumptions.
+
+       Raises ValueError if one of the assumptions is not in assumption_dict.
     '''
     if isinstance(assumptions, six.string_types):
         raise TypeError('assumptions must be an iterable of strings, not a '
                         'string itself')
-    assumption_strings = [assumption_dict[a] for a in assumptions]
+    try:
+        assumption_strings = [assumption_dict[a] for a in assumptions]
+    except KeyError:
+        raise ValueError('{} not present in assumption_dict'.format(a))
     return strings_to_list_string(assumption_strings)
 
 

@@ -11,6 +11,7 @@ from atmos.util import quantity_string, assumption_list_string, \
 def assumes(*args):
     '''Stores a function's assumptions as an attribute.'''
     args = tuple(args)
+
     def decorator(func):
         func.assumptions = args
         return func
@@ -20,6 +21,7 @@ def assumes(*args):
 def overridden_by_assumptions(*args):
     '''Stores what assumptions a function is overridden by as an attribute.'''
     args = tuple(args)
+
     def decorator(func):
         func.overridden_by_assumptions = args
         return func
@@ -49,6 +51,15 @@ equation : string, optional
 references : string, optional
     A string providing references for the function. Should be wrapped to be
     no more than 80 characters in length.
+
+Raises
+------
+ValueError:
+    If the function name does not follow (varname)_from_(any text here).
+    If an argument of the function or the varname (as above) is not present
+        in quantity_dict.
+    If an assumption in func.assumptions is not present in the
+        assumption_dict.
     '''
     # Now we have our utility functions, let's define the decorator itself
     def decorator(func):
