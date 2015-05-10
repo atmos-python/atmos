@@ -12,3 +12,6 @@ _*_float64.pyx
 # Spyder project file
 .spyderproject
 .spyderworkspace
+
+# Local install egg
+atmos.egg-info
