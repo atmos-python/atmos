@@ -2,7 +2,7 @@
 """
 test.py: Testing suite for other modules.
 """
-from __future__ import division, absolute_import, unicode_literals
+from __future__ import division, unicode_literals
 import unittest
 import nose
 import numpy as np
@@ -39,6 +39,74 @@ def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
             raise AssertionError('{} not a valid assumption'.format(m))
+
+
+class ClosestValTests(unittest.TestCase):
+
+    def setUp(self):
+        self.list = [1., 5., 10.]
+        self.array = np.array([1., 5., 10.])
+
+    def tearDown(self):
+        self.list = None
+        self.array = None
+
+    @raises(ValueError)
+    def testValueErrorOnEmptyList(self):
+        util.closest_val(1., [])
+
+    @raises(ValueError)
+    def testValueErrorOnEmptyArray(self):
+        util.closest_val(1., np.array([]))
+
+    def testClosestValSingle(self):
+        val = util.closest_val(1., np.array([50.]))
+        assert val == 0
+
+    def testClosestValInternal(self):
+        val = util.closest_val(3.5, self.array)
+        assert val == 1
+
+    def testClosestValBelow(self):
+        val = util.closest_val(-5., self.array)
+        assert val == 0
+
+    def testClosestValAbove(self):
+        val = util.closest_val(20., self.array)
+        assert val == 2
+
+    def testClosestValInternalNegative(self):
+        val = util.closest_val(-3.5, -1*self.array)
+        assert val == 1
+
+    def testClosestValInternalList(self):
+        val = util.closest_val(3.5, self.list)
+        assert val == 1
+
+    def testClosestValBelowList(self):
+        val = util.closest_val(-5., self.list)
+        assert val == 0
+
+    def testClosestValAboveList(self):
+        val = util.closest_val(20., self.list)
+        assert val == 2
+
+
+class AreaPolySphereTests(unittest.TestCase):
+
+    def setUp(self):
+        self.lat1 = np.array([0.0, 90.0, 0.0])
+        self.lon1 = np.array([0.0, 0.0, 90.0])
+        self.area1 = 1.5708
+        self.tol1 = 0.0001
+
+    def test_area_poly_sphere(self):
+        area_calc = util.area_poly_sphere(self.lat1, self.lon1, 1.)
+        assert abs(area_calc - self.area1) < self.tol1
+
+    def test_area_poly_sphere_different_radius(self):
+        area_calc = util.area_poly_sphere(self.lat1, self.lon1, 2.)
+        assert abs(area_calc - 4*self.area1) < 4*self.tol1
 
 
 class DecoratorTests(unittest.TestCase):

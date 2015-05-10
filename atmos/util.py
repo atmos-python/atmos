@@ -193,14 +193,22 @@ def closest_val(x, L):
     ValueError:
         if L is empty
     '''
+    # Make sure the iterable is nonempty
     if len(L) == 0:
         raise ValueError('L must not be empty')
-    i = 0
+    if isinstance(L, np.ndarray):
+        # use faster numpy methods if using a numpy array
+        return (np.abs(L-x)).argmin()
+    # for a general iterable (like a list) we need general Python
+    # start by assuming the first item is closest
     min_index = 0
     min_diff = abs(L[0] - x)
+    i = 1
     while i < len(L):
+        # check if each other item is closer than our current closest
         diff = abs(L[i] - x)
         if diff < min_diff:
+            # if it is, set it as the new closest
             min_index = i
             min_diff = diff
         i += 1
@@ -475,7 +483,7 @@ def area_poly_sphere(lat, lon, r_sphere):
     if len(lat) != len(lon):
         raise ValueError('lat and lon must have the same length')
     total = 0.
-    for i in range(-1, len(lat)):
+    for i in range(-1, len(lat)-1):
         fang = _tranlon(lat[i], lon[i], lat[i+1], lon[i+1])
         bang = _tranlon(lat[i], lon[i], lat[i-1], lon[i-1])
         fvb = bang - fang
