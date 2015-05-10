@@ -51,6 +51,7 @@ init:
 install:
   - "powershell appveyor\\install.ps1"
   - "set HOME=%APPVEYOR_BUILD_FOLDER%"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "%CMD_IN_ENV% pip install -r requirements.txt"
   - "%CMD_IN_ENV% pip install nose"
  
