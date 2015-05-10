@@ -490,19 +490,497 @@ class GetShortestSolutionTests(unittest.TestCase):
 
 class EquationTest(unittest.TestCase):
 
-    in_values = []
-    out_values = []
-    tols = []
-    func = None
-
-    def test_accurate_values(self):
-        for i, args in enumerate(self.in_values):
-            out_calc = self.func(*args)
-            if abs(out_calc - self.out_values[i]) > self.tols[i]:
+    def _assert_accurate_values(self, func, in_values, out_values, tols):
+        for i, args in enumerate(in_values):
+            out_calc = func(*args)
+            if abs(out_calc - out_values[i]) > tols[i]:
                 raise AssertionError(
                     'Calculated value {} from inputs {} is more than {}'
-                    'away from {}'.format(out_calc, args, self.tols[i],
-                                          self.out_values[i]))
+                    'away from {}'.format(out_calc, args, tols[i],
+                                          out_values[i]))
+
+    def test_es_from_T_Bolton(self):
+        func = equations.es_from_T_Bolton
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_es_from_T_Goff_Gratch(self):
+        func = equations.es_from_T_Goff_Gratch
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_f_from_lat(self):
+        func = equations.f_from_lat
+        in_values = [(0.,), (45.,), (90.,)]
+        out_values = [0., 1.028e-4, 1.454e-4]
+        tols = [0.001e-4, 0.001e-4, 0.001e-4]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Gammam_from_rvs_T(self):
+        func = equations.Gammam_from_rvs_T
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_MSE_from_DSE_qv(self):
+        func = equations.MSE_from_DSE_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_omega_from_w_rho_hydrostatic(self):
+        func = equations.omega_from_w_rho_hydrostatic
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_p_from_rho_Tv_ideal_gas(self):
+        func = equations.p_from_rho_Tv_ideal_gas
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_plcl_from_p_T_Tlcl(self):
+        func = equations.plcl_from_p_T_Tlcl
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Phi_from_z(self):
+        func = equations.Phi_from_z
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_AH_rho(self):
+        func = equations.qv_from_AH_rho
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_rv(self):
+        func = equations.qv_from_rv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_rv_lwv(self):
+        func = equations.qv_from_rv_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_p_e(self):
+        func = equations.qv_from_p_e
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_p_e_lwv(self):
+        func = equations.qv_from_p_e_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qvs_from_rvs(self):
+        func = equations.qvs_from_rvs
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qvs_from_rvs_lwv(self):
+        func = equations.qvs_from_rvs_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qvs_from_p_es(self):
+        func = equations.qvs_from_p_es
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qvs_from_p_es_lwv(self):
+        func = equations.qvs_from_p_es_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qt_from_qi_qv_ql(self):
+        func = equations.qt_from_qi_qv_ql
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qt_from_qv_ql(self):
+        func = equations.qt_from_qv_ql
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qt_from_qv(self):
+        func = equations.qt_from_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qt_from_qv_qi(self):
+        func = equations.qt_from_qv_qi
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_qt(self):
+        func = equations.qv_from_qt
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_qt_ql_qi(self):
+        func = equations.qv_from_qt_ql_qi
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_qt_ql(self):
+        func = equations.qv_from_qt_ql
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_qt_qi(self):
+        func = equations.qv_from_qt_qi
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qi_from_qt_qv_ql(self):
+        func = equations.qi_from_qt_qv_ql
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qi_from_qt_qv(self):
+        func = equations.qi_from_qt_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_ql_from_qt_qv_qi(self):
+        func = equations.ql_from_qt_qv_qi
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_ql_from_qt_qv(self):
+        func = equations.ql_from_qt_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_RH_from_rv_rvs(self):
+        func = equations.RH_from_rv_rvs
+        in_values = [(5., 100.), (1e-3, 2e-3)]
+        out_values = [5., 50.]
+        tols = [0.01, 0.01]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_RH_from_qv_qvs_lwv(self):
+        func = equations.RH_from_qv_qvs_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rho_from_qv_AH(self):
+        func = equations.rho_from_qv_AH
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rho_from_p_Tv_ideal_gas(self):
+        func = equations.rho_from_p_Tv_ideal_gas
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_qv(self):
+        func = equations.rv_from_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_qv_lwv(self):
+        func = equations.rv_from_qv_lwv
+        in_values = [(1.,), (2e-3,)]
+        out_values = [1., 2e-3]
+        tols = [0.001, 0.001e-3]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_p_e(self):
+        func = equations.rv_from_p_e
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rt_from_ri_rv_rl(self):
+        func = equations.rt_from_ri_rv_rl
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rt_from_rv_rl(self):
+        func = equations.rt_from_rv_rl
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rt_from_rv(self):
+        func = equations.rt_from_rv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rt_from_rv_ri(self):
+        func = equations.rt_from_rv_ri
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_rt(self):
+        func = equations.rv_from_rt
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_rt_rl_ri(self):
+        func = equations.rv_from_rt_rl_ri
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_rt_rl(self):
+        func = equations.rv_from_rt_rl
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rv_from_rt_ri(self):
+        func = equations.rv_from_rt_ri
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_ri_from_rt_rv_rl(self):
+        func = equations.ri_from_rt_rv_rl
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_ri_from_rt_rv(self):
+        func = equations.ri_from_rt_rv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rl_from_rt_rv_ri(self):
+        func = equations.rl_from_rt_rv_ri
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rl_from_rt_rv(self):
+        func = equations.rl_from_rt_rv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rvs_from_p_es(self):
+        func = equations.rvs_from_p_es
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rvs_from_qvs(self):
+        func = equations.rvs_from_qvs
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_rvs_from_qvs_lwv(self):
+        func = equations.rvs_from_qvs_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_T_from_es_Bolton(self):
+        func = equations.T_from_es_Bolton
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tlcl_from_T_RH(self):
+        func = equations.Tlcl_from_T_RH
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tlcl_from_T_Td(self):
+        func = equations.Tlcl_from_T_Td
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tlcl_from_T_e(self):
+        func = equations.Tlcl_from_T_e
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_T_from_Tv_qv(self):
+        func = equations.T_from_Tv_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tv_from_T_qv(self):
+        func = equations.Tv_from_T_qv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tv_from_T_assuming_Tv_equals_T(self):
+        func = equations.Tv_from_T_assuming_Tv_equals_T
+        in_values = [(273.15,), (100.,), (300.,)]
+        out_values = [273.15, 100., 300.]
+        tols = [0.001, 0.001, 0.001]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tv_from_p_rho_ideal_gas(self):
+        func = equations.Tv_from_p_rho_ideal_gas
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_Tw_from_T_RH_Stull(self):
+        func = equations.Tw_from_T_RH_Stull
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_T_from_Tv_assuming_Tv_equals_T(self):
+        func = equations.T_from_Tv_assuming_Tv_equals_T
+        in_values = [(273.15,), (100.,), (300.,)]
+        out_values = [273.15, 100., 300.]
+        tols = [0.001, 0.001, 0.001]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_theta_from_p_T(self):
+        func = equations.theta_from_p_T
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_thetae_from_p_T_Tlcl_rv_Bolton(self):
+        func = equations.thetae_from_p_T_Tlcl_rv_Bolton
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_thetae_from_p_e_T_RH_rv_rt(self):
+        func = equations.thetae_from_p_e_T_RH_rv_rt
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_thetae_from_T_RH_rv_lwv(self):
+        func = equations.thetae_from_T_RH_rv_lwv
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_thetaes_from_p_T_rvs_Bolton(self):
+        func = equations.thetaes_from_p_T_rvs_Bolton
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_w_from_omega_rho_hydrostatic(self):
+        func = equations.w_from_omega_rho_hydrostatic
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_z_from_Phi(self):
+        func = equations.z_from_Phi
+        in_values = []
+        out_values = []
+        tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
 
 
 if __name__ == '__main__':

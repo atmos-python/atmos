@@ -570,7 +570,7 @@ def RH_from_rv_rvs(rv, rvs):
 
 @autodoc(equation='RH = qv/qvs*100.')
 @assumes('low water vapor')
-def RH_from_qv_qvs(qv, qvs):
+def RH_from_qv_qvs_lwv(qv, qvs):
     return ne.evaluate('qv/qvs*100.')
 
 
