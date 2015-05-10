@@ -2,6 +2,7 @@
 """
 decorators.py: Function decorators used by the rest of this module.
 """
+from __future__ import division, absolute_import, unicode_literals
 import inspect
 from atmos.util import quantity_string, assumption_list_string, \
     quantity_spec_string, doc_paragraph

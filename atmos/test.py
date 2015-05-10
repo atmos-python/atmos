@@ -2,7 +2,7 @@
 """
 test.py: Testing suite for other modules.
 """
-from __future__ import division
+from __future__ import division, absolute_import, unicode_literals
 import unittest
 import nose
 import numpy as np
