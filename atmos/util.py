@@ -494,7 +494,7 @@ def area_poly_sphere(lat, lon, r_sphere):
     return (total - np.pi*float(len(lat)-2))*r_sphere**2
 
 
-def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
+def ddx(data, axis=0, dx=None, x=None, axis_x=0, boundary='forward-backward'):
     '''
     Calculates a second-order centered finite difference derivative of data
     along the specified axis.
@@ -507,12 +507,11 @@ def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
         Index of the data array on which to take the derivative.
     dx : float, optional
         Constant grid spacing value. Will assume constant grid spacing if
-        given. May not be used with argument x.
+        given. May not be used with argument x. Default value is 1 unless
+        x is given.
     x : ndarray, optional
-        Position in the coordinate system of the data along the axis on which
-        we are taking a derivative. If x is not given, returns a derivative
-        with respect to the coordinate index (i.e. assumes a grid spacing of
-        1). May not be used with argument dx.
+        Values of the axis along which we are taking a derivative to allow
+        variable grid spacing. May not be given with argument dx.
     axis_x : int, optional
         Index of the x array on which to take the derivative. Does nothing if
         x is not given as an argument.
@@ -535,7 +534,7 @@ def ddx(data, axis, dx=None, x=None, axis_x=0, boundary='forward-backward'):
         If x is specified and axis_x is out of the valid range for the shape
             of x
     '''
-    if abs(axis) > len(data.shape):
+    if abs(axis) >= len(data.shape):
         raise ValueError('axis is out of bounds for the shape of data')
     if x is not None and abs(axis_x) > len(x.shape):
         raise ValueError('axis_x is out of bounds for the shape of x')

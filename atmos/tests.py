@@ -41,6 +41,26 @@ def test_default_assumptions_exist():
             raise AssertionError('{} not a valid assumption'.format(m))
 
 
+class ddxTests(unittest.TestCase):
+
+    def setUp(self):
+        self.data = np.zeros((2, 3))
+        self.data[:] = np.array([0., 5., 10.])[None, :]
+        self.axis1 = np.array([5., 6., 7.])
+        self.axis2 = np.array([[5., 6., 7.], [8., 10., 12.]])
+        self.deriv1 = 5.*np.ones((2, 3))
+        self.deriv2 = 5.*np.ones((2, 3))
+        self.deriv2[1, :] *= 0.5
+
+    @raises(ValueError)
+    def test_invalid_data_axis(self):
+        util.ddx(self.data, axis=2)
+
+    @raises(ValueError)
+    def test_invalid_axis_x(self):
+        util.ddx(self.data, axis=2, x=self.axis1, axis_x=1)
+
+
 class ClosestValTests(unittest.TestCase):
 
     def setUp(self):
@@ -99,6 +119,10 @@ class AreaPolySphereTests(unittest.TestCase):
         self.lon1 = np.array([0.0, 0.0, 90.0])
         self.area1 = 1.5708
         self.tol1 = 0.0001
+
+    @raises(ValueError)
+    def test_area_poly_sphere_insufficient_vertices(self):
+        util.area_poly_sphere(self.lat1[:2], self.lon1[:2], 1.)
 
     def test_area_poly_sphere(self):
         area_calc = util.area_poly_sphere(self.lat1, self.lon1, 1.)
