@@ -1165,9 +1165,9 @@ class EquationTests(unittest.TestCase):
 
     def test_z_from_Phi(self):
         func = equations.z_from_Phi
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(0.,), (294.3,), (981.,)]
+        out_values = [0., 30., 100.]
+        tols = [1e-8, 0.1, 0.1]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
 
