@@ -96,7 +96,8 @@ def parse_derivative_string(string, quantity_dict):
     '''
     Assuming the string is of the form d(var1)d(var2), returns var1, var2.
     Raises ValueError if the string is not of this form, or if the vars
-    are not keys in the quantity_dict.
+    are not keys in the quantity_dict, or if var2 is not a coordinate-like
+    variable.
     '''
     match = derivative_prog.match(string)
     if match is None:

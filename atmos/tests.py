@@ -255,6 +255,10 @@ class StringUtilityTests(unittest.TestCase):
         string = strings_to_list_string(())
         assert string == ''
 
+    @raises(TypeError)
+    def test_strings_to_list_string_input_string(self):
+        strings_to_list_string('hello')
+
     def test_strings_to_list_string_single(self):
         string = strings_to_list_string(('string1',))
         assert string == 'string1'
@@ -270,6 +274,10 @@ class StringUtilityTests(unittest.TestCase):
     @raises(ValueError)
     def test_assumption_list_string_empty(self):
         assumption_list_string((), self.assumption_dict)
+
+    @raises(TypeError)
+    def test_assumption_list_string_input_string(self):
+        assumption_list_string('hello', self.assumption_dict)
 
     @raises(ValueError)
     def test_assumption_list_string_invalid(self):
@@ -325,6 +333,35 @@ class StringUtilityTests(unittest.TestCase):
                 'The quick brown fox jumped\nover.'):
             raise AssertionError('incorrect string "{0}"'.format(string))
 
+
+class ParseDerivativeStringTests(unittest.TestCase):
+
+    def setUp(self):
+        self.quantity_dict = {
+            'T': {'name': 'air temperature', 'units': 'K'},
+            'qv': {'name': 'specific humidity', 'units': 'kg/kg'},
+            'p': {'name': 'air pressure', 'units': 'Pa'},
+        }
+
+    def tearDown(self):
+        self.quantity_dict = None
+
+    @raises(ValueError)
+    def test_invalid_format(self):
+        util.parse_derivative_string('ooglymoogly', self.quantity_dict)
+
+    @raises(ValueError)
+    def test_invalid_variable(self):
+        util.parse_derivative_string('dpdz', self.quantity_dict)
+
+    def test_dTdp(self):
+        var1, var2 = util.parse_derivative_string('dTdp', self.quantity_dict)
+        assert var1 == 'T'
+        assert var2 == 'p'
+
+    @raises(ValueError)
+    def test_dpdT(self):
+        util.parse_derivative_string('dpdT', self.quantity_dict)
 
 class OverriddenByAssumptionsTests(unittest.TestCase):
     def test_overridden_by_assumptions_empty(self):
