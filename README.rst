@@ -51,17 +51,17 @@ Package dependencies:
 Installation
 ============
 
-This module can be installed with pip:
+To install this module, download and run the following:
 
 .. code:: bash
 
-    $ pip install atmos
+    $ python setup.py install
 
-If you use Anaconda, it is preferable to install with conda:
+If you would like to edit and develop the code, you can instead install in develop mode
 
 .. code:: bash
 
-    $ conda install -c mcgibbon atmos
+    $ python setup.py develop
 
 Development version
 ===================
