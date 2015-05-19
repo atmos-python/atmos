@@ -599,6 +599,12 @@ def rv_from_qv_lwv(qv):
     return 1.*qv
 
 
+@autodoc(equation='rv = RH/100.*rvs')
+@assumes()
+def rv_from_RH_rvs(RH, rvs):
+    return ne.evaluate('RH/100.*rvs')
+
+
 @autodoc(equation='rv = (Rd/Rv)*e/(p-e)')
 @assumes()
 def rv_from_p_e(p, e):
