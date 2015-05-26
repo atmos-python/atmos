@@ -21,5 +21,5 @@ level should stay backwards-compatible, but sub-modules are subject to change.
 In particular, features in the util module are likely to be changed or removed
 entirely.
 '''
-__all__ = ["solve"]
+__all__ = ['constants', 'solve', 'equations', 'util', 'decorators']
 from atmos.solve import calculate, FluidSolver
