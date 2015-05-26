@@ -68,6 +68,12 @@ If you would like to edit and develop the code, you can instead install in devel
 
     $ python setup.py develop
 
+If you are running Anaconda, you can install using conda:
+
+.. code:: bash
+
+    $ conda install -c mcgibbon atmos
+
 Development version
 ===================
 
