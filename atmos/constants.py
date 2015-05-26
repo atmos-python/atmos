@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr  1 14:29:28 2015
-
-@author: mcgibbon
+constants.py: Scientific constants.
 """
-import numpy as np
+from numpy import pi
 
 g0 = 9.81  # Gravitational acceleration (m/s)
 stefan = 5.67e-8  # Stefan-boltzmann constant (W/m^2/K^4)
 r_earth = 6370000.  # Radius of Earth (m)
-Omega = 2*np.pi/86400.  # Angular velocity of Earth (Rad/s)
+Omega = 2*pi/86400.  # Angular velocity of Earth (Rad/s)
 
 Rd = 287.04  # R for dry air (J/kg/K)
 Rv = 461.50  # R for water vapor
