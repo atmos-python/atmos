@@ -501,6 +501,7 @@ def ddx(data, axis=0, dx=None, x=None, axis_x=0, boundary='forward-backward'):
 
     Parameters
     ----------
+
     data : ndarray
         Data on which we are taking a derivative.
     axis : int
@@ -522,11 +523,13 @@ def ddx(data, axis=0, dx=None, x=None, axis_x=0, boundary='forward-backward'):
 
     Returns
     -------
+
     derivative : ndarray
         Derivative of the data along the specified axis.
 
     Raises
     ------
+
     ValueError:
         If an invalid boundary condition choice is given.
         If both dx and x are specified.
@@ -588,6 +591,7 @@ def d_x(data, axis, boundary='forward-backward'):
 
     Parameters
     ----------
+
     data : ndarray
         Data on which we are taking a derivative.
     axis : int
@@ -599,11 +603,13 @@ def d_x(data, axis, boundary='forward-backward'):
 
     Returns
     -------
+
     derivative : ndarray
         Derivative of the data along the specified axis.
 
     Raises
     ------
+
     ValueError:
         If an invalid boundary condition choice is given.
         If both dx and x are specified.

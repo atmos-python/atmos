@@ -503,6 +503,7 @@ keyword arguments stored.
 
 Parameters
 ----------
+
 assumptions : tuple, optional
     Strings specifying which assumptions to enable. Overrides the default
     assumptions. See below for a list of default assumptions.
@@ -520,6 +521,7 @@ quantity : ndarray, optional
 
 Quantity Parameters
 -------------------
+
 <quantity parameter list goes here>
 
 Returns
@@ -529,9 +531,11 @@ out : FluidSolver
 
 Assumptions
 -----------
+
 <default assumptions list goes here>
 
 Assumption descriptions:
+
 <assumptions list goes here>
 
 Examples
@@ -558,6 +562,7 @@ keyword arguments.
 
 Parameters
 ----------
+
 args : string
     Names of quantities to be calculated.
 assumptions : tuple, optional
@@ -577,18 +582,22 @@ quantity : ndarray, optional
 
 Assumptions
 -----------
+
 <default assumptions list goes here>
 
 Assumption descriptions:
+
 <assumptions list goes here>
 
 Quantity Parameters
 -------------------
+
 <quantity parameter list goes here>
 
 Returns
 -------
-quantity : ndarray or iris Cube
+
+quantity : ndarray
     Calculated quantity.
     Return type is the same as quantity parameter types.
     If multiple quantities are requested, returns a tuple containing the
@@ -596,13 +605,16 @@ quantity : ndarray or iris Cube
 
 Notes
 -----
+
 Calculating multiple quantities at once can avoid re-computing intermediate
 quantities, but requires more memory.
 
 Examples
 --------
->>>
-    '''
+
+>>> calculate('p', Tv=273., rho=1.27)
+    99519.638400000011
+'''
     if len(args) == 0:
         raise ValueError('must specify quantities to calculate')
     # initialize a solver to do the work
