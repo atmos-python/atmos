@@ -1,7 +1,0 @@
-atmos
-=====
-
-.. toctree::
-   :maxdepth: 4
-
-   atmos

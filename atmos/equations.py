@@ -580,25 +580,6 @@ def RH_from_qv_qvs_lwv(qv, qvs):
     return ne.evaluate('qv/qvs*100.')
 
 
-@autodoc(equation=r'RH = (\frac{\theta_e}{T (\frac{10^5}{p})^(\frac{R_d}'
-         r'{C_{pd} + r_t C_l}) exp(L_v \frac{r_v}{C_{pd}+r_t C_l})})^(r_v '
-         r'\frac{R_v}{C_{pd} + r_t C_l})',
-         references=ref['AMS Glossary thetae'])
-@assumes()
-@overridden_by_assumptions('low water vapor')
-def RH_from_p_e_T_thetae_rv_rt(p, e, T, RH, rv, rt):
-    return ne.evaluate('(thetae/(T*(1e5/(p-e))**(Rd/(Cpd + rt*Cl))*exp'
-                       '(Lv0*rv/((Cpd+rt*Cl)*T))))**(rv*Rv/(Cpd + rt*Cl))')
-
-
-@autodoc(equation=r'RH = (\frac{\theta_e}{T*(\frac{10^5}{p})^(\frac{R_d}'
-         r'{C_{pd}}) exp(L_v*\frac{Rv}{C_{pd}})})^{r_v*\frac{Rv}{C_{pd}}}')
-@assumes('low water vapor')
-def RH_from_T_thetae_rv_lwv(T, RH, rv):
-    return ne.evaluate('(thetae/(T*(1e5/p)**(Rd/Cpd)*'
-                       'exp(Lv0*rv/(Cpd*T))))**(rv*Rv/Cpd')
-
-
 @autodoc(equation=r'\rho = \frac{AH}{q_v}')
 @assumes()
 def rho_from_qv_AH(qv, AH):

@@ -135,7 +135,7 @@ in the assumption_dict.</p>
 <dt id="atmos.equations.AH_from_qv_rho">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">AH_from_qv_rho</tt><big>(</big><em>qv</em>, <em>rho</em><big>)</big><a class="headerlink" href="#atmos.equations.AH_from_qv_rho" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates absolute humidity (kg/m^3).</p>
-<p><span class="math">\(AH = qv*rho\)</span></p>
+<p><span class="math">\(AH = q_v \rho\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -161,7 +161,7 @@ Data for absolute humidity (kg/m^3).</p>
 <dt id="atmos.equations.DSE_from_T_Phi">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">DSE_from_T_Phi</tt><big>(</big><em>T</em>, <em>Phi</em><big>)</big><a class="headerlink" href="#atmos.equations.DSE_from_T_Phi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates dry static energy (J).</p>
-<p><span class="math">\(DSE = Cpd*T + Phi\)</span></p>
+<p><span class="math">\(DSE = C_{pd} T + \Phi\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -187,7 +187,7 @@ Data for dry static energy (J).</p>
 <dt id="atmos.equations.DSE_from_T_z">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">DSE_from_T_z</tt><big>(</big><em>T</em>, <em>z</em><big>)</big><a class="headerlink" href="#atmos.equations.DSE_from_T_z" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates dry static energy (J) assuming g is constant.</p>
-<p><span class="math">\(DSE = Cpd*T + g0*z\)</span></p>
+<p><span class="math">\(DSE = C_{pd} T + g_0 z\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -214,7 +214,8 @@ Data for dry static energy (J).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Gammam_from_rvs_T</tt><big>(</big><em>rvs</em>, <em>T</em><big>)</big><a class="headerlink" href="#atmos.equations.Gammam_from_rvs_T" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates moist adiabatic lapse rate (K/m) assuming g is constant and latent
 heat of vaporization of water is constant.</p>
-<p><span class="math">\(Gammam = g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))\)</span></p>
+<p><span class="math">\(Gammam = g_0 \frac{1+\frac{L_{v0}*r_{vs}}{R_d
+T}}{C_{pd}+\frac{L_{v0}^2*r_{vs}}{R_v T^2}}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -248,7 +249,7 @@ Retrieved March 25, 2015</dd>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">MSE_from_DSE_qv</tt><big>(</big><em>DSE</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.MSE_from_DSE_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates moist static energy (J) assuming latent heat of vaporization of water
 is constant.</p>
-<p><span class="math">\(MSE = DSE + Lv0*qv\)</span></p>
+<p><span class="math">\(MSE = DSE + L_{v0} q_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -274,7 +275,7 @@ Data for moist static energy (J).</p>
 <dt id="atmos.equations.Phi_from_z">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Phi_from_z</tt><big>(</big><em>z</em><big>)</big><a class="headerlink" href="#atmos.equations.Phi_from_z" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates geopotential (m^2/s^2) assuming g is constant.</p>
-<p><span class="math">\(Phi = g0*z\)</span></p>
+<p><span class="math">\(Phi = g_0 z\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -295,7 +296,7 @@ Data for geopotential (m^2/s^2).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">RH_from_qv_qvs_lwv</tt><big>(</big><em>qv</em>, <em>qvs</em><big>)</big><a class="headerlink" href="#atmos.equations.RH_from_qv_qvs_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates relative humidity (%) assuming terms that are second-order in
 moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(RH = qv/qvs*100.\)</span></p>
+<p><span class="math">\(RH = \frac{q_{v}}{q_{vs}} \times 100\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -321,7 +322,7 @@ Data for relative humidity (%).</p>
 <dt id="atmos.equations.RH_from_rv_rvs">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">RH_from_rv_rvs</tt><big>(</big><em>rv</em>, <em>rvs</em><big>)</big><a class="headerlink" href="#atmos.equations.RH_from_rv_rvs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates relative humidity (%).</p>
-<p><span class="math">\(RH = rv/rvs*100.\)</span></p>
+<p><span class="math">\(RH = \frac{r_v}{r_{vs}} \times 100\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -348,7 +349,7 @@ Data for relative humidity (%).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">T_from_Tv_assuming_Tv_equals_T</tt><big>(</big><em>Tv</em><big>)</big><a class="headerlink" href="#atmos.equations.T_from_Tv_assuming_Tv_equals_T" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature (K) assuming the virtual temperature correction can be
 neglected.</p>
-<p><span class="math">\(T = Tv\)</span></p>
+<p><span class="math">\(T = T_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -371,7 +372,7 @@ Data for temperature (K).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">T_from_Tv_qv</tt><big>(</big><em>Tv</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.T_from_Tv_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature (K) assuming liquid water can be neglected and ice can be
 neglected.</p>
-<p><span class="math">\(Tv/(1+0.608*qv)\)</span></p>
+<p><span class="math">\(T = \frac{T_v}{1 + 0.608 q_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -397,7 +398,7 @@ Data for temperature (K).</p>
 <dt id="atmos.equations.T_from_es_Bolton">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">T_from_es_Bolton</tt><big>(</big><em>es</em><big>)</big><a class="headerlink" href="#atmos.equations.T_from_es_Bolton" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature (K) assuming the assumptions in Bolton (1980) hold.</p>
-<p><span class="math">\(T = (29.65*log(es)-4880.16)/(log(es)-19.48)\)</span></p>
+<p><span class="math">\(T = \frac{29.65 log(es)-4880.16}{log(es)-19.48}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -425,11 +426,38 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/1520-0493(198
 </dd></dl>
 
 <dl class="function">
+<dt id="atmos.equations.T_from_p_theta">
+<tt class="descclassname">atmos.equations.</tt><tt class="descname">T_from_p_theta</tt><big>(</big><em>p</em>, <em>T</em><big>)</big><a class="headerlink" href="#atmos.equations.T_from_p_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates temperature (K) assuming Cp is constant and equal to Cp for dry air
+at 0C.</p>
+<p><span class="math">\(T = \theta (\frac{10^5}{p})^{-\frac{R_d}{C_{pd}}}\)</span></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<em>float or ndarray</em>) &#8211; Data for pressure (Pa).</li>
+<li><strong>T</strong> (<em>float or ndarray</em>) &#8211; Data for temperature (K).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>T</strong> &#8211;
+Data for temperature (K).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float or ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="atmos.equations.Tlcl_from_T_RH">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tlcl_from_T_RH</tt><big>(</big><em>T</em>, <em>RH</em><big>)</big><a class="headerlink" href="#atmos.equations.Tlcl_from_T_RH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature at lifting condensation level (K) assuming the
 assumptions in Bolton (1980) hold.</p>
-<p><span class="math">\(Tlcl = 1./((1./T-55.)-(log(RH/100.)/2840.)) + 55.\)</span></p>
+<p><span class="math">\(T_{lcl} = ((\frac{1}{T-55}-(\frac{log(\frac{RH}{100})}{2840}))^{-1} + 55\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -464,7 +492,7 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/1520-0493(198
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tlcl_from_T_Td</tt><big>(</big><em>T</em>, <em>Td</em><big>)</big><a class="headerlink" href="#atmos.equations.Tlcl_from_T_Td" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature at lifting condensation level (K) assuming the
 assumptions in Bolton (1980) hold.</p>
-<p><span class="math">\(Tlcl = 1./((1./(Td-56.))-(log(T/Td)/800.)) + 56.\)</span></p>
+<p><span class="math">\(T_{lcl} = ((1./(Td-56.))-(log(T/Td)/800.))^{-1} + 56.\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -499,7 +527,7 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/1520-0493(198
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tlcl_from_T_e</tt><big>(</big><em>T</em>, <em>e</em><big>)</big><a class="headerlink" href="#atmos.equations.Tlcl_from_T_e" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates temperature at lifting condensation level (K) assuming the
 assumptions in Bolton (1980) hold.</p>
-<p><span class="math">\(Tlcl = 2840./(3.5*log(T)-log(e)-4.805) + 55.\)</span></p>
+<p><span class="math">\(T_{lcl} = \frac{2840}{3.5 log(T) - log(e) - 4.805} + 55\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -534,7 +562,7 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/1520-0493(198
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tv_from_T_assuming_Tv_equals_T</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#atmos.equations.Tv_from_T_assuming_Tv_equals_T" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates virtual temperature (K) assuming the virtual temperature correction
 can be neglected.</p>
-<p><span class="math">\(Tv = T\)</span></p>
+<p><span class="math">\(T_v = T\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -557,7 +585,7 @@ Data for virtual temperature (K).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tv_from_T_qv</tt><big>(</big><em>T</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.Tv_from_T_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates virtual temperature (K) assuming liquid water can be neglected and
 ice can be neglected.</p>
-<p><span class="math">\(T*(1+0.608*qv)\)</span></p>
+<p><span class="math">\(T_v = T*(1+0.608 q_v)\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -583,7 +611,7 @@ Data for virtual temperature (K).</p>
 <dt id="atmos.equations.Tv_from_p_rho_ideal_gas">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">Tv_from_p_rho_ideal_gas</tt><big>(</big><em>p</em>, <em>rho</em><big>)</big><a class="headerlink" href="#atmos.equations.Tv_from_p_rho_ideal_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates virtual temperature (K) assuming the ideal gas law holds.</p>
-<p><span class="math">\(Tv = p/(rho*Rd)\)</span></p>
+<p><span class="math">\(T_v = \frac{p}{\rho R_d}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -698,7 +726,7 @@ Ventilating Engineers, New York, 1946.</dd>
 <dt id="atmos.equations.e_from_p_es_T_Tw">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">e_from_p_es_T_Tw</tt><big>(</big><em>p</em>, <em>es</em>, <em>T</em>, <em>Tw</em><big>)</big><a class="headerlink" href="#atmos.equations.e_from_p_es_T_Tw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor partial pressure (Pa) assuming the bulb is not frozen.</p>
-<p><span class="math">\(e = es - 6.60e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p\)</span></p>
+<p><span class="math">\(e = es - (6.60 \times 10^{-4}) (1 + 0.00115 (T_w-273.15) (T-T_w)) p\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -732,7 +760,7 @@ Data for water vapor partial pressure (Pa).</p>
 <dt id="atmos.equations.e_from_p_es_T_Tw_frozen_bulb">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">e_from_p_es_T_Tw_frozen_bulb</tt><big>(</big><em>p</em>, <em>es</em>, <em>T</em>, <em>Tw</em><big>)</big><a class="headerlink" href="#atmos.equations.e_from_p_es_T_Tw_frozen_bulb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor partial pressure (Pa) assuming the bulb is frozen.</p>
-<p><span class="math">\(e = es - 5.82e-4*(1+0.00115(Tw-273.15)*(T-Tw))*p\)</span></p>
+<p><span class="math">\(e = es - (5.82 \times 10^{-4}) (1 + 0.00115 (T_w-273.15)  (T-T_w)) p\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -766,7 +794,7 @@ Data for water vapor partial pressure (Pa).</p>
 <dt id="atmos.equations.e_from_p_qv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">e_from_p_qv</tt><big>(</big><em>p</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.e_from_p_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor partial pressure (Pa).</p>
-<p><span class="math">\(p*qv/(0.622+qv)\)</span></p>
+<p><span class="math">\(e = p \frac{q_v}{0.622+q_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -793,7 +821,7 @@ Data for water vapor partial pressure (Pa).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">es_from_T_Bolton</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#atmos.equations.es_from_T_Bolton" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation water vapor partial pressure (Pa) assuming the assumptions
 in Bolton (1980) hold.</p>
-<p><span class="math">\(es(T) = 611.2*exp(17.67*(T-273.15)/(T-29.65))\)</span></p>
+<p><span class="math">\(es(T) = 611.2 exp(17.67  rac{T-273.15}{T-29.65})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -886,7 +914,7 @@ doi:10.1256/qj.04.94</dd>
 <dt id="atmos.equations.f_from_lat">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">f_from_lat</tt><big>(</big><em>lat</em><big>)</big><a class="headerlink" href="#atmos.equations.f_from_lat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates Coriolis parameter (Hz).</p>
-<p><span class="math">\(f = 2.*Omega*sin(pi/180.*lat)\)</span></p>
+<p><span class="math">\(f = 2 \Omega sin(\frac{\pi}{180.} lat)\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -907,7 +935,7 @@ Data for Coriolis parameter (Hz).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">omega_from_w_rho_hydrostatic</tt><big>(</big><em>w</em>, <em>rho</em><big>)</big><a class="headerlink" href="#atmos.equations.omega_from_w_rho_hydrostatic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates vertical velocity expressed as tendency of pressure (Pa/s) assuming
 hydrostatic balance and g is constant.</p>
-<p><span class="math">\(omega = -rho*g0*w\)</span></p>
+<p><span class="math">\(\omega = - \rho g_0 w\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -933,7 +961,7 @@ Data for vertical velocity expressed as tendency of pressure (Pa/s).</p>
 <dt id="atmos.equations.p_from_rho_Tv_ideal_gas">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">p_from_rho_Tv_ideal_gas</tt><big>(</big><em>rho</em>, <em>Tv</em><big>)</big><a class="headerlink" href="#atmos.equations.p_from_rho_Tv_ideal_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates pressure (Pa) assuming the ideal gas law holds.</p>
-<p><span class="math">\(p = rho*Rd*Tv\)</span></p>
+<p><span class="math">\(p = \rho R_d T_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -960,7 +988,7 @@ Data for pressure (Pa).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">plcl_from_p_T_Tlcl</tt><big>(</big><em>p</em>, <em>T</em>, <em>Tlcl</em><big>)</big><a class="headerlink" href="#atmos.equations.plcl_from_p_T_Tlcl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates pressure at lifting condensation level (Pa) assuming Cp is constant
 and equal to Cp for dry air at 0C.</p>
-<p><span class="math">\(plcl = p*(Tlcl/T)**(Cpd/Rd)\)</span></p>
+<p><span class="math">\(p_{lcl} = p (\frac{T_{lcl}}{T})^(\frac{C_{pd}}{R_d})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -988,7 +1016,7 @@ Data for pressure at lifting condensation level (Pa).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qi_from_qt_qv</tt><big>(</big><em>qt</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.qi_from_qt_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to ice (kg/kg) assuming liquid water
 can be neglected.</p>
-<p><span class="math">\(qi = qt-qv\)</span></p>
+<p><span class="math">\(q_i = q_t-q_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1014,7 +1042,7 @@ Data for specific humidity with respect to ice (kg/kg).</p>
 <dt id="atmos.equations.qi_from_qt_qv_ql">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qi_from_qt_qv_ql</tt><big>(</big><em>qt</em>, <em>qv</em>, <em>ql</em><big>)</big><a class="headerlink" href="#atmos.equations.qi_from_qt_qv_ql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to ice (kg/kg).</p>
-<p><span class="math">\(qi = qt-qv-ql\)</span></p>
+<p><span class="math">\(q_i = q_t-q_v-q_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1042,7 +1070,7 @@ Data for specific humidity with respect to ice (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">ql_from_qt_qv</tt><big>(</big><em>qt</em>, <em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.ql_from_qt_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to liquid water (kg/kg) assuming ice
 can be neglected.</p>
-<p><span class="math">\(ql = qt-qv\)</span></p>
+<p><span class="math">\(q_l = q_t-q_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1068,7 +1096,7 @@ Data for specific humidity with respect to liquid water (kg/kg).</p>
 <dt id="atmos.equations.ql_from_qt_qv_qi">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">ql_from_qt_qv_qi</tt><big>(</big><em>qt</em>, <em>qv</em>, <em>qi</em><big>)</big><a class="headerlink" href="#atmos.equations.ql_from_qt_qv_qi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to liquid water (kg/kg).</p>
-<p><span class="math">\(ql = qt-qv-qi\)</span></p>
+<p><span class="math">\(q_l = q_t-q_v-q_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1095,7 +1123,7 @@ Data for specific humidity with respect to liquid water (kg/kg).</p>
 <dt id="atmos.equations.qt_from_qi_qv_ql">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qt_from_qi_qv_ql</tt><big>(</big><em>qi</em>, <em>qv</em>, <em>ql</em><big>)</big><a class="headerlink" href="#atmos.equations.qt_from_qi_qv_ql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to total water (kg/kg).</p>
-<p><span class="math">\(qt = qi+qv+ql\)</span></p>
+<p><span class="math">\(q_t = q_i+q_v+q_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1123,7 +1151,7 @@ Data for specific humidity with respect to total water (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qt_from_qv</tt><big>(</big><em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.qt_from_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to total water (kg/kg) assuming liquid
 water can be neglected and ice can be neglected.</p>
-<p><span class="math">\(qt = qv\)</span></p>
+<p><span class="math">\(q_t = q_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1144,7 +1172,7 @@ Data for specific humidity with respect to total water (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qt_from_qv_qi</tt><big>(</big><em>qv</em>, <em>qi</em><big>)</big><a class="headerlink" href="#atmos.equations.qt_from_qv_qi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to total water (kg/kg) assuming liquid
 water can be neglected.</p>
-<p><span class="math">\(qt = qv+ql\)</span></p>
+<p><span class="math">\(q_t = q_v+q_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1171,7 +1199,7 @@ Data for specific humidity with respect to total water (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qt_from_qv_ql</tt><big>(</big><em>qv</em>, <em>ql</em><big>)</big><a class="headerlink" href="#atmos.equations.qt_from_qv_ql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity with respect to total water (kg/kg) assuming ice
 can be neglected.</p>
-<p><span class="math">\(qt = qv+ql\)</span></p>
+<p><span class="math">\(q_t = q_v+q_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1197,7 +1225,7 @@ Data for specific humidity with respect to total water (kg/kg).</p>
 <dt id="atmos.equations.qv_from_AH_rho">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_AH_rho</tt><big>(</big><em>AH</em>, <em>rho</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_AH_rho" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg).</p>
-<p><span class="math">\(qv = AH/rho\)</span></p>
+<p><span class="math">\(q_v = \frac{AH}{\rho}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1223,7 +1251,7 @@ Data for specific humidity (kg/kg).</p>
 <dt id="atmos.equations.qv_from_p_e">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_p_e</tt><big>(</big><em>p</em>, <em>e</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_p_e" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg).</p>
-<p><span class="math">\(qv = (Rd/Rv)*e/(p-(1-Rd/Rv)*e)\)</span></p>
+<p><span class="math">\(q_v = \frac{R_d}{R_v} \frac{e}{p-(1-\frac{R_d}{R_v}) e}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1250,7 +1278,7 @@ Data for specific humidity (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_p_e_lwv</tt><big>(</big><em>p</em>, <em>e</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_p_e_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg) assuming terms that are second-order in
 moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(qv = (Rd/Rv)*e/p\)</span></p>
+<p><span class="math">\(qv = (\frac{R_d}{R_v}) \frac{e}{p}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1277,7 +1305,7 @@ Data for specific humidity (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_qt</tt><big>(</big><em>qt</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_qt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg) assuming liquid water can be neglected and
 ice can be neglected.</p>
-<p><span class="math">\(qv = qt\)</span></p>
+<p><span class="math">\(q_v = q_t\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1297,7 +1325,7 @@ Data for specific humidity (kg/kg).</td>
 <dt id="atmos.equations.qv_from_qt_qi">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_qt_qi</tt><big>(</big><em>qt</em>, <em>qi</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_qt_qi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg) assuming liquid water can be neglected.</p>
-<p><span class="math">\(qv = qt - qi\)</span></p>
+<p><span class="math">\(q_v = q_t - q_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1323,7 +1351,7 @@ Data for specific humidity (kg/kg).</p>
 <dt id="atmos.equations.qv_from_qt_ql">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_qt_ql</tt><big>(</big><em>qt</em>, <em>ql</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_qt_ql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg) assuming ice can be neglected.</p>
-<p><span class="math">\(qv = qt-ql\)</span></p>
+<p><span class="math">\(q_v = q_t-q_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1349,7 +1377,7 @@ Data for specific humidity (kg/kg).</p>
 <dt id="atmos.equations.qv_from_qt_ql_qi">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_qt_ql_qi</tt><big>(</big><em>qt</em>, <em>ql</em>, <em>qi</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_qt_ql_qi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg).</p>
-<p><span class="math">\(qv = qt-ql-qi\)</span></p>
+<p><span class="math">\(q_v = q_t-q_l-q_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1376,7 +1404,7 @@ Data for specific humidity (kg/kg).</p>
 <dt id="atmos.equations.qv_from_rv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_rv</tt><big>(</big><em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_rv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg).</p>
-<p><span class="math">\(qv = rv/(1+rv)\)</span></p>
+<p><span class="math">\(q_v = \frac{r_v}{1+r_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1397,7 +1425,7 @@ Data for specific humidity (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qv_from_rv_lwv</tt><big>(</big><em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.qv_from_rv_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates specific humidity (kg/kg) assuming terms that are second-order in
 moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(qv = rv\)</span></p>
+<p><span class="math">\(q_v = r_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1417,7 +1445,7 @@ Data for specific humidity (kg/kg).</td>
 <dt id="atmos.equations.qvs_from_p_es">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qvs_from_p_es</tt><big>(</big><em>p</em>, <em>es</em><big>)</big><a class="headerlink" href="#atmos.equations.qvs_from_p_es" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation specific humidity (kg/kg).</p>
-<p><span class="math">\(qv = qv_from_p_e(p, es)\)</span></p>
+<p><span class="math">\(q_{vs} = qv\_from\_p\_e(p, e_s)\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1442,13 +1470,35 @@ Data for saturation specific humidity (kg/kg).</p>
 <dl class="function">
 <dt id="atmos.equations.qvs_from_p_es_lwv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qvs_from_p_es_lwv</tt><big>(</big><em>p</em>, <em>es</em><big>)</big><a class="headerlink" href="#atmos.equations.qvs_from_p_es_lwv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculates saturation specific humidity (kg/kg) assuming terms that are second-
+order in moisture quantities can be neglected (eg. qv == rv).</p>
+<p><span class="math">\(q_v = qv\_from\_p\_e\_lwv(p, e_s)\)</span></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<em>float or ndarray</em>) &#8211; Data for pressure (Pa).</li>
+<li><strong>es</strong> (<em>float or ndarray</em>) &#8211; Data for saturation water vapor partial pressure (Pa).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>qvs</strong> &#8211;
+Data for saturation specific humidity (kg/kg).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float or ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="atmos.equations.qvs_from_rvs">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qvs_from_rvs</tt><big>(</big><em>rvs</em><big>)</big><a class="headerlink" href="#atmos.equations.qvs_from_rvs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation specific humidity (kg/kg).</p>
-<p><span class="math">\(qvs = rvs/(1+rvs)\)</span></p>
+<p><span class="math">\(q_{vs} = \frac{r_{vs}}{1+r_{vs}}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1469,7 +1519,7 @@ Data for saturation specific humidity (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">qvs_from_rvs_lwv</tt><big>(</big><em>rvs</em><big>)</big><a class="headerlink" href="#atmos.equations.qvs_from_rvs_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation specific humidity (kg/kg) assuming terms that are second-
 order in moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(qv = rv\)</span></p>
+<p><span class="math">\(q_v = r_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1489,7 +1539,7 @@ Data for saturation specific humidity (kg/kg).</td>
 <dt id="atmos.equations.rho_from_p_Tv_ideal_gas">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rho_from_p_Tv_ideal_gas</tt><big>(</big><em>p</em>, <em>Tv</em><big>)</big><a class="headerlink" href="#atmos.equations.rho_from_p_Tv_ideal_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates density (kg/m^3) assuming the ideal gas law holds.</p>
-<p><span class="math">\(rho = p/(Rd*Tv)\)</span></p>
+<p><span class="math">\(\rho = \frac{p}{R_d T_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1515,7 +1565,7 @@ Data for density (kg/m^3).</p>
 <dt id="atmos.equations.rho_from_qv_AH">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rho_from_qv_AH</tt><big>(</big><em>qv</em>, <em>AH</em><big>)</big><a class="headerlink" href="#atmos.equations.rho_from_qv_AH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates density (kg/m^3).</p>
-<p><span class="math">\(rho = AH/qv\)</span></p>
+<p><span class="math">\(\rho = \frac{AH}{q_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1541,7 +1591,7 @@ Data for density (kg/m^3).</p>
 <dt id="atmos.equations.ri_from_rt_rv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">ri_from_rt_rv</tt><big>(</big><em>rt</em>, <em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.ri_from_rt_rv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates ice mixing ratio (kg/kg) assuming liquid water can be neglected.</p>
-<p><span class="math">\(ri = rt-rv\)</span></p>
+<p><span class="math">\(r_i = r_t-r_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1567,7 +1617,7 @@ Data for ice mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.ri_from_rt_rv_rl">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">ri_from_rt_rv_rl</tt><big>(</big><em>rt</em>, <em>rv</em>, <em>rl</em><big>)</big><a class="headerlink" href="#atmos.equations.ri_from_rt_rv_rl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates ice mixing ratio (kg/kg).</p>
-<p><span class="math">\(ri = rt-rv-rl\)</span></p>
+<p><span class="math">\(r_i = r_t-r_v-r_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1594,7 +1644,7 @@ Data for ice mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rl_from_rt_rv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rl_from_rt_rv</tt><big>(</big><em>rt</em>, <em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.rl_from_rt_rv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates liquid water mixing ratio (kg/kg) assuming ice can be neglected.</p>
-<p><span class="math">\(rl = rt-rv\)</span></p>
+<p><span class="math">\(r_l = r_t-r_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1620,7 +1670,7 @@ Data for liquid water mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rl_from_rt_rv_ri">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rl_from_rt_rv_ri</tt><big>(</big><em>rt</em>, <em>rv</em>, <em>ri</em><big>)</big><a class="headerlink" href="#atmos.equations.rl_from_rt_rv_ri" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates liquid water mixing ratio (kg/kg).</p>
-<p><span class="math">\(rl = rt-rv-ri\)</span></p>
+<p><span class="math">\(r_l = r_t-r_v-r_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1647,7 +1697,7 @@ Data for liquid water mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rt_from_ri_rv_rl">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rt_from_ri_rv_rl</tt><big>(</big><em>ri</em>, <em>rv</em>, <em>rl</em><big>)</big><a class="headerlink" href="#atmos.equations.rt_from_ri_rv_rl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates total water mixing ratio (kg/kg).</p>
-<p><span class="math">\(rt = ri+rv+rl\)</span></p>
+<p><span class="math">\(r_t = r_i+r_v+r_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1675,7 +1725,7 @@ Data for total water mixing ratio (kg/kg).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rt_from_rv</tt><big>(</big><em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.rt_from_rv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates total water mixing ratio (kg/kg) assuming liquid water can be
 neglected and ice can be neglected.</p>
-<p><span class="math">\(rt = rv\)</span></p>
+<p><span class="math">\(r_t = r_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1696,7 +1746,7 @@ Data for total water mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rt_from_rv_ri</tt><big>(</big><em>rv</em>, <em>ri</em><big>)</big><a class="headerlink" href="#atmos.equations.rt_from_rv_ri" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates total water mixing ratio (kg/kg) assuming liquid water can be
 neglected.</p>
-<p><span class="math">\(rt = rv+rl\)</span></p>
+<p><span class="math">\(r_t = r_v+r_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1722,7 +1772,7 @@ Data for total water mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rt_from_rv_rl">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rt_from_rv_rl</tt><big>(</big><em>rv</em>, <em>rl</em><big>)</big><a class="headerlink" href="#atmos.equations.rt_from_rv_rl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates total water mixing ratio (kg/kg) assuming ice can be neglected.</p>
-<p><span class="math">\(rt = rv+rl\)</span></p>
+<p><span class="math">\(r_t = r_v+r_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1748,7 +1798,7 @@ Data for total water mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rv_from_RH_rvs">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_RH_rvs</tt><big>(</big><em>RH</em>, <em>rvs</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_RH_rvs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rv = RH/100.*rvs\)</span></p>
+<p><span class="math">\(r_v = \frac{RH}{100} r_{vs}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1774,7 +1824,7 @@ Data for water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rv_from_p_e">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_p_e</tt><big>(</big><em>p</em>, <em>e</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_p_e" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rv = (Rd/Rv)*e/(p-e)\)</span></p>
+<p><span class="math">\(rv = (\frac{Rd}{Rv}) \frac{e}{p-e}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1800,7 +1850,7 @@ Data for water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rv_from_qv">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_qv</tt><big>(</big><em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_qv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rv = qv/(1-qv)\)</span></p>
+<p><span class="math">\(r_v = \frac{q_v}{1-q_v}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1821,7 +1871,7 @@ Data for water vapor mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_qv_lwv</tt><big>(</big><em>qv</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_qv_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg) assuming terms that are second-order
 in moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(rv = qv\)</span></p>
+<p><span class="math">\(r_v = q_v\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1842,7 +1892,7 @@ Data for water vapor mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_rt</tt><big>(</big><em>rt</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_rt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg) assuming liquid water can be
 neglected and ice can be neglected.</p>
-<p><span class="math">\(rv = rt\)</span></p>
+<p><span class="math">\(r_v = r_t\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1863,7 +1913,7 @@ Data for water vapor mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_rt_ri</tt><big>(</big><em>rt</em>, <em>ri</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_rt_ri" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg) assuming liquid water can be
 neglected.</p>
-<p><span class="math">\(rv = rt - ri\)</span></p>
+<p><span class="math">\(r_v = r_t - r_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1889,7 +1939,7 @@ Data for water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rv_from_rt_rl">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_rt_rl</tt><big>(</big><em>rt</em>, <em>rl</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_rt_rl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg) assuming ice can be neglected.</p>
-<p><span class="math">\(rv = rt-rl\)</span></p>
+<p><span class="math">\(r_v = r_t-r_l\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1915,7 +1965,7 @@ Data for water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rv_from_rt_rl_ri">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rv_from_rt_rl_ri</tt><big>(</big><em>rt</em>, <em>rl</em>, <em>ri</em><big>)</big><a class="headerlink" href="#atmos.equations.rv_from_rt_rl_ri" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rv = rt-rl-ri\)</span></p>
+<p><span class="math">\(r_v = r_t-r_l-r_i\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1942,7 +1992,7 @@ Data for water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rvs_from_p_es">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rvs_from_p_es</tt><big>(</big><em>p</em>, <em>es</em><big>)</big><a class="headerlink" href="#atmos.equations.rvs_from_p_es" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rvs = rv_from_p_e(p, es)\)</span></p>
+<p><span class="math">\(r_{vs} = rv\_from\_p\_e(p, e_s)\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1968,7 +2018,7 @@ Data for saturation water vapor mixing ratio (kg/kg).</p>
 <dt id="atmos.equations.rvs_from_qvs">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rvs_from_qvs</tt><big>(</big><em>qvs</em><big>)</big><a class="headerlink" href="#atmos.equations.rvs_from_qvs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation water vapor mixing ratio (kg/kg).</p>
-<p><span class="math">\(rv = rv_from_qv(qvs)\)</span></p>
+<p><span class="math">\(r_v = rv\_from\_qv(q_{vs})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1989,7 +2039,7 @@ Data for saturation water vapor mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">rvs_from_qvs_lwv</tt><big>(</big><em>qvs</em><big>)</big><a class="headerlink" href="#atmos.equations.rvs_from_qvs_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation water vapor mixing ratio (kg/kg) assuming terms that are
 second-order in moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(rv = rv_from_qv(qvs)\)</span></p>
+<p><span class="math">\(r_v = rv\_from\_qv(q_{vs})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2010,7 +2060,7 @@ Data for saturation water vapor mixing ratio (kg/kg).</td>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">theta_from_p_T</tt><big>(</big><em>p</em>, <em>T</em><big>)</big><a class="headerlink" href="#atmos.equations.theta_from_p_T" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates potential temperature (K) assuming Cp is constant and equal to Cp for
 dry air at 0C.</p>
-<p><span class="math">\(theta = T*(1e5/p)**(Rd/Cpd)\)</span></p>
+<p><span class="math">\(\theta = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2037,7 +2087,8 @@ Data for potential temperature (K).</p>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">thetae_from_T_RH_rv_lwv</tt><big>(</big><em>T</em>, <em>RH</em>, <em>rv</em><big>)</big><a class="headerlink" href="#atmos.equations.thetae_from_T_RH_rv_lwv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates equivalent temperature (K) assuming terms that are second-order in
 moisture quantities can be neglected (eg. qv == rv).</p>
-<p><span class="math">\(thetae = T*(1e5/p)**(Rd/Cpd)*H**(-rv*Rv/Cpd)exp(Lv*rv/Cpd)\)</span></p>
+<p><span class="math">\(\theta_e = T*(\frac{10^5}{p})^(\frac{R_d}{C_{pd}})
+RH^{-r_v*\frac{Rv}{C_{pd}}} exp(L_v*\frac{Rv}{C_{pd}})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2066,7 +2117,8 @@ Data for equivalent temperature (K).</p>
 <dd><p>Calculates equivalent temperature (K) assuming the assumptions in Bolton (1980)
 hold, Cp is constant and equal to Cp for dry air at 0C, and liquid water can be
 neglected.</p>
-<p><span class="math">\(thetae = T*(1e5/p)**((Rd/Cpd)*(1-0.28*rv))*exp((3.376/Tlcl-0.00254)*rv*1e3*(1+0.81*rv))\)</span></p>
+<p><span class="math">\(\theta_e = T (\frac{10^5}{p})^((\frac{R_d}{C_{pd}})(1-0.28*r_v))
+exp((\frac{3.376}{T_{lcl}}-0.00254) (r_v \times 10^3) (1+0.81*r_v))\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2107,7 +2159,8 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/2009MWR2774.1
 <dt id="atmos.equations.thetae_from_p_e_T_RH_rv_rt">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">thetae_from_p_e_T_RH_rv_rt</tt><big>(</big><em>p</em>, <em>e</em>, <em>T</em>, <em>RH</em>, <em>rv</em>, <em>rt</em><big>)</big><a class="headerlink" href="#atmos.equations.thetae_from_p_e_T_RH_rv_rt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates equivalent temperature (K).</p>
-<p><span class="math">\(thetae = T*(1e5/p)**(Rd/(Cpd + rt*Cl))*H**(-rv*Rv/(Cpd +rt*Cl))*exp(Lv*rv/(Cpd+rt*Cl))\)</span></p>
+<p><span class="math">\(\theta_e = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd} + r_t C_l}) RH^{-r_v
+\frac{R_v}{C_{pd} +r_t C_l}} exp(L_v \frac{r_v}{C_{pd}+r_t C_l})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2145,7 +2198,7 @@ Retrieved April 23, 2015</dd>
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">thetaes_from_p_T_rvs_Bolton</tt><big>(</big><em>p</em>, <em>T</em>, <em>rvs</em><big>)</big><a class="headerlink" href="#atmos.equations.thetaes_from_p_T_rvs_Bolton" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates saturation equivalent temperature (K) assuming the assumptions in
 Bolton (1980) hold and Cp is constant and equal to Cp for dry air at 0C.</p>
-<p><span class="math">\(thetaes = thetae_from_p_T_Tlcl_rv_Bolton(p, T, T, rvs)\)</span></p>
+<p><span class="math">\(\theta_{es} = thetae\_from\_p\_T\_Tlcl\_rv\_Bolton(p, T, T, r_{vs})\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2184,7 +2237,7 @@ doi: <a class="reference external" href="http://dx.doi.org/10.1175/2009MWR2774.1
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">w_from_omega_rho_hydrostatic</tt><big>(</big><em>omega</em>, <em>rho</em><big>)</big><a class="headerlink" href="#atmos.equations.w_from_omega_rho_hydrostatic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates vertical velocity (m/s) assuming g is constant and hydrostatic
 balance.</p>
-<p><span class="math">\(w = -omega/(rho*g0)\)</span></p>
+<p><span class="math">\(w = - \frac{\omega}{\rho g_0}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2210,7 +2263,7 @@ Data for vertical velocity (m/s).</p>
 <dt id="atmos.equations.z_from_Phi">
 <tt class="descclassname">atmos.equations.</tt><tt class="descname">z_from_Phi</tt><big>(</big><em>Phi</em><big>)</big><a class="headerlink" href="#atmos.equations.z_from_Phi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates height (m) assuming g is constant.</p>
-<p><span class="math">\(z = Phi/g0\)</span></p>
+<p><span class="math">\(z = \frac{\Phi}{g_0}\)</span></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
