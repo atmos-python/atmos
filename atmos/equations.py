@@ -804,16 +804,16 @@ def T_from_Tv_assuming_Tv_equals_T(Tv):
     return 1.*Tv
 
 
-@autodoc(equation=r'\theta = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}}')
+@autodoc(equation=r'\theta = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}})')
 @assumes('constant Cp')
 def theta_from_p_T(p, T):
     return ne.evaluate('T*(1e5/p)**(Rd/Cpd)')
 
 
 @autodoc(
-    equation=r'\theta_e = T (\frac{10^5}{p})^((\frac{R_d}{C_{pd}})'
-    r'(1-0.28*r_v)) exp((\frac{3.376}{T_{lcl}}-0.00254) (r_v \times 10^3) '
-    r'(1+0.81*r_v))',
+    equation=r'\theta_e = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}})'
+    r'(1-0.28 r_v)) exp((\frac{3.376}{T_{lcl}}-0.00254) (r_v \times 10^3) '
+    r'(1+0.81 r_v))',
     references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
     notes='''
 This is one of the most accurate ways of computing thetae, with an
@@ -825,7 +825,7 @@ def thetae_from_p_T_Tlcl_rv_Bolton(p, T, Tlcl, rv):
                        '0.00254)*rv*1e3*(1+0.81*rv))')
 
 
-@autodoc(equation=r'\theta_e = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd} + '
+@autodoc(equation=r'\theta_e = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}) + '
          r'r_t C_l}) RH^{-r_v \frac{R_v}{C_{pd} +'
          r'r_t C_l}} exp(L_v \frac{r_v}{C_{pd}+r_t C_l})',
          references=ref['AMS Glossary thetae'])
@@ -837,7 +837,7 @@ def thetae_from_p_e_T_RH_rv_rt(p, e, T, RH, rv, rt):
 
 
 @autodoc(equation=r'\theta_e = T*(\frac{10^5}{p})^(\frac{R_d}{C_{pd}}) '
-         r'RH^{-r_v*\frac{Rv}{C_{pd}}} exp(L_v*\frac{Rv}{C_{pd}})')
+         r'RH^{-r_v \frac{Rv}{C_{pd}}} exp(L_v \frac{Rv}{C_{pd}})')
 @assumes('low water vapor')
 def thetae_from_T_RH_rv_lwv(T, RH, rv):
     return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*RH**(-rv*Rv/Cpd)*'
