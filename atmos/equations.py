@@ -611,7 +611,7 @@ def rv_from_RH_rvs(RH, rvs):
     return ne.evaluate('RH/100.*rvs')
 
 
-@autodoc(equation=r'rv = (\frac{Rd}{Rv}) \frac{e}{p-e}'
+@autodoc(equation=r'rv = (\frac{Rd}{Rv}) \frac{e}{p-e}')
 @assumes()
 def rv_from_p_e(p, e):
     return ne.evaluate('0.622*e/(p-e)')
