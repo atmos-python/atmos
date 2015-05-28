@@ -8,8 +8,7 @@ An atmospheric sciences utility library
 ---------------------------------------
 
 **atmos** is a library of Python programming utilities for the atmospheric
-sciences. It is in ongoing development. If you have an idea for a feature or
-have found a bug, please post it on the `GitHub issue tracker`_.
+sciences. It is in ongoing development.
 
 Information on how to use the module can be found predominantly by using the
 built-in help() function in Python. Many docstrings are automatically

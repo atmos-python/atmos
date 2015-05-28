@@ -245,7 +245,7 @@ def _fill_doc(s, module, default_assumptions):
         s = s.replace(
             '<assumptions list goes here>',
             '\n'.join(sorted(
-                ["'{0}': {1}".format(a, desc) for a, desc in
+                ["* **{0}** -- {1}".format(a, desc) for a, desc in
                  assumptions.items()],
                 key=lambda x: x.lower())))
         s = s.replace(
@@ -257,8 +257,8 @@ def _fill_doc(s, module, default_assumptions):
         s = s.replace(
             '<quantity parameter list goes here>',
             '\n'.join(sorted([
-                '{0} {1} ({2})'.format(
-                    (q + ' :').ljust(9), info['name'], info['units'])
+                '* **{0}** -- {1} ({2})'.format(
+                    q, info['name'], info['units'])
                 for q, info in
                 module.quantities.items()
                 ], key=lambda x: x.lower())))
@@ -519,22 +519,23 @@ quantity : ndarray, optional
     quantities used for calculations. For a complete list of kwargs that
     may be used, see the Quantity Parameters section below.
 
-Quantity Parameters
--------------------
-
-<quantity parameter list goes here>
-
 Returns
 -------
 out : FluidSolver
     A FluidSolver object with the specified assumptions and variables.
 
-Assumptions
------------
+Notes
+-----
+
+**Quantity kwargs**
+
+<quantity parameter list goes here>
+
+**Assumptions**
 
 <default assumptions list goes here>
 
-Assumption descriptions:
+**Assumption descriptions**
 
 <assumptions list goes here>
 
@@ -563,7 +564,7 @@ keyword arguments.
 Parameters
 ----------
 
-args : string
+\*args : string
     Names of quantities to be calculated.
 assumptions : tuple, optional
     Strings specifying which assumptions to enable. Overrides the default
@@ -575,24 +576,10 @@ remove_assumptions : tuple, optional
     Strings specifying assumptions not to use from the default assumptions.
     May not be given in combination with the assumptions kwarg. May not
     contain strings that are contained in add_assumptions, if given.
-quantity : ndarray, optional
+\*\*kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
     quantities used for calculations. For a complete list of kwargs that
     may be used, see the Quantity Parameters section below.
-
-Assumptions
------------
-
-<default assumptions list goes here>
-
-Assumption descriptions:
-
-<assumptions list goes here>
-
-Quantity Parameters
--------------------
-
-<quantity parameter list goes here>
 
 Returns
 -------
@@ -608,6 +595,18 @@ Notes
 
 Calculating multiple quantities at once can avoid re-computing intermediate
 quantities, but requires more memory.
+
+**Quantity kwargs**
+
+<quantity parameter list goes here>
+
+**Assumptions**
+
+<default assumptions list goes here>
+
+**Assumption descriptions**
+
+<assumptions list goes here>
 
 Examples
 --------

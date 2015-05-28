@@ -53,11 +53,15 @@ def strings_to_list_string(strings):
 
 
 def assumption_list_string(assumptions, assumption_dict):
-    '''Takes in a list of short forms of assumptions and an assumption
-       dictionary, and returns a "list" form of the long form of the
-       assumptions.
+    '''
+Takes in a list of short forms of assumptions and an assumption
+dictionary, and returns a "list" form of the long form of the
+assumptions.
 
-       Raises ValueError if one of the assumptions is not in assumption_dict.
+Raises
+------
+ValueError
+    if one of the assumptions is not in assumption_dict.
     '''
     if isinstance(assumptions, six.string_types):
         raise TypeError('assumptions must be an iterable of strings, not a '
@@ -70,9 +74,14 @@ def assumption_list_string(assumptions, assumption_dict):
 
 
 def quantity_spec_string(name, quantity_dict):
-    '''Returns a quantity specification for docstrings. Example:
-       >>> quantity_spec_string('Tv')
-       >>> 'Tv : float or ndarray\n    Data for virtual temperature.'
+    '''
+Returns a quantity specification for docstrings.
+
+Example
+-------
+
+>>> quantity_spec_string('Tv')
+>>> 'Tv : float or ndarray\n    Data for virtual temperature.'
     '''
     if name not in quantity_dict.keys():
         raise ValueError('{0} not present in quantity_dict'.format(name))
@@ -444,32 +453,35 @@ def isobaric_to_hybrid(data, p, ps, hybrid_a, hybrid_b, p0=1e5,
 
 def area_poly_sphere(lat, lon, r_sphere):
     '''
-    Calculates the area enclosed by an arbitrary polygon on the sphere.
+Calculates the area enclosed by an arbitrary polygon on the sphere.
 
-    Parameters
-    ----------
-    lat : iterable
-        The latitudes, in degrees, of the vertex locations of the polygon, in
-        clockwise order.
-    lon : iterable
-        The longitudes, in degrees, of the vertex locations of the polygon, in
-        clockwise order.
+Parameters
+----------
 
-    Returns
-    -------
-    area : float
-        The desired spherical area in the same units as r_sphere.
+lat : iterable
+    The latitudes, in degrees, of the vertex locations of the polygon, in
+    clockwise order.
+lon : iterable
+    The longitudes, in degrees, of the vertex locations of the polygon, in
+    clockwise order.
 
-    Notes
-    -----
-    This function assumes the vertices form a valid polygon (edges do not
-    intersect each other).
+Returns
+-------
 
-    Reference
-    ---------
-    Computing the Area of a Spherical Polygon of Arbitrary Shape
-    Bevis and Cambareri (1987)
-    Mathematical Geology, vol.19, Issue 4, pp 335-346
+area : float
+    The desired spherical area in the same units as r_sphere.
+
+Notes
+-----
+
+This function assumes the vertices form a valid polygon (edges do not
+intersect each other).
+
+**References**
+
+Computing the Area of a Spherical Polygon of Arbitrary Shape
+Bevis and Cambareri (1987)
+Mathematical Geology, vol.19, Issue 4, pp 335-346
     '''
     dtr = np.pi/180.
 
@@ -496,46 +508,45 @@ def area_poly_sphere(lat, lon, r_sphere):
 
 def ddx(data, axis=0, dx=None, x=None, axis_x=0, boundary='forward-backward'):
     '''
-    Calculates a second-order centered finite difference derivative of data
-    along the specified axis.
+Calculates a second-order centered finite difference derivative of data
+along the specified axis.
 
-    Parameters
-    ----------
+Parameters
+----------
 
-    data : ndarray
-        Data on which we are taking a derivative.
-    axis : int
-        Index of the data array on which to take the derivative.
-    dx : float, optional
-        Constant grid spacing value. Will assume constant grid spacing if
-        given. May not be used with argument x. Default value is 1 unless
-        x is given.
-    x : ndarray, optional
-        Values of the axis along which we are taking a derivative to allow
-        variable grid spacing. May not be given with argument dx.
-    axis_x : int, optional
-        Index of the x array on which to take the derivative. Does nothing if
-        x is not given as an argument.
-    boundary: string, optional
-        Boundary condition. If 'periodic', assume periodic boundary condition
-        for centered difference. If 'forward-backward', take first-order
-        forward or backward derivatives at boundary.
+data : ndarray
+    Data on which we are taking a derivative.
+axis : int
+    Index of the data array on which to take the derivative.
+dx : float, optional
+    Constant grid spacing value. Will assume constant grid spacing if
+    given. May not be used with argument x. Default value is 1 unless
+    x is given.
+x : ndarray, optional
+    Values of the axis along which we are taking a derivative to allow
+    variable grid spacing. May not be given with argument dx.
+axis_x : int, optional
+    Index of the x array on which to take the derivative. Does nothing if
+    x is not given as an argument.
+boundary : string, optional
+    Boundary condition. If 'periodic', assume periodic boundary condition
+    for centered difference. If 'forward-backward', take first-order
+    forward or backward derivatives at boundary.
 
-    Returns
-    -------
+Returns
+-------
 
-    derivative : ndarray
-        Derivative of the data along the specified axis.
+derivative : ndarray
+    Derivative of the data along the specified axis.
 
-    Raises
-    ------
+Raises
+------
 
-    ValueError:
-        If an invalid boundary condition choice is given.
-        If both dx and x are specified.
-        If axis is out of the valid range for the shape of the data
-        If x is specified and axis_x is out of the valid range for the shape
-            of x
+ValueError:
+    If an invalid boundary condition choice is given, if both dx and x are
+    specified, if axis is out of the valid range for the shape of the data,
+    or if x is specified and axis_x is out of the valid range for the shape
+    of x.
     '''
     if abs(axis) >= len(data.shape):
         raise ValueError('axis is out of bounds for the shape of data')
@@ -586,36 +597,35 @@ def ddx(data, axis=0, dx=None, x=None, axis_x=0, boundary='forward-backward'):
 
 def d_x(data, axis, boundary='forward-backward'):
     '''
-    Calculates a second-order centered finite difference of data along the
-    specified axis.
+Calculates a second-order centered finite difference of data along the
+specified axis.
 
-    Parameters
-    ----------
+Parameters
+----------
 
-    data : ndarray
-        Data on which we are taking a derivative.
-    axis : int
-        Index of the data array on which to take the difference.
-    boundary: string, optional
-        Boundary condition. If 'periodic', assume periodic boundary condition
-        for centered difference. If 'forward-backward', take first-order
-        forward or backward derivatives at boundary.
+data : ndarray
+    Data on which we are taking a derivative.
+axis : int
+    Index of the data array on which to take the difference.
+boundary : string, optional
+    Boundary condition. If 'periodic', assume periodic boundary condition
+    for centered difference. If 'forward-backward', take first-order
+    forward or backward derivatives at boundary.
 
-    Returns
-    -------
+Returns
+-------
 
-    derivative : ndarray
-        Derivative of the data along the specified axis.
+derivative : ndarray
+    Derivative of the data along the specified axis.
 
-    Raises
-    ------
+Raises
+------
 
-    ValueError:
-        If an invalid boundary condition choice is given.
-        If both dx and x are specified.
-        If axis is out of the valid range for the shape of the data
-        If x is specified and axis_x is out of the valid range for the shape
-            of x
+ValueError:
+    If an invalid boundary condition choice is given, if both dx and x are
+    specified, if axis is out of the valid range for the shape of the data,
+    or if x is specified and axis_x is out of the valid range for the shape
+    of x.
     '''
     if abs(axis) > len(data.shape):
         raise ValueError('axis is out of bounds for the shape of data')
