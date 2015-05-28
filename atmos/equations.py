@@ -296,7 +296,7 @@ def DSE_from_T_Phi(T, Phi):
     return ne.evaluate('Cpd*T + Phi')
 
 
-@autodoc(equation=r'p \frac{q_v}{0.622+q_v}')
+@autodoc(equation=r'e = p \frac{q_v}{0.622+q_v}')
 @assumes()
 def e_from_p_qv(p, qv):
     return ne.evaluate('\frac{p*qv}{0.622+qv}')
@@ -322,7 +322,7 @@ def e_from_p_es_T_Tw(p, es, T, Tw):
     return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
 
-@autodoc(equation=r'e = es - (5.82 \times 10^{-4)) (1 + 0.00115 (T_w-273.15) '
+@autodoc(equation=r'e = es - (5.82 \times 10^{-4}) (1 + 0.00115 (T_w-273.15) '
          ' (T-T_w)) p',
          references=ref['Petty 2008'])
 @assumes('frozen bulb')
@@ -383,15 +383,15 @@ def es_from_T_Bolton(T):
     return ne.evaluate('611.2*exp(17.67*(T-273.15)/(T-29.65))')
 
 
-@autodoc(equation=r'f = 2 Omega sin(\frac{\pi}{180.} lat)')
+@autodoc(equation=r'f = 2 \Omega sin(\frac{\pi}{180.} lat)')
 @assumes()
 def f_from_lat(lat):
     return ne.evaluate('2.*Omega*sin(pi/180.*lat)')
 
 
 @autodoc(
-    equation=r'Gammam = g0 \frac{1+\frac{L_{v0}*r_{vs}}{R_d T}}{C_{pd}+'
-    '\frac{L_{v0}^2*r_{vs}}{R_v T^2}}',
+    equation=r'Gammam = g_0 \frac{1+\frac{L_{v0}*r_{vs}}{R_d T}}{C_{pd}+'
+    r'\frac{L_{v0}^2*r_{vs}}{R_v T^2}}',
     references=ref['AMS Glossary Gammam'])
 @assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
@@ -404,7 +404,7 @@ def MSE_from_DSE_qv(DSE, qv):
     return ne.evaluate('DSE + Lv0*qv')
 
 
-@autodoc(equation=r'omega = - \rho g_0 w')
+@autodoc(equation=r'\omega = - \rho g_0 w')
 @assumes('hydrostatic', 'constant g')
 def omega_from_w_rho_hydrostatic(w, rho):
     return ne.evaluate('-rho*g0*w')
@@ -416,7 +416,7 @@ def p_from_rho_Tv_ideal_gas(rho, Tv):
     return ne.evaluate('rho*Rd*Tv')
 
 
-@autodoc(equation=r'p_{lcl} = p*(\frac{T_{lcl}}{T})**(\frac{C_{pd}}{R_d})')
+@autodoc(equation=r'p_{lcl} = p (\frac{T_{lcl}}{T})^(\frac{C_{pd}}{R_d})')
 @assumes('constant Cp')
 def plcl_from_p_T_Tlcl(p, T, Tlcl):
     return ne.evaluate('p*(Tlcl/T)**(Cpd/Rd)')
@@ -434,7 +434,7 @@ def qv_from_AH_rho(AH, rho):
     return ne.evaluate('AH/rho')
 
 
-@autodoc(equation=r'q+v = \frac{r_v}{1+r_v}')
+@autodoc(equation=r'q_v = \frac{r_v}{1+r_v}')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def qv_from_rv(rv):
@@ -447,14 +447,14 @@ def qv_from_rv_lwv(rv):
     return 1.*rv
 
 
-@autodoc(equation=r'q_v = \frac{R_d}{R_v} \frac{e}{p-(1-\frac{R_d}{R_v})*e}')
+@autodoc(equation=r'q_v = \frac{R_d}{R_v} \frac{e}{p-(1-\frac{R_d}{R_v}) e}')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def qv_from_p_e(p, e):
     return ne.evaluate('0.622*e/(p-0.378*e)')
 
 
-@autodoc(equation='qv = (\frac{R_d}{R_v}) \frac{e}{p}')
+@autodoc(equation=r'qv = (\frac{R_d}{R_v}) \frac{e}{p}')
 @assumes('low water vapor')
 def qv_from_p_e_lwv(p, e):
     return ne.evaluate('0.622*e/p')
@@ -473,14 +473,14 @@ def qvs_from_rvs_lwv(rvs):
     return 1.*rvs
 
 
-@autodoc(equation=r'q_v = qv_from_p_e(p, e_s)')
+@autodoc(equation=r'q_{vs} = qv\_from\_p\_e(p, e_s)')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def qvs_from_p_es(p, es):
     return qv_from_p_e(p, es)
 
 
-@autodoc(equation=r'qv = qv_from_p_e_lwv(p, e_s)')
+@autodoc(equation=r'q_v = qv\_from\_p\_e\_lwv(p, e_s)')
 @assumes('low water vapor')
 def qvs_from_p_es_lwv(p, es):
     return qv_from_p_e_lwv(p, es)
@@ -574,15 +574,15 @@ def RH_from_rv_rvs(rv, rvs):
     return ne.evaluate('rv/rvs*100.')
 
 
-@autodoc(equation=r'RH = \frac{q_{v}{q_{vs}} \times 100')
+@autodoc(equation=r'RH = \frac{q_{v}}{q_{vs}} \times 100')
 @assumes('low water vapor')
 def RH_from_qv_qvs_lwv(qv, qvs):
     return ne.evaluate('qv/qvs*100.')
 
 
 @autodoc(equation=r'RH = (\frac{\theta_e}{T (\frac{10^5}{p})^(\frac{R_d}'
-         '{C_{pd} + r_t C_l}) exp(L_v \frac{r_v}{C_{pd}+r_t C_l})})^(r_v '
-         '\frac{R_v}{C_{pd} + r_t C_l})',
+         r'{C_{pd} + r_t C_l}) exp(L_v \frac{r_v}{C_{pd}+r_t C_l})})^(r_v '
+         r'\frac{R_v}{C_{pd} + r_t C_l})',
          references=ref['AMS Glossary thetae'])
 @assumes()
 @overridden_by_assumptions('low water vapor')
@@ -592,7 +592,7 @@ def RH_from_p_e_T_thetae_rv_rt(p, e, T, RH, rv, rt):
 
 
 @autodoc(equation=r'RH = (\frac{\theta_e}{T*(\frac{10^5}{p})^(\frac{R_d}'
-         '{C_{pd}}) exp(L_v*\frac{Rv}{C_{pd}})})^{r_v*\frac{Rv}{C_{pd}}}')
+         r'{C_{pd}}) exp(L_v*\frac{Rv}{C_{pd}})})^{r_v*\frac{Rv}{C_{pd}}}')
 @assumes('low water vapor')
 def RH_from_T_thetae_rv_lwv(T, RH, rv):
     return ne.evaluate('(thetae/(T*(1e5/p)**(Rd/Cpd)*'
@@ -718,26 +718,26 @@ def rl_from_rt_rv(rt, rv):
     return ne.evaluate('rt-rv')
 
 
-@autodoc(equation=r'r_{vs} = rv_from_p_e(p, e_s)')
+@autodoc(equation=r'r_{vs} = rv\_from\_p\_e(p, e_s)')
 @assumes()
 def rvs_from_p_es(p, es):
     return rv_from_p_e(p, es)
 
 
-@autodoc(equation=r'r_v = rv_from_qv(q_{vs})')
+@autodoc(equation=r'r_v = rv\_from\_qv(q_{vs})')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
 
 
-@autodoc(equation=r'r_v = rv_from_qv(q_{vs})')
+@autodoc(equation=r'r_v = rv\_from\_qv(q_{vs})')
 @assumes('low water vapor')
 def rvs_from_qvs_lwv(qvs):
     return rv_from_qv_lwv(qvs)
 
 
-@autodoc(equation=r'T = \frac{29.65*log(es)-4880.16}{log(es)-19.48}',
+@autodoc(equation=r'T = \frac{29.65 log(es)-4880.16}{log(es)-19.48}',
          references=ref['Bolton 1980'] + ref['Wexler 1976'],
          notes='''
 Fits Wexler's formula to an accuracy of 0.1% for temperatures between
@@ -747,7 +747,7 @@ def T_from_es_Bolton(es):
     return ne.evaluate('(29.65*log(es)-4880.16)/(log(es)-19.48)')
 
 
-@autodoc(equation=r'T_{lcl} = ((\frac{1}{T-55}-(\frac{log(\frac{RH}{100}}'
+@autodoc(equation=r'T_{lcl} = ((\frac{1}{T-55}-(\frac{log(\frac{RH}{100})}'
          '{2840}))^{-1} + 55',
          references=ref['Bolton 1980'],
          notes='Uses Bolton (1980) equation 22.')
@@ -823,7 +823,7 @@ def T_from_Tv_assuming_Tv_equals_T(Tv):
     return 1.*Tv
 
 
-@autodoc(equation=r'\theta = T*(1e5/p)**(Rd/Cpd)')
+@autodoc(equation=r'\theta = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd}}')
 @assumes('constant Cp')
 def theta_from_p_T(p, T):
     return ne.evaluate('T*(1e5/p)**(Rd/Cpd)')
@@ -831,8 +831,8 @@ def theta_from_p_T(p, T):
 
 @autodoc(
     equation=r'\theta_e = T (\frac{10^5}{p})^((\frac{R_d}{C_{pd}})'
-    '(1-0.28*r_v)) exp((\frac{3.376}{T_{lcl}}-0.00254) (r_v \times 10^3) '
-    '(1+0.81*r_v))',
+    r'(1-0.28*r_v)) exp((\frac{3.376}{T_{lcl}}-0.00254) (r_v \times 10^3) '
+    r'(1+0.81*r_v))',
     references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
     notes='''
 This is one of the most accurate ways of computing thetae, with an
@@ -845,8 +845,8 @@ def thetae_from_p_T_Tlcl_rv_Bolton(p, T, Tlcl, rv):
 
 
 @autodoc(equation=r'\theta_e = T (\frac{10^5}{p})^(\frac{R_d}{C_{pd} + '
-         'r_t C_l}) RH^{-r_v \frac{R_v}{C_{pd} +'
-         'r_t C_l}} exp(L_v \frac{r_v}{C_{pd}+r_t C_l})',
+         r'r_t C_l}) RH^{-r_v \frac{R_v}{C_{pd} +'
+         r'r_t C_l}} exp(L_v \frac{r_v}{C_{pd}+r_t C_l})',
          references=ref['AMS Glossary thetae'])
 @assumes()
 @overridden_by_assumptions('low water vapor')
@@ -856,15 +856,15 @@ def thetae_from_p_e_T_RH_rv_rt(p, e, T, RH, rv, rt):
 
 
 @autodoc(equation=r'\theta_e = T*(\frac{10^5}{p})^(\frac{R_d}{C_{pd}}) '
-         'RH^{-r_v*\frac{Rv}{C_{pd}}} exp(L_v*\frac{Rv}{C_{pd}})')
+         r'RH^{-r_v*\frac{Rv}{C_{pd}}} exp(L_v*\frac{Rv}{C_{pd}})')
 @assumes('low water vapor')
 def thetae_from_T_RH_rv_lwv(T, RH, rv):
     return ne.evaluate('T*(1e5/p)**(Rd/Cpd)*RH**(-rv*Rv/Cpd)*'
                        'exp(Lv0*rv/(Cpd*T)')
 
 
-@autodoc(equation=r'\theta_{es} = thetae_from_p_T_Tlcl_rv_Bolton(p, T, T,'
-         ' r_{vs})',
+@autodoc(equation=r'\theta_{es} = thetae\_from\_p\_T\_Tlcl\_rv\_Bolton(p, T, '
+         r'T, r_{vs})',
          references=ref['Bolton 1980'] + ref['Davies-Jones 2009'],
          notes='''
 See thetae_from_theta_Tlcl_rv_Bolton for more information.''')
