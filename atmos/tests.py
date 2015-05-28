@@ -218,35 +218,6 @@ class DecoratorTests(unittest.TestCase):
             self.quantity_dict, self.assumption_dict, equation='x=y',
             references='reference here', notes='c sharp')(invalid_function)
 
-    def test_autodoc_valid(self):
-        def T_from_p_qv(p, qv):
-            return 1.
-        func = decorators.equation_docstring(
-            self.quantity_dict, self.assumption_dict, equation='x=y',
-            references='ref', notes='notes')(T_from_p_qv)
-        assert func.__doc__ == (
-            'Calculates air temperature (K).\n\nx=y\n\nPa'
-            'rameters\n----------\np : float or ndarray\n    Data for air pre'
-            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
-            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
-            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
-            '---------\nref\n')
-
-    def test_autodoc_valid_assumes(self):
-        @decorators.assumes('a1')
-        def T_from_p_qv(p, qv):
-            return 1.
-        func = decorators.equation_docstring(
-            self.quantity_dict, self.assumption_dict, equation='x=y',
-            references='ref', notes='notes')(T_from_p_qv)
-        assert func.__doc__ == (
-            'Calculates air temperature (K) assuming a1_long.\n\nx=y\n\nPa'
-            'rameters\n----------\np : float or ndarray\n    Data for air pre'
-            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
-            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
-            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
-            '---------\nref\n')
-
 
 class StringUtilityTests(unittest.TestCase):
 
