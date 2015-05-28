@@ -84,7 +84,8 @@ ValueError:
         docstring += '\n\n'
         if equation is not None:
             func.equation = equation
-            docstring += ':math:`' + equation.strip() + '`\n\n'
+            docstring += doc_paragraph(':math:`' + equation.strip() + '`')
+            docstring += '\n\n'
         docstring += 'Parameters\n'
         docstring += '----------\n\n'
         docstring += '\n'.join([quantity_spec_string(q, quantity_dict)
