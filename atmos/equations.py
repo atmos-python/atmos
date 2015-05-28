@@ -747,6 +747,12 @@ def Tlcl_from_T_e(T, e):
     return ne.evaluate('2840./(3.5*log(T)-log(e)-4.805) + 55.')
 
 
+@autodoc(equation='T = theta (\frac{10^5}{p})^{-\frac{Rd}{Cpd}}')
+@assumes('constant Cp')
+def T_from_p_theta(p, T):
+    return ne.evaluate('theta*(1e5/p)**(-Rd/Cpd)')
+
+
 @autodoc(equation='Tv/(1+0.608*qv)')
 @assumes('no liquid water', 'no ice')
 @overridden_by_assumptions('Tv equals T')
