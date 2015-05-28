@@ -580,6 +580,25 @@ def RH_from_qv_qvs_lwv(qv, qvs):
     return ne.evaluate('qv/qvs*100.')
 
 
+@autodoc(equation=r'RH = (\frac{\theta_e}{T (\frac{10^5}{p})^(\frac{R_d}'
+         '{C_{pd} + r_t C_l}) exp(L_v \frac{r_v}{C_{pd}+r_t C_l})})^(r_v '
+         '\frac{R_v}{C_{pd} + r_t C_l})',
+         references=ref['AMS Glossary thetae'])
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def RH_from_p_e_T_thetae_rv_rt(p, e, T, RH, rv, rt):
+    return ne.evaluate('(thetae/(T*(1e5/(p-e))**(Rd/(Cpd + rt*Cl))*exp'
+                       '(Lv0*rv/((Cpd+rt*Cl)*T))))**(rv*Rv/(Cpd + rt*Cl))')
+
+
+@autodoc(equation=r'RH = (\frac{\theta_e}{T*(\frac{10^5}{p})^(\frac{R_d}'
+         '{C_{pd}}) exp(L_v*\frac{Rv}{C_{pd}})})^{r_v*\frac{Rv}{C_{pd}}}')
+@assumes('low water vapor')
+def RH_from_T_thetae_rv_lwv(T, RH, rv):
+    return ne.evaluate('(thetae/(T*(1e5/p)**(Rd/Cpd)*'
+                       'exp(Lv0*rv/(Cpd*T))))**(rv*Rv/Cpd')
+
+
 @autodoc(equation=r'\rho = \frac{AH}{q_v}')
 @assumes()
 def rho_from_qv_AH(qv, AH):
@@ -617,102 +636,102 @@ def rv_from_p_e(p, e):
     return ne.evaluate('0.622*e/(p-e)')
 
 
-@autodoc(equation='r_t = r_i+r_v+r_l')
+@autodoc(equation=r'r_t = r_i+r_v+r_l')
 @assumes()
 @overridden_by_assumptions('no liquid water', 'no ice')
 def rt_from_ri_rv_rl(ri, rv, rl):
     return ne.evaluate('ri+rv+rl')
 
 
-@autodoc(equation='r_t = r_v+r_l')
+@autodoc(equation=r'r_t = r_v+r_l')
 @assumes('no ice')
 @overridden_by_assumptions('no liquid water')
 def rt_from_rv_rl(rv, rl):
     return ne.evaluate('rv+rl')
 
 
-@autodoc(equation='r_t = r_v')
+@autodoc(equation=r'r_t = r_v')
 @assumes('no liquid water', 'no ice')
 def rt_from_rv(rv):
     return 1.*rv
 
 
-@autodoc(equation='r_t = r_v+r_l')
+@autodoc(equation=r'r_t = r_v+r_l')
 @assumes('no liquid water')
 @overridden_by_assumptions('no ice')
 def rt_from_rv_ri(rv, ri):
     return ne.evaluate('rv+ri')
 
 
-@autodoc(equation='r_v = r_t')
+@autodoc(equation=r'r_v = r_t')
 @assumes('no liquid water', 'no ice')
 def rv_from_rt(rt):
     return 1.*rt
 
 
-@autodoc(equation='r_v = r_t-r_l-r_i')
+@autodoc(equation=r'r_v = r_t-r_l-r_i')
 @assumes()
 @overridden_by_assumptions('no liquid water', 'no ice')
 def rv_from_rt_rl_ri(rt, rl, ri):
     return ne.evaluate('rt-rl-ri')
 
 
-@autodoc(equation='r_v = r_t-r_l')
+@autodoc(equation=r'r_v = r_t-r_l')
 @assumes('no ice')
 @overridden_by_assumptions('no liquid water')
 def rv_from_rt_rl(rt, rl):
     return ne.evaluate('rt-rl')
 
 
-@autodoc(equation='r_v = r_t - r_i')
+@autodoc(equation=r'r_v = r_t - r_i')
 @assumes('no liquid water')
 @overridden_by_assumptions('no ice')
 def rv_from_rt_ri(rt, ri):
     return ne.evaluate('rt-ri')
 
 
-@autodoc(equation='r_i = r_t-r_v-r_l')
+@autodoc(equation=r'r_i = r_t-r_v-r_l')
 @assumes()
 @overridden_by_assumptions('no liquid water', 'no ice')
 def ri_from_rt_rv_rl(rt, rv, rl):
     return ne.evaluate('rt-rv-rl')
 
 
-@autodoc(equation='r_i = r_t-r_v')
+@autodoc(equation=r'r_i = r_t-r_v')
 @assumes('no liquid water')
 @overridden_by_assumptions('no ice')
 def ri_from_rt_rv(rt, rv):
     return ne.evaluate('rt-rv')
 
 
-@autodoc(equation='r_l = r_t-r_v-r_i')
+@autodoc(equation=r'r_l = r_t-r_v-r_i')
 @assumes()
 @overridden_by_assumptions('no liquid water', 'no ice')
 def rl_from_rt_rv_ri(rt, rv, ri):
     return ne.evaluate('rt-rv-ri')
 
 
-@autodoc(equation='r_l = r_t-r_v')
+@autodoc(equation=r'r_l = r_t-r_v')
 @assumes('no ice')
 @overridden_by_assumptions('no liquid water')
 def rl_from_rt_rv(rt, rv):
     return ne.evaluate('rt-rv')
 
 
-@autodoc(equation='r_{vs} = rv_from_p_e(p, e_s)')
+@autodoc(equation=r'r_{vs} = rv_from_p_e(p, e_s)')
 @assumes()
 def rvs_from_p_es(p, es):
     return rv_from_p_e(p, es)
 
 
-@autodoc(equation='r_v = rv_from_qv(q_{vs})')
+@autodoc(equation=r'r_v = rv_from_qv(q_{vs})')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
 
 
-@autodoc(equation='r_v = rv_from_qv(q_{vs})')
+@autodoc(equation=r'r_v = rv_from_qv(q_{vs})')
 @assumes('low water vapor')
 def rvs_from_qvs_lwv(qvs):
     return rv_from_qv_lwv(qvs)
