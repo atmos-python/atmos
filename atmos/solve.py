@@ -7,7 +7,7 @@ from __future__ import division, absolute_import, unicode_literals
 import inspect
 from atmos import equations
 import numpy as np
-from six import add_metaclass
+from six import add_metaclass, string_types
 from textwrap import wrap
 
 
@@ -363,6 +363,13 @@ Notes
             self._debug = kwargs.pop('debug')
         else:
             self._debug = False
+        # make sure add and remove assumptions are tuples, not strings
+        if ('add_assumptions' in kwargs.keys() and
+                isinstance(kwargs['add_assumptions'], string_types)):
+            kwargs['add_assumptions'] = (kwargs['add_assumptions'],)
+        if ('remove_assumptions' in kwargs.keys() and
+                isinstance(kwargs['remove_assumptions'], string_types)):
+            kwargs['remove_assumptions'] = (kwargs['remove_assumptions'],)
         # See if an assumption set was given
         if 'assumptions' in kwargs.keys():
             # If it was, make sure it wasn't given with other ways of
