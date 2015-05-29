@@ -1,5 +1,5 @@
-atmos package
-=============
+atmos package reference
+=======================
 
 Module contents
 ---------------
