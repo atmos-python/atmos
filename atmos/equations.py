@@ -428,6 +428,13 @@ def Phi_from_z(z):
     return ne.evaluate('g0*z')
 
 
+@autodoc(equation=r'qv = \frac{(\frac{Tv}{T} - 1)}{0.608}')
+@assumes('no liquid water', 'no ice')
+@overridden_by_assumptions('Tv equals T')
+def qv_from_Tv_T(Tv, T):
+    return ne.evaluate('(Tv/T - 1.)/0.608')
+
+
 @autodoc(equation=r'q_v = \frac{AH}{\rho}')
 @assumes()
 def qv_from_AH_rho(AH, rho):
