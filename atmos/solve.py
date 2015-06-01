@@ -434,7 +434,7 @@ object at initialization.
 
 Parameters
 ----------
-varname_out : string
+*args : string
     Name of quantity to be calculated.
 
 Returns

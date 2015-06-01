@@ -1,0 +1,336 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using FluidSolver &mdash; atmos 0.2.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="atmos 0.2.1 documentation" href="index.html" />
+    <link rel="next" title="Subclassing BaseSolver and FluidSolver" href="subclassing.html" />
+    <link rel="prev" title="Using calculate()" href="calculate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="subclassing.html" title="Subclassing BaseSolver and FluidSolver"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="calculate.html" title="Using calculate()"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">atmos 0.2.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-fluidsolver">
+<h1>Using FluidSolver<a class="headerlink" href="#using-fluidsolver" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-does-fluidsolver-do">
+<h2>What does FluidSolver do?<a class="headerlink" href="#what-does-fluidsolver-do" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#atmos.FluidSolver" title="atmos.FluidSolver"><tt class="xref py py-class docutils literal"><span class="pre">atmos.FluidSolver</span></tt></a> takes input variables (like
+pressure, virtual temperature, water vapor mixing ratio, etc.) and information
+about what assumptions you&#8217;re willing to make (hydrostatic? low water vapor?
+ignore virtual temperature correction? use an empirical formula for
+equivalent potential temperature?), and from that calculates any desired
+output variables that you request and can be calculated.</p>
+<p>The main benefit of using <a class="reference internal" href="#atmos.FluidSolver" title="atmos.FluidSolver"><tt class="xref py py-class docutils literal"><span class="pre">atmos.FluidSolver</span></tt></a> instead of
+<a class="reference internal" href="calculate.html#atmos.calculate" title="atmos.calculate"><tt class="xref py py-func docutils literal"><span class="pre">atmos.calculate()</span></tt></a> is that the FluidSolver object has memory. It can keep
+track of what assumptions you enabled, as well as what quantities you&#8217;ve given
+it and it has calculated.</p>
+</div>
+<div class="section" id="what-can-it-calculate">
+<h2>What can it calculate?<a class="headerlink" href="#what-can-it-calculate" title="Permalink to this headline">¶</a></h2>
+<p>Anything that can be calculated by equations in <a class="reference internal" href="atmos.html#module-atmos.equations" title="atmos.equations"><tt class="xref py py-mod docutils literal"><span class="pre">atmos.equations</span></tt></a>.
+If you find that the FluidSolver can&#8217;t do a calculation you might expect it
+to, check the equations it has available and make sure you&#8217;re using the right
+variables, or enabling the right assumptions. A common problem is using <em>T</em>
+instead of <em>Tv</em> and expecting the ideal gas law to work.</p>
+</div>
+<div class="section" id="a-simple-example">
+<h2>A simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h2>
+<p>By default, a certain set of assumptions are used, such as that we are
+considering an ideal gas, and so can use ideal gas law. This allows us to do
+simple calculations that use the default assumptions. For example, to
+calculate pressure from virtual temperature and density:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atmos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">atmos</span><span class="o">.</span><span class="n">FluidSolver</span><span class="p">(</span><span class="n">Tv</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="go">99519.638400000011</span>
+</pre></div>
+</div>
+<p>Or to calculate relative humidity from water vapor mixing ratio and
+saturation water vapor mixing ratio (which needs no assumptions):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atmos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">atmos</span><span class="o">.</span><span class="n">FluidSolver</span><span class="p">(</span><span class="n">rv</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">rvs</span><span class="o">=</span><span class="mf">0.002</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;RH&#39;</span><span class="p">)</span>
+<span class="go">50.0</span>
+</pre></div>
+</div>
+<p>For a full list of default assumptions, see <a class="reference internal" href="#atmos.FluidSolver" title="atmos.FluidSolver"><tt class="xref py py-class docutils literal"><span class="pre">atmos.FluidSolver</span></tt></a>.</p>
+</div>
+<div class="section" id="viewing-equation-functions-used">
+<h2>Viewing equation functions used<a class="headerlink" href="#viewing-equation-functions-used" title="Permalink to this headline">¶</a></h2>
+<p>Calculating pressure from virtual temperature and density, also returning a
+list of functions used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atmos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">atmos</span><span class="o">.</span><span class="n">FluidSolver</span><span class="p">(</span><span class="n">Tv</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span> <span class="n">funcs</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcs</span>
+<span class="go">(&lt;function atmos.equations.p_from_rho_Tv_ideal_gas&gt;,)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-and-removing-assumptions">
+<h2>Adding and removing assumptions<a class="headerlink" href="#adding-and-removing-assumptions" title="Permalink to this headline">¶</a></h2>
+<p>If you want to use assumptions that are not enabled by default (such as
+ignoring the virtual temperature correction), you can use the add_assumptions
+keyword argument, which takes a tuple of strings specifying assumptions.
+The exact string to enter for each assumption is detailed in
+<a class="reference internal" href="#atmos.FluidSolver" title="atmos.FluidSolver"><tt class="xref py py-class docutils literal"><span class="pre">atmos.FluidSolver</span></tt></a>. For example, to calculate T instead of Tv,
+neglecting the virtual temperature correction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atmos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">atmos</span><span class="o">.</span><span class="n">FluidSolver</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">,</span> <span class="n">add_assumptions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Tv equals T&#39;</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="go">99519.638400000011</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="overriding-assumptions">
+<h2>Overriding assumptions<a class="headerlink" href="#overriding-assumptions" title="Permalink to this headline">¶</a></h2>
+<p>If you want to ignore the default assumptions entirely, you could specify
+your own assumptions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">atmos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">atmos</span><span class="o">.</span><span class="n">FluidSolver</span><span class="p">(</span><span class="n">Tv</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">,</span> <span class="n">assumptions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;ideal gas&#39;</span><span class="p">,</span> <span class="s">&#39;bolton&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="go">99519.638400000011</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="class-reference">
+<h2>Class reference<a class="headerlink" href="#class-reference" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="atmos.FluidSolver">
+<em class="property">class </em><tt class="descclassname">atmos.</tt><tt class="descname">FluidSolver</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#atmos.FluidSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes with the given assumptions enabled, and variables passed as
+keyword arguments stored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>assumptions</strong> (<em>tuple, optional</em>) &#8211; Strings specifying which assumptions to enable. Overrides the default
+assumptions. See below for a list of default assumptions.</li>
+<li><strong>add_assumptions</strong> (<em>tuple, optional</em>) &#8211; Strings specifying assumptions to use in addition to the default
+assumptions. May not be given in combination with the assumptions kwarg.</li>
+<li><strong>remove_assumptions</strong> (<em>tuple, optional</em>) &#8211; Strings specifying assumptions not to use from the default assumptions.
+May not be given in combination with the assumptions kwarg. May not
+contain strings that are contained in add_assumptions, if given.</li>
+<li><strong>**kwargs</strong> &#8211; <p>Keyword arguments used to pass in arrays of data that correspond to
+quantities used for calculations. For a complete list of kwargs that
+may be used, see the Quantity Parameters section below.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> &#8211;
+A FluidSolver object with the specified assumptions and variables.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">FluidSolver</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p><strong>Quantity kwargs</strong></p>
+<ul class="simple">
+<li><strong>AH</strong> &#8211; absolute humidity (kg/m^3)</li>
+<li><strong>DSE</strong> &#8211; dry static energy (J)</li>
+<li><strong>e</strong> &#8211; water vapor partial pressure (Pa)</li>
+<li><strong>es</strong> &#8211; saturation water vapor partial pressure (Pa)</li>
+<li><strong>f</strong> &#8211; Coriolis parameter (Hz)</li>
+<li><strong>Gammam</strong> &#8211; moist adiabatic lapse rate (K/m)</li>
+<li><strong>lat</strong> &#8211; latitude (degrees N)</li>
+<li><strong>lon</strong> &#8211; longitude (degrees E)</li>
+<li><strong>MSE</strong> &#8211; moist static energy (J)</li>
+<li><strong>N2</strong> &#8211; squared Brunt-Vaisala frequency (Hz^2)</li>
+<li><strong>omega</strong> &#8211; vertical velocity expressed as tendency of pressure (Pa/s)</li>
+<li><strong>p</strong> &#8211; pressure (Pa)</li>
+<li><strong>Phi</strong> &#8211; geopotential (m^2/s^2)</li>
+<li><strong>plcl</strong> &#8211; pressure at lifting condensation level (Pa)</li>
+<li><strong>qi</strong> &#8211; specific humidity with respect to ice (kg/kg)</li>
+<li><strong>ql</strong> &#8211; specific humidity with respect to liquid water (kg/kg)</li>
+<li><strong>qt</strong> &#8211; specific humidity with respect to total water (kg/kg)</li>
+<li><strong>qv</strong> &#8211; specific humidity (kg/kg)</li>
+<li><strong>qvs</strong> &#8211; saturation specific humidity (kg/kg)</li>
+<li><strong>RB</strong> &#8211; bulk Richardson number (unitless)</li>
+<li><strong>RH</strong> &#8211; relative humidity (%)</li>
+<li><strong>rho</strong> &#8211; density (kg/m^3)</li>
+<li><strong>ri</strong> &#8211; ice mixing ratio (kg/kg)</li>
+<li><strong>rl</strong> &#8211; liquid water mixing ratio (kg/kg)</li>
+<li><strong>rt</strong> &#8211; total water mixing ratio (kg/kg)</li>
+<li><strong>rv</strong> &#8211; water vapor mixing ratio (kg/kg)</li>
+<li><strong>rvs</strong> &#8211; saturation water vapor mixing ratio (kg/kg)</li>
+<li><strong>T</strong> &#8211; temperature (K)</li>
+<li><strong>Td</strong> &#8211; dewpoint temperature (K)</li>
+<li><strong>theta</strong> &#8211; potential temperature (K)</li>
+<li><strong>thetae</strong> &#8211; equivalent temperature (K)</li>
+<li><strong>thetaes</strong> &#8211; saturation equivalent temperature (K)</li>
+<li><strong>Tlcl</strong> &#8211; temperature at lifting condensation level (K)</li>
+<li><strong>Tv</strong> &#8211; virtual temperature (K)</li>
+<li><strong>Tw</strong> &#8211; wet bulb temperature (K)</li>
+<li><strong>u</strong> &#8211; eastward zonal wind velocity (m/s)</li>
+<li><strong>v</strong> &#8211; northward meridional wind velocity (m/s)</li>
+<li><strong>w</strong> &#8211; vertical velocity (m/s)</li>
+<li><strong>x</strong> &#8211; x (m)</li>
+<li><strong>y</strong> &#8211; y (m)</li>
+<li><strong>Z</strong> &#8211; geopotential height (m)</li>
+<li><strong>z</strong> &#8211; height (m)</li>
+</ul>
+<p><strong>Assumptions</strong></p>
+<p>Default assumptions are &#8216;ideal gas&#8217;, &#8216;hydrostatic&#8217;, &#8216;constant g&#8217;, &#8216;constant Lv&#8217;,
+&#8216;constant Cp&#8217;, &#8216;no liquid water&#8217;, &#8216;no ice&#8217;, &#8216;bolton&#8217;.</p>
+<p><strong>Assumption descriptions</strong></p>
+<ul class="simple">
+<li><strong>bolton</strong> &#8211; the assumptions in Bolton (1980) hold</li>
+<li><strong>constant Cp</strong> &#8211; Cp is constant and equal to Cp for dry air at 0C</li>
+<li><strong>constant g</strong> &#8211; g is constant</li>
+<li><strong>constant Lv</strong> &#8211; latent heat of vaporization of water is constant</li>
+<li><strong>frozen bulb</strong> &#8211; the bulb is frozen</li>
+<li><strong>goff-gratch</strong> &#8211; the Goff-Gratch equation for es</li>
+<li><strong>hydrostatic</strong> &#8211; hydrostatic balance</li>
+<li><strong>ideal gas</strong> &#8211; the ideal gas law holds</li>
+<li><strong>low water vapor</strong> &#8211; terms that are second-order in moisture quantities can be neglected (eg. qv == rv)</li>
+<li><strong>no ice</strong> &#8211; ice can be neglected</li>
+<li><strong>no liquid water</strong> &#8211; liquid water can be neglected</li>
+<li><strong>Tv equals T</strong> &#8211; the virtual temperature correction can be neglected</li>
+<li><strong>unfrozen bulb</strong> &#8211; the bulb is not frozen</li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Calculating pressure from virtual temperature and density:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">FluidSolver</span><span class="p">(</span><span class="n">Tv</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="go">99519.638400000011</span>
+</pre></div>
+</div>
+<p>Same calculation, but also returning a list of functions used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">FluidSolver</span><span class="p">(</span><span class="n">Tv</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span> <span class="n">funcs</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcs</span>
+<span class="go">(&lt;function atmos.equations.p_from_rho_Tv_ideal_gas&gt;,)</span>
+</pre></div>
+</div>
+<p>Same calculation with temperature instead, ignoring virtual temperature
+correction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span> <span class="o">=</span> <span class="n">FluidSolver</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">273.</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">1.27</span><span class="p">,</span> <span class="n">add_assumptions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Tv equals T&#39;</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">solver</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">,)</span>
+<span class="go">99519.638400000011</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using FluidSolver</a><ul>
+<li><a class="reference internal" href="#what-does-fluidsolver-do">What does FluidSolver do?</a></li>
+<li><a class="reference internal" href="#what-can-it-calculate">What can it calculate?</a></li>
+<li><a class="reference internal" href="#a-simple-example">A simple example</a></li>
+<li><a class="reference internal" href="#viewing-equation-functions-used">Viewing equation functions used</a></li>
+<li><a class="reference internal" href="#adding-and-removing-assumptions">Adding and removing assumptions</a></li>
+<li><a class="reference internal" href="#overriding-assumptions">Overriding assumptions</a></li>
+<li><a class="reference internal" href="#class-reference">Class reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="calculate.html"
+                        title="previous chapter">Using calculate()</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="subclassing.html"
+                        title="next chapter">Subclassing BaseSolver and FluidSolver</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/solver.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="subclassing.html" title="Subclassing BaseSolver and FluidSolver"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="calculate.html" title="Using calculate()"
+             >previous</a> |</li>
+        <li><a href="index.html">atmos 0.2.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jeremy McGibbon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
