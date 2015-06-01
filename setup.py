@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='atmos',
     packages=['atmos'],
-    version='0.2.2-develop',
+    version='0.2.2',
     description='Atmospheric sciences utility library',
     author='Jeremy McGibbon',
     author_email='mcgibbon@uw.edu',
