@@ -39,9 +39,9 @@ Features
 Dependencies
 ============
 
-This module is tested to work only with Python 2.7 on Unix, but support is
-given for Python 3.x and all platforms. If there are bugs on your particular
-version of Python, please submit it to the `GitHub issue tracker`_.
+This module is tested to work with Python versions 2.6, 2.7, 3.3, and 3.4 on
+Unix. Support is given for all platforms. If there are bugs on your
+particular version of Python, please submit it to the `GitHub issue tracker`_.
 
 Package dependencies:
 
