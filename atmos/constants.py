@@ -15,8 +15,8 @@ Included constants:
 * **Lv0** : latent heat of vaporization for water at 0C
 """
 from numpy import pi
-from scipy.constants import g as g0
 
+g0 = 9.80665  # standard gravitational acceleration (m/s)
 stefan = 5.67e-8  # Stefan-boltzmann constant (W/m^2/K^4)
 r_earth = 6370000.  # Radius of Earth (m)
 Omega = 7.2921159e-5  # Angular velocity of Earth (Rad/s)
