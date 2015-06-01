@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-constants.py: Scientific constants, all in SI units.
+constants.py: Scientific constants in SI units.
 
 Included constants:
-* g0 : standard acceleration of gravity
-* r_earth : mean radius of Earth
-* Omega : angular velocity of Earth
-* Rd : specific gas constant for dry air
-* Rv : specific gas constant for water vapor
-* Cpd : specific heat capacity of dry air at constant pressure at 300K
-* Cl : specific heat capacity of liquid water
-* Gammad : dry adiabatic lapse rate
-* Lv0 : latent heat of vaporization for water at 0C
+
+* **g0** : standard acceleration of gravity
+* **r_earth** : mean radius of Earth
+* **Omega** : angular velocity of Earth
+* **Rd** : specific gas constant for dry air
+* **Rv** : specific gas constant for water vapor
+* **Cpd** : specific heat capacity of dry air at constant pressure at 300K
+* **Cl** : specific heat capacity of liquid water
+* **Gammad** : dry adiabatic lapse rate
+* **Lv0** : latent heat of vaporization for water at 0C
 """
 from numpy import pi
 from scipy.constants import g as g0
