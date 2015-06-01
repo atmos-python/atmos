@@ -15,3 +15,6 @@ _*_float64.pyx
 
 # Local install egg
 atmos.egg-info
+
+# build directory
+build
