@@ -737,7 +737,7 @@ class EquationTests(unittest.TestCase):
     def test_f_from_lat(self):
         func = equations.f_from_lat
         in_values = [(0.,), (45.,), (90.,)]
-        out_values = [0., 1.028e-4, 1.454e-4]
+        out_values = [0., 1.031e-4, 1.458e-4]
         tols = [0.001e-4, 0.001e-4, 0.001e-4]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
