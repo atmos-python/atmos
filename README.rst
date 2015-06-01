@@ -74,6 +74,12 @@ If you are running Anaconda, you can install using conda:
 
     $ conda install -c mcgibbon atmos
 
+You can also install using pip:
+
+.. code:: bash
+
+    $ pip install atmos
+
 Development version
 ===================
 
