@@ -7,7 +7,7 @@ from __future__ import division, absolute_import, unicode_literals
 import inspect
 from atmos import equations
 import numpy as np
-from six import add_metaclass
+from six import add_metaclass, string_types
 from textwrap import wrap
 
 
@@ -245,7 +245,7 @@ def _fill_doc(s, module, default_assumptions):
         s = s.replace(
             '<assumptions list goes here>',
             '\n'.join(sorted(
-                ["'{0}': {1}".format(a, desc) for a, desc in
+                ["* **{0}** -- {1}".format(a, desc) for a, desc in
                  assumptions.items()],
                 key=lambda x: x.lower())))
         s = s.replace(
@@ -257,8 +257,8 @@ def _fill_doc(s, module, default_assumptions):
         s = s.replace(
             '<quantity parameter list goes here>',
             '\n'.join(sorted([
-                '{0} {1} ({2})'.format(
-                    (q + ' :').ljust(9), info['name'], info['units'])
+                '* **{0}** -- {1} ({2})'.format(
+                    q, info['name'], info['units'])
                 for q, info in
                 module.quantities.items()
                 ], key=lambda x: x.lower())))
@@ -310,6 +310,47 @@ class BaseSolver(object):
     '''
 Base class for solving systems of equations. Should not be instantiated,
 as it is not associated with any equations.
+
+Initializes with the given assumptions enabled, and variables passed as
+keyword arguments stored.
+
+Parameters
+----------
+
+assumptions : tuple, optional
+    Strings specifying which assumptions to enable. Overrides the default
+    assumptions. See below for a list of default assumptions.
+add_assumptions : tuple, optional
+    Strings specifying assumptions to use in addition to the default
+    assumptions. May not be given in combination with the assumptions kwarg.
+remove_assumptions : tuple, optional
+    Strings specifying assumptions not to use from the default assumptions.
+    May not be given in combination with the assumptions kwarg. May not
+    contain strings that are contained in add_assumptions, if given.
+**kwargs : ndarray, optional
+    Keyword arguments used to pass in arrays of data that correspond to
+    quantities used for calculations. For a complete list of kwargs that
+    may be used, see the Quantity Parameters section below.
+
+Returns
+-------
+out : BaseSolver
+    A BaseSolver object with the specified assumptions and variables.
+
+Notes
+-----
+
+**Quantity kwargs**
+
+<quantity parameter list goes here>
+
+**Assumptions**
+
+<default assumptions list goes here>
+
+**Assumption descriptions**
+
+<assumptions list goes here>
     '''
 
     _equation_module = None
@@ -322,6 +363,13 @@ as it is not associated with any equations.
             self._debug = kwargs.pop('debug')
         else:
             self._debug = False
+        # make sure add and remove assumptions are tuples, not strings
+        if ('add_assumptions' in kwargs.keys() and
+                isinstance(kwargs['add_assumptions'], string_types)):
+            kwargs['add_assumptions'] = (kwargs['add_assumptions'],)
+        if ('remove_assumptions' in kwargs.keys() and
+                isinstance(kwargs['remove_assumptions'], string_types)):
+            kwargs['remove_assumptions'] = (kwargs['remove_assumptions'],)
         # See if an assumption set was given
         if 'assumptions' in kwargs.keys():
             # If it was, make sure it wasn't given with other ways of
@@ -386,7 +434,7 @@ object at initialization.
 
 Parameters
 ----------
-varname_out : string
+*args : string
     Name of quantity to be calculated.
 
 Returns
@@ -404,6 +452,29 @@ Raises
 ValueError:
     If the output quantity cannot be determined from the input
     quantities.
+
+Examples
+--------
+
+Calculating pressure from virtual temperature and density:
+
+>>> solver = FluidSolver(Tv=273., rho=1.27)
+>>> solver.calculate('p')
+99519.638400000011
+
+Same calculation, but also returning a list of functions used:
+
+>>> solver = FluidSolver(Tv=273., rho=1.27, debug=True)
+>>> p, funcs = solver.calculate('p')
+>>> funcs
+(<function atmos.equations.p_from_rho_Tv_ideal_gas>,)
+
+Same calculation with temperature instead, ignoring virtual temperature
+correction:
+
+>>> solver = FluidSolver(T=273., rho=1.27, add_assumptions=('Tv equals T',))
+>>> solver.calculate('p',)
+99519.638400000011
         '''
         self._ensure_quantities(*args)
         possible_quantities = get_calculatable_quantities(self.vars.keys(),
@@ -503,6 +574,7 @@ keyword arguments stored.
 
 Parameters
 ----------
+
 assumptions : tuple, optional
     Strings specifying which assumptions to enable. Overrides the default
     assumptions. See below for a list of default assumptions.
@@ -513,34 +585,53 @@ remove_assumptions : tuple, optional
     Strings specifying assumptions not to use from the default assumptions.
     May not be given in combination with the assumptions kwarg. May not
     contain strings that are contained in add_assumptions, if given.
-quantity : ndarray, optional
+**kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
     quantities used for calculations. For a complete list of kwargs that
     may be used, see the Quantity Parameters section below.
-
-Quantity Parameters
--------------------
-<quantity parameter list goes here>
 
 Returns
 -------
 out : FluidSolver
     A FluidSolver object with the specified assumptions and variables.
 
-Assumptions
------------
+Notes
+-----
+
+**Quantity kwargs**
+
+<quantity parameter list goes here>
+
+**Assumptions**
+
 <default assumptions list goes here>
 
-Assumption descriptions:
+**Assumption descriptions**
+
 <assumptions list goes here>
 
 Examples
 --------
->>> solver = FluidSolver(rho=array1, p=array2)
 
-Non-default assumptions:
+Calculating pressure from virtual temperature and density:
 
->>> solver = FluidSolver(add_assumptions=('Tv equals T'), rho=array1, p=array2)
+>>> solver = FluidSolver(Tv=273., rho=1.27)
+>>> solver.calculate('p')
+99519.638400000011
+
+Same calculation, but also returning a list of functions used:
+
+>>> solver = FluidSolver(Tv=273., rho=1.27, debug=True)
+>>> p, funcs = solver.calculate('p')
+>>> funcs
+(<function atmos.equations.p_from_rho_Tv_ideal_gas>,)
+
+Same calculation with temperature instead, ignoring virtual temperature
+correction:
+
+>>> solver = FluidSolver(T=273., rho=1.27, add_assumptions=('Tv equals T',))
+>>> solver.calculate('p',)
+99519.638400000011
     '''
 
     # module containing fluid dynamics equations
@@ -558,7 +649,8 @@ keyword arguments.
 
 Parameters
 ----------
-args : string
+
+\*args : string
     Names of quantities to be calculated.
 assumptions : tuple, optional
     Strings specifying which assumptions to enable. Overrides the default
@@ -570,25 +662,15 @@ remove_assumptions : tuple, optional
     Strings specifying assumptions not to use from the default assumptions.
     May not be given in combination with the assumptions kwarg. May not
     contain strings that are contained in add_assumptions, if given.
-quantity : ndarray, optional
+\*\*kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
     quantities used for calculations. For a complete list of kwargs that
     may be used, see the Quantity Parameters section below.
 
-Assumptions
------------
-<default assumptions list goes here>
-
-Assumption descriptions:
-<assumptions list goes here>
-
-Quantity Parameters
--------------------
-<quantity parameter list goes here>
-
 Returns
 -------
-quantity : ndarray or iris Cube
+
+quantity : ndarray
     Calculated quantity.
     Return type is the same as quantity parameter types.
     If multiple quantities are requested, returns a tuple containing the
@@ -596,13 +678,42 @@ quantity : ndarray or iris Cube
 
 Notes
 -----
+
 Calculating multiple quantities at once can avoid re-computing intermediate
 quantities, but requires more memory.
 
+**Quantity kwargs**
+
+<quantity parameter list goes here>
+
+**Assumptions**
+
+<default assumptions list goes here>
+
+**Assumption descriptions**
+
+<assumptions list goes here>
+
 Examples
 --------
->>>
-    '''
+
+Calculating pressure from virtual temperature and density:
+
+>>> calculate('p', Tv=273., rho=1.27)
+99519.638400000011
+
+Same calculation, but also returning a list of functions used:
+
+>>> p, funcs = calculate('p', Tv=273., rho=1.27, debug=True)
+>>> funcs
+(<function atmos.equations.p_from_rho_Tv_ideal_gas>,)
+
+Same calculation with temperature instead, ignoring virtual temperature
+correction:
+
+>>> calculate('p', T=273., rho=1.27, add_assumptions=('Tv equals T',))
+99519.638400000011
+'''
     if len(args) == 0:
         raise ValueError('must specify quantities to calculate')
     # initialize a solver to do the work

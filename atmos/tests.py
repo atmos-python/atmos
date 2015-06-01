@@ -218,35 +218,6 @@ class DecoratorTests(unittest.TestCase):
             self.quantity_dict, self.assumption_dict, equation='x=y',
             references='reference here', notes='c sharp')(invalid_function)
 
-    def test_autodoc_valid(self):
-        def T_from_p_qv(p, qv):
-            return 1.
-        func = decorators.equation_docstring(
-            self.quantity_dict, self.assumption_dict, equation='x=y',
-            references='ref', notes='notes')(T_from_p_qv)
-        assert func.__doc__ == (
-            'Calculates air temperature (K).\n\nx=y\n\nPa'
-            'rameters\n----------\np : float or ndarray\n    Data for air pre'
-            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
-            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
-            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
-            '---------\nref\n')
-
-    def test_autodoc_valid_assumes(self):
-        @decorators.assumes('a1')
-        def T_from_p_qv(p, qv):
-            return 1.
-        func = decorators.equation_docstring(
-            self.quantity_dict, self.assumption_dict, equation='x=y',
-            references='ref', notes='notes')(T_from_p_qv)
-        assert func.__doc__ == (
-            'Calculates air temperature (K) assuming a1_long.\n\nx=y\n\nPa'
-            'rameters\n----------\np : float or ndarray\n    Data for air pre'
-            'ssure (Pa).\nqv : float or ndarray\n    Data for specific humidi'
-            'ty (kg/kg).\n\nReturns\n-------\nT : float or ndarray\n    Data '
-            'for air temperature (K).\n\nNotes\n-----\nnotes\n\nReferences\n-'
-            '---------\nref\n')
-
 
 class StringUtilityTests(unittest.TestCase):
 
@@ -386,6 +357,7 @@ class ParseDerivativeStringTests(unittest.TestCase):
     @raises(ValueError)
     def test_dpdT(self):
         util.parse_derivative_string('dpdT', self.quantity_dict)
+
 
 class OverriddenByAssumptionsTests(unittest.TestCase):
     def test_overridden_by_assumptions_empty(self):
@@ -765,7 +737,7 @@ class EquationTests(unittest.TestCase):
     def test_f_from_lat(self):
         func = equations.f_from_lat
         in_values = [(0.,), (45.,), (90.,)]
-        out_values = [0., 1.028e-4, 1.454e-4]
+        out_values = [0., 1.031e-4, 1.458e-4]
         tols = [0.001e-4, 0.001e-4, 0.001e-4]
         self._assert_accurate_values(func, in_values, out_values, tols)
 

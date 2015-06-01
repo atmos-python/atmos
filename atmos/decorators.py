@@ -36,6 +36,7 @@ Creates a decorator that adds a docstring to an equation function.
 
 Parameters
 ----------
+
 quantity_dict : dict
     A dictionary describing the quantities used in the equations. Its keys
     should be abbreviations for the quantities, and its values should be a
@@ -55,12 +56,12 @@ references : string, optional
 
 Raises
 ------
+
 ValueError:
-    If the function name does not follow (varname)_from_(any text here).
-    If an argument of the function or the varname (as above) is not present
-        in quantity_dict.
-    If an assumption in func.assumptions is not present in the
-        assumption_dict.
+    If the function name does not follow (varname)_from_(any text here), or
+    if an argument of the function or the varname (as above) is not present
+    in quantity_dict, or if an assumption in func.assumptions is not present
+    in the assumption_dict.
     '''
     # Now we have our utility functions, let's define the decorator itself
     def decorator(func):
@@ -83,25 +84,29 @@ ValueError:
         docstring += '\n\n'
         if equation is not None:
             func.equation = equation
-            docstring += equation.strip() + '\n\n'
+            docstring += doc_paragraph(':math:`' + equation.strip() + '`')
+            docstring += '\n\n'
         docstring += 'Parameters\n'
-        docstring += '----------\n'
+        docstring += '----------\n\n'
         docstring += '\n'.join([quantity_spec_string(q, quantity_dict)
                                 for q in in_quantities])
         docstring += '\n\n'
         docstring += 'Returns\n'
-        docstring += '-------\n'
+        docstring += '-------\n\n'
         docstring += quantity_spec_string(out_quantity, quantity_dict)
         if notes is not None:
             docstring += '\n\n'
             docstring += 'Notes\n'
-            docstring += '-----\n'
+            docstring += '-----\n\n'
             docstring += notes.strip()
         if references is not None:
+            if notes is None:  # still need notes header for references
+                docstring += '\n\n'
+                docstring += 'Notes\n'
+                docstring += '-----\n\n'
             func.references = references
             docstring += '\n\n'
-            docstring += 'References\n'
-            docstring += '----------\n'
+            docstring += '**References**\n\n'
             docstring += references.strip()
         docstring += '\n'
         func.__doc__ = docstring
