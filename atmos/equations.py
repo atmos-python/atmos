@@ -32,7 +32,9 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 # Need some more "shortcut" equations
 #
 # Check whether certain inputs are valid (0 < RH < 100, 0 < T, etc.)
-from __future__ import division, absolute_import, unicode_literals
+# can't use numexpr with unicode_literals because of bugs in older versions
+# of numexpr
+from __future__ import division, absolute_import
 import numpy as np
 import numexpr as ne
 from numpy import pi
@@ -53,8 +55,8 @@ Petty, G.W. 2008: A First Course in Atmospheric Thermodynamics. 1st Ed.
     Sundog Publishing.''',
        'Goff-Gratch': '''
 Goff, J. A., and Gratch, S. 1946: Low-pressure properties of water
-    from −160 to 212 °F, in Transactions of the American Society of
-    Heating and Ventilating Engineers, pp 95–122, presented at the
+    from -160 to 212 F, in Transactions of the American Society of
+    Heating and Ventilating Engineers, pp 95-122, presented at the
     52nd annual meeting of the American Society of Heating and
     Ventilating Engineers, New York, 1946.''',
        'Wexler 1976': '''
@@ -62,15 +64,15 @@ Wexler, A. (1976): Vapor pressure formulation for water in range 0 to
     100 C. A revision. J. Res. Natl. Bur. Stand. A, 80, 775-785.''',
        'Bolton 1980': '''
 Bolton, D. 1980: The Computation of Equivalent Potential Temperature.
-    Mon. Wea. Rev., 108, 1046–1053.
+    Mon. Wea. Rev., 108, 1046-1053.
     doi: http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2''',
        'Stull 2011': '''
 Stull, R. 2011: Wet-Bulb Temperature from Relative Humidity and Air
-    Temperature. J. Appl. Meteor. Climatol., 50, 2267–2269.
+    Temperature. J. Appl. Meteor. Climatol., 50, 2267-2269.
     doi: http://dx.doi.org/10.1175/JAMC-D-11-0143.1''',
        'Davies-Jones 2009': '''
 Davies-Jones, R. 2009: On Formulas for Equivalent Potential
-    Temperature. Mon. Wea. Rev., 137, 3137–3148.
+    Temperature. Mon. Wea. Rev., 137, 3137-3148.
     doi: http://dx.doi.org/10.1175/2009MWR2774.1'''
        }
 
@@ -333,7 +335,7 @@ def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
 @autodoc(references=ref['Goff-Gratch'] + '''
 Goff, J. A. (1957) Saturation pressure of water on the new Kelvin
     temperature scale, Transactions of the American Society of Heating and
-    Ventilating Engineers, pp 347–354, presented at the semi-annual meeting of
+    Ventilating Engineers, pp 347-354, presented at the semi-annual meeting of
     the American Society of Heating and Ventilating Engineers, Murray Bay, Que.
     Canada.
 World Meteorological Organization (1988) General meteorological
@@ -344,10 +346,10 @@ World Meteorological Organization (2000) General meteorological
     WMO-No. 49, corrigendum.
 Murphy, D. M. and Koop, T. (2005): Review of the vapour pressures of
     ice and supercooled water for atmospheric applications, Quarterly Journal
-    of the Royal Meteorological Society 131(608): 1539–1565.
+    of the Royal Meteorological Society 131(608): 1539-1565.
     doi:10.1256/qj.04.94''',
          notes='''
-The original Goff–Gratch (1946) equation reads as follows:
+The original Goff-Gratch (1946) equation reads as follows:
 
 | Log10(es) = -7.90298 (Tst/T-1)
 |             + 5.02808 Log10(Tst/T)
