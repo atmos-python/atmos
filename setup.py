@@ -15,7 +15,7 @@ setup(
     description='Atmospheric sciences utility library',
     author='Jeremy McGibbon',
     author_email='mcgibbon@uw.edu',
-    install_requires = reqs,
+    install_requires=reqs,
     url='https://github.com/mcgibbon/atmos',
     keywords=['atmos', 'atmospheric', 'equations', 'geoscience', 'science'],
     classifiers=[],
