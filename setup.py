@@ -19,4 +19,5 @@ setup(
     url='https://github.com/mcgibbon/atmos',
     keywords=['atmos', 'atmospheric', 'equations', 'geoscience', 'science'],
     classifiers=[],
+    license='MIT',
 )
