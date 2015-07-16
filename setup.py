@@ -11,7 +11,7 @@ reqs = [str(ir.req) for ir in install_reqs]
 setup(
     name='atmos',
     packages=['atmos'],
-    version='0.2.4-develop',
+    version='0.2.4',
     description='Atmospheric sciences utility library',
     author='Jeremy McGibbon',
     author_email='mcgibbon@uw.edu',
