@@ -639,7 +639,7 @@ correction:
     # which assumptions to use by default
     default_assumptions = (
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
-        'no liquid water', 'no ice', 'bolton',)
+        'no liquid water', 'no ice', 'bolton', 'cimo')
 
 
 def calculate(*args, **kwargs):

@@ -93,7 +93,11 @@ quantities = {
         'units': 'Pa',
     },
     'es': {
-        'name': 'saturation water vapor partial pressure',
+        'name': 'saturation water vapor partial pressure over water',
+        'units': 'Pa',
+    },
+    'esi': {
+        'name': 'saturation water vapor partial pressure over ice',
         'units': 'Pa',
     },
     'f': {
@@ -259,7 +263,7 @@ assumptions = {
     'constant Lv': 'latent heat of vaporization of water is constant',
     'ideal gas': 'the ideal gas law holds',
     'bolton': 'the assumptions in Bolton (1980) hold',
-    'goff-gratch': 'the Goff-Gratch equation for es',
+    'goff-gratch': 'the Goff-Gratch equation for es and esi',
     'frozen bulb': 'the bulb is frozen',
     'unfrozen bulb': 'the bulb is not frozen',
     'Tv equals T': 'the virtual temperature correction can be neglected',
@@ -267,7 +271,8 @@ assumptions = {
     'no liquid water': 'liquid water can be neglected',
     'no ice': 'ice can be neglected',
     'low water vapor': ('terms that are second-order in moisture quantities '
-                        'can be neglected (eg. qv == rv)')
+                        'can be neglected (eg. qv == rv)'),
+    'cimo': 'the CIMO guide equation for esi',
 }
 
 
@@ -383,6 +388,27 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 @assumes('bolton')
 def es_from_T_Bolton(T):
     return ne.evaluate('611.2*exp(17.67*(T-273.15)/(T-29.65))')
+
+
+@autodoc(
+    equation=r'esi(T) = 610.71 * 10^{9.09718 (273.16/T - 1) - 3.56654 '
+             r'log_{10}(273.16/T) + 0.876793 (1 - T/273.16)}',
+    notes='''
+Valid between -100C and 0C.''')
+@assumes('goff-gratch')
+def esi_from_T_Goff_Gratch(T):
+    return ne.evaluate(
+        '''610.71 * 10**(-9.09718*(273.16/T - 1) - 3.56654*log10(273.16/T)
+                      + 0.876793*(1 - T/273.16))''')
+
+
+@autodoc(
+    equation=r'esi = 6.112*e^{22.46*\frac{T - 273.15}{T - 0.53}}',
+    notes='''
+Matches Goff-Gratch within 0.2% from -70C to 0C, 2.5% from -100C to -70C.''')
+@assumes('cimo')
+def esi_from_T_CIMO(T):
+    return ne.evaluate('611.2*exp(22.46*(T - 273.15)/(T - 0.53))')
 
 
 @autodoc(equation=r'f = 2 \Omega sin(\frac{\pi}{180.} lat)')
