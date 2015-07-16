@@ -145,7 +145,11 @@ quantities = {
         'units': 'kg/kg',
     },
     'qvs': {
-        'name': 'saturation specific humidity',
+        'name': 'saturation specific humidity with respect to liquid water',
+        'units': 'kg/kg',
+    },
+    'qvsi': {
+        'name': 'saturation specific humidity with respect to ice',
         'units': 'kg/kg',
     },
     'qi': {
@@ -165,7 +169,11 @@ quantities = {
         'units': 'unitless',
     },
     'RH': {
-        'name': 'relative humidity',
+        'name': 'relative humidity with respect to liquid water',
+        'units': '%',
+    },
+    'RHi': {
+        'name': 'relative humidity with respect to ice',
         'units': '%',
     },
     'rho': {
@@ -177,7 +185,12 @@ quantities = {
         'units': 'kg/kg',
     },
     'rvs': {
-        'name': 'saturation water vapor mixing ratio',
+        'name': 'saturation water vapor mixing ratio with respect to liquid '
+                'water',
+        'units': 'kg/kg',
+    },
+    'rvsi': {
+        'name': 'saturation water vapor mixing ratio with respect to ice',
         'units': 'kg/kg',
     },
     'ri': {
@@ -515,10 +528,23 @@ def qvs_from_p_es(p, es):
     return qv_from_p_e(p, es)
 
 
-@autodoc(equation=r'q_v = qv\_from\_p\_e\_lwv(p, e_s)')
+@autodoc(equation=r'q_{vs} = qv\_from\_p\_e\_lwv(p, e_s)')
 @assumes('low water vapor')
 def qvs_from_p_es_lwv(p, es):
     return qv_from_p_e_lwv(p, es)
+
+
+@autodoc(equation=r'q_{vsi} = qv\_from\_p\_e(p, e_{si})')
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def qvsi_from_p_esi(p, esi):
+    return qv_from_p_e(p, esi)
+
+
+@autodoc(equation=r'q_{vsi} = qv\_from\_p\_e\_lwv(p, e_{si})')
+@assumes('low water vapor')
+def qvsi_from_p_esi_lwv(p, esi):
+    return qv_from_p_e_lwv(p, esi)
 
 
 @autodoc(equation=r'q_t = q_i+q_v+q_l')
@@ -609,10 +635,22 @@ def RH_from_rv_rvs(rv, rvs):
     return ne.evaluate('rv/rvs*100.')
 
 
+@autodoc(equation=r'RH_i = \frac{r_v}{r_{vsi}} \times 100')
+@assumes()
+def RHi_from_rv_rvsi(rv, rvsi):
+    return ne.evaluate('rv/rvsi*100.')
+
+
 @autodoc(equation=r'RH = \frac{q_{v}}{q_{vs}} \times 100')
 @assumes('low water vapor')
 def RH_from_qv_qvs_lwv(qv, qvs):
     return ne.evaluate('qv/qvs*100.')
+
+
+@autodoc(equation=r'RH_i = \frac{q_{v}}{q_{vsi}} \times 100')
+@assumes('low water vapor')
+def RHi_from_qv_qvsi_lwv(qv, qvsi):
+    return ne.evaluate('qv/qvsi*100.')
 
 
 @autodoc(equation=r'\rho = \frac{AH}{q_v}')
@@ -644,6 +682,12 @@ def rv_from_qv_lwv(qv):
 @assumes()
 def rv_from_RH_rvs(RH, rvs):
     return ne.evaluate('RH/100.*rvs')
+
+
+@autodoc(equation=r'r_v = \frac{RH_i}{100} r_{vsi}')
+@assumes()
+def rv_from_RHi_rvsi(RHi, rvsi):
+    return ne.evaluate('RHi/100.*rvsi')
 
 
 @autodoc(equation=r'rv = (\frac{Rd}{Rv}) \frac{e}{p-e}')
@@ -740,11 +784,30 @@ def rvs_from_p_es(p, es):
     return rv_from_p_e(p, es)
 
 
-@autodoc(equation=r'r_v = rv\_from\_qv(q_{vs})')
+@autodoc(equation=r'r_{vsi} = rv\_from\_p\_e(p, e_{si})')
+@assumes()
+def rvsi_from_p_esi(p, esi):
+    return rv_from_p_e(p, esi)
+
+
+@autodoc(equation=r'r_{vs} = rv\_from\_qv(q_{vs})')
 @assumes()
 @overridden_by_assumptions('low water vapor')
 def rvs_from_qvs(qvs):
     return rv_from_qv(qvs)
+
+
+@autodoc(equation=r'r_{vsi} = rv\_from\_qv(q_{vsi})')
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def rvsi_from_qvsi(qvsi):
+    return rv_from_qv(qvsi)
+
+
+@autodoc(equation=r'r_{vsi} = rv\_from\_qv(q_{vsi})')
+@assumes('low water vapor')
+def rvsi_from_qvsi_lwv(qvsi):
+    return rv_from_qv_lwv(qvsi)
 
 
 @autodoc(equation=r'r_v = rv\_from\_qv(q_{vs})')
