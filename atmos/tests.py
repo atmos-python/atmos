@@ -939,9 +939,9 @@ class EquationTests(unittest.TestCase):
 
     def test_RH_from_qv_qvs_lwv(self):
         func = equations.RH_from_qv_qvs_lwv
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(5., 100.), (1e-3, 2e-3)]
+        out_values = [5., 50.]
+        tols = [0.01, 0.01]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_rho_from_qv_AH(self):
@@ -974,9 +974,9 @@ class EquationTests(unittest.TestCase):
 
     def test_rv_from_p_e(self):
         func = equations.rv_from_p_e
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(1e5, 500.), (9e4, 1000.), (8e4, 0.)]
+        out_values = [0.003125, 0.006988, 0.]
+        tols = [1e-6, 1e-6, 1e-8]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_rt_from_ri_rv_rl(self):
@@ -1065,9 +1065,9 @@ class EquationTests(unittest.TestCase):
 
     def test_rvs_from_p_es(self):
         func = equations.rvs_from_p_es
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(1e5, 500.), (9e4, 1000.), (8e4, 0.)]
+        out_values = [0.003125, 0.006988, 0.]
+        tols = [1e-6, 1e-6, 1e-8]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_rvs_from_qvs(self):
@@ -1156,9 +1156,9 @@ class EquationTests(unittest.TestCase):
 
     def test_theta_from_p_T(self):
         func = equations.theta_from_p_T
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(75000., 273.15), (1e5, 253.15), (10000., 253.15)]
+        out_values = [296.57, 253.15, 489.07]
+        tols = [0.1, 0.01, 0.5]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_thetae_from_p_T_Tlcl_rv_Bolton(self):
