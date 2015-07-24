@@ -319,7 +319,7 @@ def DSE_from_T_Phi(T, Phi):
 @autodoc(equation=r'e = p \frac{q_v}{0.622+q_v}')
 @assumes()
 def e_from_p_qv(p, qv):
-    return ne.evaluate('\frac{p*qv}{0.622+qv}')
+    return ne.evaluate('p*qv/(0.622+qv)')
 
 
 @autodoc(equation=r'e = es(Td)', references=ref['Goff-Gratch'])
