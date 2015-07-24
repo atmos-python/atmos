@@ -110,11 +110,11 @@ quantities = {
     },
     'lat': {
         'name': 'latitude',
-        'units': 'degrees N',
+        'units': 'degrees',
     },
     'lon': {
         'name': 'longitude',
-        'units': 'degrees E',
+        'units': 'degrees',
     },
     'MSE': {
         'name': 'moist static energy',
@@ -166,15 +166,15 @@ quantities = {
     },
     'RB': {
         'name': 'bulk Richardson number',
-        'units': 'unitless',
+        'units': 'dimensionless',
     },
     'RH': {
         'name': 'relative humidity with respect to liquid water',
-        'units': '%',
+        'units': 'percent',
     },
     'RHi': {
         'name': 'relative humidity with respect to ice',
-        'units': '%',
+        'units': 'percent',
     },
     'rho': {
         'name': 'density',
