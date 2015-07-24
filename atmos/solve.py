@@ -9,6 +9,16 @@ from atmos import equations
 import numpy as np
 from six import add_metaclass, string_types
 from textwrap import wrap
+import re
+import pint
+
+# initialize a unit registry for converting units
+_ureg = pint.UnitRegistry()
+_ureg.define('fraction = [fraction] = frac = ratio')
+_ureg.define('percent = 0.01*fraction = %')
+# regex program for identifying unit-specifying keyword arguments for
+# solvers
+_unit_kwarg_prog = re.compile(r'^(.+)_unit$|^(.+)_units$')
 
 
 class ExcludeError(Exception):
@@ -363,6 +373,13 @@ Notes
             self._debug = kwargs.pop('debug')
         else:
             self._debug = False
+        # get reference units from equation module
+        self._ref_units = {}
+        # this could be made a class variable for optimization
+        for quantity in self._equation_module.quantities.keys():
+            self._ref_units[quantity] = \
+                _ureg(self._equation_module.quantities[
+                      quantity]['units'])
         # make sure add and remove assumptions are tuples, not strings
         if ('add_assumptions' in kwargs.keys() and
                 isinstance(kwargs['add_assumptions'], string_types)):
@@ -404,8 +421,28 @@ Notes
         self._ensure_assumptions(*assumptions)
         # now that we have our assumptions, use them to set the methods
         self.methods = self._get_methods(assumptions)
+        # take out any unit designations
+        self.units = {}
+        for kwarg in kwargs.keys():
+            m = _unit_kwarg_prog.match(kwarg)
+            if m is not None:
+                # select whichever group is not None
+                var = m.group(1) or m.group(2)
+                unit_str = kwargs.pop(kwarg)
+                if not isinstance(unit_str, string_types):
+                    raise TypeError('units must be strings')
+                units = _ureg(unit_str)
+                self.units[var] = units
         # make sure the remaining variables are quantities
         self._ensure_quantities(*kwargs.keys())
+        # convert quantities to reference units
+        for kwarg in kwargs:
+            if (kwarg in self.units and
+                    self.units[kwarg] != self._ref_units[kwarg]):
+                # special unit defined
+                # convert to reference unit for calculations
+                kwargs[kwarg] = (self.units[kwarg] * kwargs[kwarg]).to(
+                    self._ref_units[kwarg]).magnitude
         # also store the quantities
         self.vars = kwargs
 
@@ -493,19 +530,27 @@ correction:
             value = func(*[self.vars[varname] for varname in func_args[i]])
             # Add it to our dictionary of quantities for successive functions
             self.vars[extra_values[i]] = value
+        return_list = []
+        # do corrections for non-standard units
+        for arg in args:
+            if arg in self.units and self.units[arg] != self._ref_units[arg]:
+                return_list.append((self._ref_units[arg] * self.vars[arg]).to(
+                    self.units[arg]).magnitude)
+            else:
+                return_list.append(self.vars[arg])
         if self._debug:
             # We should return a list of funcs as the last item returned
-            if len(args) == 1:
-                return _check_scalar(self.vars[args[0]]), funcs
+            if len(return_list) == 1:
+                return _check_scalar(return_list[0]), funcs
             else:
-                return ([_check_scalar(self.vars[arg]) for arg in args] +
+                return ([_check_scalar(val) for val in return_list] +
                         [funcs, ])
         else:
             # no function debugging, just return the quantities
             if len(args) == 1:
-                return _check_scalar(self.vars[args[0]])
+                return _check_scalar(return_list[0])
             else:
-                return [_check_scalar(self.vars[arg]) for arg in args]
+                return [_check_scalar(val) for val in return_list]
 
     def _get_methods(self, assumptions):
         '''

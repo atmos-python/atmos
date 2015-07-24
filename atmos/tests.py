@@ -531,17 +531,17 @@ class calculateTests(unittest.TestCase):
         rho = calculate('rho', **self.vars1)
         assert (rho.shape == self.shape)
         assert (rho == 1/Rd).all()
-        assert isinstance(rho, np.ndarray)
+        self.assertIsInstance(rho, np.ndarray)
 
     def test_returns_float(self):
         rho = calculate('rho', Tv=1., p=1.)
-        assert isinstance(rho, float)
+        self.assertIsInstance(rho, float)
 
     def test_depth_2_calculation(self):
         rho = calculate('rho', add_assumptions=('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
-        assert isinstance(rho, np.ndarray)
+        self.assertIsInstance(rho, np.ndarray)
 
     def test_double_calculation(self):
         Tv, rho = calculate('Tv', 'rho', add_assumptions=('Tv equals T',),
@@ -549,25 +549,61 @@ class calculateTests(unittest.TestCase):
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
-        assert isinstance(rho, np.ndarray)
-        assert isinstance(Tv, np.ndarray)
+        self.assertIsInstance(rho, np.ndarray)
+        self.assertIsInstance(Tv, np.ndarray)
 
     def test_double_reverse_calculation(self):
         rho, Tv = calculate('rho', 'Tv', add_assumptions=('Tv equals T',),
                             **self.vars2)
         assert (rho == 1/Rd).all()
-        assert isinstance(rho, np.ndarray)
-        assert isinstance(Tv, np.ndarray)
+        self.assertIsInstance(rho, np.ndarray)
+        self.assertIsInstance(Tv, np.ndarray)
 
     def test_T_from_Tv(self):
         assert calculate('T', Tv=1., add_assumptions=('Tv equals T',)) == 1.
         assert calculate('T', Tv=5., add_assumptions=('Tv equals T',)) == 5.
 
     def test_rv_from_qv(self):
-        assert np.isclose(calculate('rv', qv=0.005), 0.005025125628140704)
+        self.assertAlmostEqual(calculate('rv', qv=0.005), 0.005025125628140704)
 
     def test_qv_from_rv(self):
-        assert np.isclose(calculate('qv', rv=0.005), 0.0049751243781094535)
+        self.assertAlmostEqual(calculate('qv', rv=0.005), 0.004975124378109453)
+
+
+class CalculateWithUnitsTests(unittest.TestCase):
+
+    def setUp(self):
+        self.units_dict = {
+            'T': ('K', 'degC', 'degF'),
+            'p': ('hPa', 'Pa'),
+            'Tv': ('K', 'degC', 'degF'),
+            'rv': ('g/kg', 'kg/kg'),
+            'qv': ('g/kg', 'kg/kg'),
+            'rvs': ('g/kg', 'kg/kg'),
+            'RH': ('percent',),
+        }
+
+    def tearDown(self):
+        self.units_dict = None
+
+    def test_returns_same_value(self):
+        for quantity in self.units_dict.keys():
+            for unit in self.units_dict[quantity]:
+                kwargs = {}
+                kwargs[quantity + '_unit'] = unit
+                kwargs[quantity] = 1.5
+                result = calculate(quantity, **kwargs)
+                self.assertAlmostEqual(
+                    result, 1.5, msg='calculate should return the same value '
+                    'when given a value as input')
+
+    def test_input_unit(self):
+        rho = calculate('rho', Tv=1., p=0.01, p_unit='hPa')
+        self.assertEqual(rho, 1./Rd)
+
+    def test_output_unit(self):
+        p = calculate('p', Tv=1., rho=1./Rd, p_unit='millibar')
+        self.assertEqual(p, 0.01)
 
 
 class TestSolveValuesNearSkewT(unittest.TestCase):
@@ -618,7 +654,7 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
         self._generator('Tlcl', 1.)
 
     def test_calculate_thetae(self):
-        quantity = 'Tw'
+        quantity = 'thetae'
         skew_T_value = self.quantities.pop(quantity)
         self.quantities.pop('Tlcl')  # let us calculate this ourselves
         calculated_value, funcs = calculate(
@@ -626,7 +662,7 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             debug=True,
             **self.quantities)
         diff = abs(skew_T_value - calculated_value)
-        if diff > 1.:
+        if diff > 2.:
             err_msg = ('Value {:.2f} is too far away from '
                        '{:.2f} for {}.'.format(
                            calculated_value, skew_T_value, quantity))
@@ -641,6 +677,107 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             quantity, add_assumptions=('bolton', 'unfrozen bulb'),
             debug=True,
             **self.quantities)
+        diff = abs(skew_T_value - calculated_value)
+        if diff > 1.:
+            err_msg = ('Value {:.2f} is too far away from '
+                       '{:.2f} for {}.'.format(
+                           calculated_value, skew_T_value, quantity))
+            err_msg += '\nfunctions used:\n'
+            err_msg += '\n'.join([f.__name__ for f in funcs])
+            raise AssertionError(err_msg)
+
+#    def test_calculate_Td(self):
+#        self._generator('Td', 1.)
+
+    def test_calculate_plcl(self):
+        self._generator('plcl', 10000.)
+
+
+class TestSolveValuesNearSkewTAlternateUnits(unittest.TestCase):
+
+    def setUp(self):
+        self.quantities = {'p': 8.9e2, 'Tv': 4.5, 'theta': 14.+273.15,
+                           'rv': 1., 'Tlcl': -22.5+273.15,
+                           'thetae': 17.+273.15, 'Tw': -2.5,
+                           'Td': -18.5+273.15, 'plcl': 62500.,
+                           }
+        self.units = {'p_unit': 'hPa', 'Tv_units': 'degC', 'Tw_unit': 'degC',
+                      'rv_unit': 'g/kg'}
+        kwargs = {}
+        kwargs.update(self.quantities)
+        kwargs.update(self.units)
+        self.quantities['T'] = calculate('T', **kwargs)
+        self.quantities['rho'] = calculate('rho', **kwargs)
+        self.add_assumptions = ('bolton', 'unfrozen bulb')
+
+    def _generator(self, quantity, tolerance):
+        skew_T_value = self.quantities.pop(quantity)
+        kwargs = {}
+        kwargs.update(self.quantities)
+        kwargs.update(self.units)
+        calculated_value, funcs = calculate(
+            quantity, add_assumptions=self.add_assumptions,
+            debug=True, **kwargs)
+        diff = abs(skew_T_value - calculated_value)
+        if diff > tolerance:
+            err_msg = ('Value {:.2f} is too far away from '
+                       '{:.2f} for {}.'.format(
+                           calculated_value, skew_T_value, quantity))
+            err_msg += '\nfunctions used:\n'
+            err_msg += '\n'.join([f.__name__ for f in funcs])
+            raise AssertionError(err_msg)
+
+    def tearDown(self):
+        self.quantities = None
+
+    def test_calculate_precursors(self):
+        pass
+
+    def test_calculate_p(self):
+        self._generator('p', 100.)
+
+    def test_calculate_Tv(self):
+        self._generator('Tv', 1.)
+
+    def test_calculate_theta(self):
+        self._generator('theta', 1.)
+
+    def test_calculate_rv(self):
+        self._generator('rv', 1e-3)
+
+    def test_calculate_Tlcl(self):
+        self._generator('Tlcl', 1.)
+
+    def test_calculate_thetae(self):
+        quantity = 'thetae'
+        skew_T_value = self.quantities.pop(quantity)
+        self.quantities.pop('Tlcl')  # let us calculate this ourselves
+        kwargs = {}
+        kwargs.update(self.quantities)
+        kwargs.update(self.units)
+        calculated_value, funcs = calculate(
+            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
+            debug=True,
+            **kwargs)
+        diff = abs(skew_T_value - calculated_value)
+        if diff > 1.:
+            err_msg = ('Value {:.2f} is too far away from '
+                       '{:.2f} for {}.'.format(
+                           calculated_value, skew_T_value, quantity))
+            err_msg += '\nfunctions used:\n'
+            err_msg += '\n'.join([f.__name__ for f in funcs])
+            raise AssertionError(err_msg)
+
+    def test_calculate_Tw(self):
+        quantity = 'Tw'
+        skew_T_value = self.quantities.pop(quantity)
+        kwargs = {}
+        kwargs.update(self.quantities)
+        kwargs.update(self.units)
+        calculated_value, funcs = calculate(
+            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
+            debug=True,
+            **kwargs)
         diff = abs(skew_T_value - calculated_value)
         if diff > 1.:
             err_msg = ('Value {:.2f} is too far away from '
@@ -714,11 +851,10 @@ class EquationTests(unittest.TestCase):
     def _assert_accurate_values(self, func, in_values, out_values, tols):
         for i, args in enumerate(in_values):
             out_calc = func(*args)
-            if abs(out_calc - out_values[i]) > tols[i]:
-                raise AssertionError(
-                    'Calculated value {} from inputs {} is more than {}'
-                    'away from {}'.format(out_calc, args, tols[i],
-                                          out_values[i]))
+            self.assertAlmostEqual(
+                out_calc, out_values[i], delta=tols[i], msg='Calculated value '
+                '{} from inputs {} is more than {} '
+                'away from {}'.format(out_calc, args, tols[i], out_values[i]))
 
     def test_es_from_T_Bolton(self):
         func = equations.es_from_T_Bolton
