@@ -9,6 +9,10 @@ from atmos import equations
 import numpy as np
 from six import add_metaclass, string_types
 from textwrap import wrap
+try:
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
 
 
 class ExcludeError(Exception):
@@ -219,7 +223,7 @@ def _get_module_methods(module):
             continue
         else:
             funcs.append(func)
-        args = tuple(inspect.getfullargspec(func).args)
+        args = tuple(getfullargspec(func).args)
         try:
             assumptions = tuple(func.assumptions)
         except AttributeError:
