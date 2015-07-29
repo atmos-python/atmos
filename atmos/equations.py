@@ -469,13 +469,6 @@ def Phi_from_z(z):
     return ne.evaluate('g0*z')
 
 
-@autodoc(equation=r'qv = \frac{(\frac{Tv}{T} - 1)}{0.608}')
-@assumes('no liquid water', 'no ice')
-@overridden_by_assumptions('Tv equals T')
-def qv_from_Tv_T(Tv, T):
-    return ne.evaluate('(Tv/T - 1.)/0.608')
-
-
 @autodoc(equation=r'q_v = \frac{AH}{\rho}')
 @assumes()
 def qv_from_AH_rho(AH, rho):
@@ -676,6 +669,19 @@ def rv_from_qv(qv):
 @assumes('low water vapor')
 def rv_from_qv_lwv(qv):
     return 1.*qv
+
+
+@autodoc(equation='r_v = \frac{-311 (T-T_v)}{500 T - 311 T_v}')
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def rv_from_Tv_T(Tv, T):
+    return ne.evaluate('-311*(T-Tv)/(500*T-311*Tv)')
+
+
+@autodoc(equation='r_v = (\frac{T_v}{T} - 1)\frac{0.622}{1-0.622}')
+@assumes('low water vapor')
+def rv_from_Tv_T_lwv(Tv, T):
+    return ne.evaluate('(Tv/T - 1)*(0.622/(1-0.622))')
 
 
 @autodoc(equation=r'r_v = \frac{RH}{100} r_{vs}')
