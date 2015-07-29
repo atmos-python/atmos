@@ -141,7 +141,7 @@ class DecoratorTests(unittest.TestCase):
             return x
         self.func = dummyfunction
         self.func_name = dummyfunction.__name__
-        self.func_argspec = inspect.getargspec(dummyfunction)
+        self.func_argspec = inspect.getfullargspec(dummyfunction)
         self.quantity_dict = {
             'T': {'name': 'air temperature', 'units': 'K'},
             'qv': {'name': 'specific humidity', 'units': 'kg/kg'},
@@ -152,7 +152,7 @@ class DecoratorTests(unittest.TestCase):
             'a2': 'a2_long',
             'a3': 'a3_long',
         }
-        self.func_argspec = inspect.getargspec(self.func)
+        self.func_argspec = inspect.getfullargspec(self.func)
 
     def tearDown(self):
         self.func = None
@@ -163,38 +163,38 @@ class DecoratorTests(unittest.TestCase):
         func = decorators.assumes()(self.func)
         assert func.assumptions == ()
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     def test_assumes_single(self, **kwargs):
         func = decorators.assumes('a1')(self.func)
         assert func.assumptions == ('a1',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     def test_assumes_triple(self, **kwargs):
         func = decorators.assumes('a1', 'a2', 'a3')(self.func)
         assert func.assumptions == ('a1', 'a2', 'a3',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_empty(self, **kwargs):
         func = decorators.overridden_by_assumptions()(self.func)
         assert func.overridden_by_assumptions == ()
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_single(self, **kwargs):
         func = decorators.overridden_by_assumptions('a1')(self.func)
         assert func.overridden_by_assumptions == ('a1',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_triple(self, **kwargs):
         func = decorators.overridden_by_assumptions(
             'a1', 'a2', 'a3')(self.func)
         assert func.overridden_by_assumptions == ('a1', 'a2', 'a3',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert inspect.getfullargspec(func) == self.func_argspec
 
     @raises(ValueError)
     def test_autodoc_invalid_no_extra_args(self):

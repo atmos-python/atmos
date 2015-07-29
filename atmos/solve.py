@@ -219,7 +219,7 @@ def _get_module_methods(module):
             continue
         else:
             funcs.append(func)
-        args = tuple(inspect.getargspec(func).args)
+        args = tuple(inspect.getfullargspec(func).args)
         try:
             assumptions = tuple(func.assumptions)
         except AttributeError:
