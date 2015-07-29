@@ -894,7 +894,7 @@ Neglects density effects of liquid and solid water""")
 @assumes()
 @overridden_by_assumptions('low water vapor', 'Tv equals T')
 def T_from_Tv_rv(Tv, rv):
-    return ne.evaluate('T/(1+rv/0.622)*(1+rv)')
+    return ne.evaluate('Tv/(1+rv/0.622)*(1+rv)')
 
 
 @autodoc(
@@ -914,7 +914,7 @@ Neglects density effects of liquid and solid water""")
 @assumes('low water vapor')
 @overridden_by_assumptions('Tv equals T')
 def T_from_Tv_rv_lwv(Tv, rv):
-    return ne.evaluate('T/(1+(1/0.622-1)*rv)')
+    return ne.evaluate('Tv/(1+(1/0.622-1)*rv)')
 
 
 @autodoc(equation=r'T_v = T',
