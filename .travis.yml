@@ -5,14 +5,13 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
-  - "nightly"
+#  - "nightly"
 
 # command to install dependencies
 install:
   - "pip install ."
   - "pip install python-coveralls"
   - "pip install coverage"
-  - "pip install coverage --upgrade"
   - "pip install nose"
   - "pip install -r requirements.txt"
 
