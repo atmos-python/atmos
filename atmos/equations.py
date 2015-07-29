@@ -403,6 +403,17 @@ def es_from_T_Bolton(T):
     return ne.evaluate('611.2*exp(17.67*(T-273.15)/(T-29.65))')
 
 
+@autodoc(equation=r'T_d = \frac{17.67*273.15 - 29.65 ln(\frac{e}{611.2})}'
+                  r'{17.67-ln(\frac{e}{611.2})}',
+         references=ref['Bolton 1980'],
+         notes='''
+Obtained by inverting Bolton's formula, es(Td) = T.''')
+@assumes('bolton')
+def Td_from_e_Bolton(e):
+    return ne.evaluate('(17.67*273.15 - 29.65*log(e/611.2))/'
+                       '(17.67-log(e/611.2))')
+
+
 @autodoc(
     equation=r'esi(T) = 610.71 * 10^{9.09718 (273.16/T - 1) - 3.56654 '
              r'log_{10}(273.16/T) + 0.876793 (1 - T/273.16)}',
