@@ -423,16 +423,20 @@ Notes
         self.methods = self._get_methods(assumptions)
         # take out any unit designations
         self.units = {}
-        for kwarg in kwargs.keys():
+        remove_kwargs = []
+        for kwarg in kwargs:
             m = _unit_kwarg_prog.match(kwarg)
             if m is not None:
                 # select whichever group is not None
                 var = m.group(1) or m.group(2)
-                unit_str = kwargs.pop(kwarg)
+                unit_str = kwargs[kwarg]
+                remove_kwargs.append(kwarg)
                 if not isinstance(unit_str, string_types):
                     raise TypeError('units must be strings')
                 units = _ureg(unit_str)
                 self.units[var] = units
+        for kwarg in remove_kwargs:
+            kwargs.pop(kwarg)
         # make sure the remaining variables are quantities
         self._ensure_quantities(*kwargs.keys())
         # convert quantities to reference units
@@ -441,7 +445,9 @@ Notes
                     self.units[kwarg] != self._ref_units[kwarg]):
                 # special unit defined
                 # convert to reference unit for calculations
-                kwargs[kwarg] = (self.units[kwarg] * kwargs[kwarg]).to(
+                print(self.units[kwarg], kwargs[kwarg], self._ref_units[kwarg])
+                kwargs[kwarg] = _ureg.Quantity(kwargs[kwarg],
+                                               self.units[kwarg]).to(
                     self._ref_units[kwarg]).magnitude
         # also store the quantities
         self.vars = kwargs
