@@ -853,7 +853,7 @@ def Tlcl_from_T_e(T, e):
 
 @autodoc(equation=r'T = \theta (\frac{10^5}{p})^{-\frac{R_d}{C_{pd}}}')
 @assumes('constant Cp')
-def T_from_p_theta(p, T):
+def T_from_p_theta(p, theta):
     return ne.evaluate('theta*(1e5/p)**(-Rd/Cpd)')
 
 
