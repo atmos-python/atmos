@@ -857,18 +857,64 @@ def T_from_p_theta(p, theta):
     return ne.evaluate('theta*(1e5/p)**(-Rd/Cpd)')
 
 
-@autodoc(equation=r'T = \frac{T_v}{1 + 0.608 q_v}')
-@assumes('no liquid water', 'no ice')
+@autodoc(
+    equation=r'T_v = \frac{T}{1-\frac{e}{p}(1-0.622)}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
 @overridden_by_assumptions('Tv equals T')
-def T_from_Tv_qv(Tv, qv):
-    return ne.evaluate('Tv/(1+0.608*qv)')
+def Tv_from_p_e_T(p, e, T):
+    return ne.evaluate('T/(1-e/p*(1-0.622))')
 
 
-@autodoc(equation=r'T_v = T*(1+0.608 q_v)')
-@assumes('no liquid water', 'no ice')
+@autodoc(
+    equation=r'T = T_v (1-\frac{e}{p}(1-0.622))',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
 @overridden_by_assumptions('Tv equals T')
-def Tv_from_T_qv(T, qv):
-    return ne.evaluate('T*(1+0.608*qv)')
+def T_from_p_e_Tv(p, e, Tv):
+    return ne.evaluate('Tv*(1-e/p*(1-0.622))')
+
+
+@autodoc(
+    equation=r'T_v = T \frac{1 + \frac{r_v}{0.622}}{1+r_v}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
+@overridden_by_assumptions('low water vapor', 'Tv equals T')
+def Tv_from_T_rv(T, rv):
+    return ne.evaluate('T*(1+rv/0.622)/(1+rv)')
+
+
+@autodoc(
+    equation=r'T = T_v \frac{1 + r_v}{1+ \frac{r_v}{0.622}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
+@overridden_by_assumptions('low water vapor', 'Tv equals T')
+def T_from_Tv_rv(Tv, rv):
+    return ne.evaluate('T/(1+rv/0.622)*(1+rv)')
+
+
+@autodoc(
+    equation=r'T_v = T (1 + (\frac{1}{0.622} - 1) r_v)',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes('low water vapor')
+@overridden_by_assumptions('Tv equals T')
+def Tv_from_T_rv_lwv(T, rv):
+    return ne.evaluate('T*(1+(1/0.622-1)*rv)')
+
+
+@autodoc(
+    equation=r'T = \frac{T_v}{1 + (\frac{1}{0.622} - 1) r_v}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes('low water vapor')
+@overridden_by_assumptions('Tv equals T')
+def T_from_Tv_rv_lwv(Tv, rv):
+    return ne.evaluate('T/(1+(1/0.622-1)*rv)')
 
 
 @autodoc(equation=r'T_v = T',

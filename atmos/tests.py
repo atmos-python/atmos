@@ -591,9 +591,10 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             quantity, add_assumptions=self.add_assumptions,
             debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
+        print(funcs)
         if diff > tolerance:
-            err_msg = ('Value {:.2f} is too far away from '
-                       '{:.2f} for {}.'.format(
+            err_msg = ('Value {:.4f} is too far away from '
+                       '{:.4f} for {}.'.format(
                            calculated_value, skew_T_value, quantity))
             err_msg += '\nfunctions used:\n'
             err_msg += '\n'.join([f.__name__ for f in funcs])
@@ -791,6 +792,13 @@ class EquationTests(unittest.TestCase):
         in_values = []
         out_values = []
         tols = []
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_qv_from_Tv_T(self):
+        func = equations.qv_from_Tv_T
+        in_values = [(300., 300.), (300.1824, 300.), (250.304, 250.)]
+        out_values = [0., 0.001, 0.002]
+        tols = [1e-6, 1e-4, 1e-4]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_qv_from_rv(self):
@@ -1110,20 +1118,6 @@ class EquationTests(unittest.TestCase):
 
     def test_Tlcl_from_T_e(self):
         func = equations.Tlcl_from_T_e
-        in_values = []
-        out_values = []
-        tols = []
-        self._assert_accurate_values(func, in_values, out_values, tols)
-
-    def test_T_from_Tv_qv(self):
-        func = equations.T_from_Tv_qv
-        in_values = []
-        out_values = []
-        tols = []
-        self._assert_accurate_values(func, in_values, out_values, tols)
-
-    def test_Tv_from_T_qv(self):
-        func = equations.Tv_from_T_qv
         in_values = []
         out_values = []
         tols = []
