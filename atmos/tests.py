@@ -576,12 +576,13 @@ class calculateTests(unittest.TestCase):
 class TestSolveValuesNearSkewT(unittest.TestCase):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e4, 'Tv': 4.5+273.15, 'theta': 14.+273.15,
+        self.quantities = {'p': 8.9e4, 'theta': 14.+273.15,
                            'rv': 1e-3, 'Tlcl': -22.5+273.15,
                            'thetae': 17.+273.15, 'Tw': -2.5+273.15,
                            'Td': -18.5+273.15, 'plcl': 62500.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
+        self.quantities['Tv'] = calculate('Tv', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
         self.add_assumptions = ('bolton', 'unfrozen bulb')
 
@@ -591,7 +592,6 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             quantity, add_assumptions=self.add_assumptions,
             debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
-        print(funcs)
         if diff > tolerance:
             err_msg = ('Value {:.4f} is too far away from '
                        '{:.4f} for {}.'.format(
@@ -671,12 +671,13 @@ class TestSolveValuesNearSkewTAssumingLowMoisture(TestSolveValuesNearSkewT):
 class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 18.4+273.15,
+        self.quantities = {'p': 8.9e4, 'theta': 18.4+273.15,
                            'rv': 6e-3, 'Tlcl': 3.8+273.15,
                            'thetae': 36.5+273.15,
                            'Tw': 6.5+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
+        self.quantities['Tv'] = calculate('Tv', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
         self.add_assumptions = ('bolton', 'unfrozen bulb')
 
@@ -792,13 +793,6 @@ class EquationTests(unittest.TestCase):
         in_values = []
         out_values = []
         tols = []
-        self._assert_accurate_values(func, in_values, out_values, tols)
-
-    def test_qv_from_Tv_T(self):
-        func = equations.qv_from_Tv_T
-        in_values = [(300., 300.), (300.1824, 300.), (250.304, 250.)]
-        out_values = [0., 0.001, 0.002]
-        tols = [1e-6, 1e-4, 1e-4]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_qv_from_rv(self):
