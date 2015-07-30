@@ -334,19 +334,41 @@ def e_from_Td_Bolton(Td):
     return es_from_T_Bolton(Td)
 
 
-@autodoc(equation=r'e = es - (6.60 \times 10^{-4}) '
+@autodoc(equation=r'e = es(T_w) - (6.60 \times 10^{-4}) '
          '(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
          references=ref['Petty 2008'])
-@assumes('unfrozen bulb')
-def e_from_p_es_T_Tw(p, es, T, Tw):
+@assumes('unfrozen bulb', 'goff-gratch')
+def e_from_p_es_T_Tw_Goff_Gratch(p, es, T, Tw):
+    es = es_from_T_Goff_Gratch(Tw)
     return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
 
-@autodoc(equation=r'e = es - (5.82 \times 10^{-4}) (1 + 0.00115 (T_w-273.15) '
-         ' (T-T_w)) p',
+@autodoc(equation=r'e = es(T_w) - (5.82 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) '
+         r' (T-T_w)) p',
          references=ref['Petty 2008'])
-@assumes('frozen bulb')
-def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
+@assumes('frozen bulb', 'goff-gratch')
+def e_from_p_es_T_Tw_frozen_bulb_Goff_Gratch(p, es, T, Tw):
+    es = es_from_T_Goff_Gratch(Tw)
+    return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
+
+
+@autodoc(equation=r'e = es(T_w) - (6.60 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
+         references=ref['Petty 2008'])
+@assumes('unfrozen bulb', 'bolton')
+def e_from_p_es_T_Tw_Bolton(p, es, T, Tw):
+    es = es_from_T_Bolton(Tw)
+    return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
+
+
+@autodoc(equation=r'e = es(T_w) - (5.82 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) '
+         r' (T-T_w)) p',
+         references=ref['Petty 2008'])
+@assumes('frozen bulb', 'bolton')
+def e_from_p_es_T_Tw_frozen_bulb_Bolton(p, es, T, Tw):
+    es = es_from_T_Bolton(Tw)
     return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
 
 
@@ -840,7 +862,8 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 -35C and 35C.''')
 @assumes('bolton')
 def T_from_es_Bolton(es):
-    return ne.evaluate('(29.65*log(es)-4880.16)/(log(es)-19.48)')
+    return ne.evaluate('(59300*log(5*es/3056)-9653121)/(2000*log(5*es/3056)-'
+                       '35340)')
 
 
 @autodoc(equation=r'T_{lcl} = ((\frac{1}{T-55}-(\frac{log(\frac{RH}{100})}'
