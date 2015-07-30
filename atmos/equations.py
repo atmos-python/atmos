@@ -338,7 +338,7 @@ def e_from_Td_Bolton(Td):
          '(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
          references=ref['Petty 2008'])
 @assumes('unfrozen bulb', 'goff-gratch')
-def e_from_p_es_T_Tw_Goff_Gratch(p, es, T, Tw):
+def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
     es = es_from_T_Goff_Gratch(Tw)
     return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
@@ -348,7 +348,7 @@ def e_from_p_es_T_Tw_Goff_Gratch(p, es, T, Tw):
          r' (T-T_w)) p',
          references=ref['Petty 2008'])
 @assumes('frozen bulb', 'goff-gratch')
-def e_from_p_es_T_Tw_frozen_bulb_Goff_Gratch(p, es, T, Tw):
+def e_from_p_T_Tw_frozen_bulb_Goff_Gratch(p, T, Tw):
     es = es_from_T_Goff_Gratch(Tw)
     return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
 
@@ -357,7 +357,7 @@ def e_from_p_es_T_Tw_frozen_bulb_Goff_Gratch(p, es, T, Tw):
          r'(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
          references=ref['Petty 2008'])
 @assumes('unfrozen bulb', 'bolton')
-def e_from_p_es_T_Tw_Bolton(p, es, T, Tw):
+def e_from_p_T_Tw_Bolton(p, T, Tw):
     es = es_from_T_Bolton(Tw)
     return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
@@ -367,7 +367,7 @@ def e_from_p_es_T_Tw_Bolton(p, es, T, Tw):
          r' (T-T_w)) p',
          references=ref['Petty 2008'])
 @assumes('frozen bulb', 'bolton')
-def e_from_p_es_T_Tw_frozen_bulb_Bolton(p, es, T, Tw):
+def e_from_p_T_Tw_frozen_bulb_Bolton(p, T, Tw):
     es = es_from_T_Bolton(Tw)
     return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
 
@@ -972,7 +972,9 @@ def Tv_from_p_rho_ideal_gas(p, rho):
 
 
 @autodoc(references=ref['Stull 2011'],
-         notes='Uses the empirical inverse solution from Stull (2011).')
+         notes='''
+Uses the empirical inverse solution from Stull (2011). Only valid at 101.3kPa.
+''')
 @assumes()
 def Tw_from_T_RH_Stull(T, RH):
     return ne.evaluate('''((T-273.15)*arctan(0.151977*(RH + 8.313659)**0.5)
