@@ -6,7 +6,6 @@ from __future__ import division, unicode_literals
 import unittest
 import nose
 import numpy as np
-import inspect
 from atmos import equations
 from atmos import util
 from atmos import decorators
@@ -18,6 +17,10 @@ from atmos.solve import BaseSolver, FluidSolver, calculate, \
 from atmos.util import quantity_string, assumption_list_string, \
     quantity_spec_string, doc_paragraph, \
     strings_to_list_string
+try:
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
 
 
 def test_quantities_dict_complete():
@@ -141,7 +144,7 @@ class DecoratorTests(unittest.TestCase):
             return x
         self.func = dummyfunction
         self.func_name = dummyfunction.__name__
-        self.func_argspec = inspect.getargspec(dummyfunction)
+        self.func_argspec = getfullargspec(dummyfunction)
         self.quantity_dict = {
             'T': {'name': 'air temperature', 'units': 'K'},
             'qv': {'name': 'specific humidity', 'units': 'kg/kg'},
@@ -152,7 +155,7 @@ class DecoratorTests(unittest.TestCase):
             'a2': 'a2_long',
             'a3': 'a3_long',
         }
-        self.func_argspec = inspect.getargspec(self.func)
+        self.func_argspec = getfullargspec(self.func)
 
     def tearDown(self):
         self.func = None
@@ -163,38 +166,38 @@ class DecoratorTests(unittest.TestCase):
         func = decorators.assumes()(self.func)
         assert func.assumptions == ()
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     def test_assumes_single(self, **kwargs):
         func = decorators.assumes('a1')(self.func)
         assert func.assumptions == ('a1',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     def test_assumes_triple(self, **kwargs):
         func = decorators.assumes('a1', 'a2', 'a3')(self.func)
         assert func.assumptions == ('a1', 'a2', 'a3',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_empty(self, **kwargs):
         func = decorators.overridden_by_assumptions()(self.func)
         assert func.overridden_by_assumptions == ()
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_single(self, **kwargs):
         func = decorators.overridden_by_assumptions('a1')(self.func)
         assert func.overridden_by_assumptions == ('a1',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     def test_overridden_by_assumptions_triple(self, **kwargs):
         func = decorators.overridden_by_assumptions(
             'a1', 'a2', 'a3')(self.func)
         assert func.overridden_by_assumptions == ('a1', 'a2', 'a3',)
         assert func.__name__ == self.func_name
-        assert inspect.getargspec(func) == self.func_argspec
+        assert getfullargspec(func) == self.func_argspec
 
     @raises(ValueError)
     def test_autodoc_invalid_no_extra_args(self):
@@ -609,12 +612,13 @@ class CalculateWithUnitsTests(unittest.TestCase):
 class TestSolveValuesNearSkewT(unittest.TestCase):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e4, 'Tv': 4.5+273.15, 'theta': 14.+273.15,
-                           'rv': 1e-3, 'Tlcl': -22.5+273.15,
-                           'thetae': 17.+273.15, 'Tw': -2.5+273.15,
-                           'Td': -18.5+273.15, 'plcl': 62500.,
+        self.quantities = {'p': 9e4, 'theta': 14.+273.15,
+                           'rv': 1e-3, 'Tlcl': -22.+273.15,
+                           'thetae': 17.+273.15, 'Tw': -4.+273.15,
+                           'Td': -18.+273.15, 'plcl': 65000.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
+        self.quantities['Tv'] = calculate('Tv', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
         self.add_assumptions = ('bolton', 'unfrozen bulb')
 
@@ -625,8 +629,8 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
-            err_msg = ('Value {:.2f} is too far away from '
-                       '{:.2f} for {}.'.format(
+            err_msg = ('Value {:.4f} is too far away from '
+                       '{:.4f} for {}.'.format(
                            calculated_value, skew_T_value, quantity))
             err_msg += '\nfunctions used:\n'
             err_msg += '\n'.join([f.__name__ for f in funcs])
@@ -643,6 +647,9 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
 
     def test_calculate_Tv(self):
         self._generator('Tv', 1.)
+
+    def test_calculate_Td(self):
+        self._generator('Td', 1.)
 
     def test_calculate_theta(self):
         self._generator('theta', 1.)
@@ -669,25 +676,6 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             err_msg += '\nfunctions used:\n'
             err_msg += '\n'.join([f.__name__ for f in funcs])
             raise AssertionError(err_msg)
-
-    def test_calculate_Tw(self):
-        quantity = 'Tw'
-        skew_T_value = self.quantities.pop(quantity)
-        calculated_value, funcs = calculate(
-            quantity, add_assumptions=('bolton', 'unfrozen bulb'),
-            debug=True,
-            **self.quantities)
-        diff = abs(skew_T_value - calculated_value)
-        if diff > 1.:
-            err_msg = ('Value {:.2f} is too far away from '
-                       '{:.2f} for {}.'.format(
-                           calculated_value, skew_T_value, quantity))
-            err_msg += '\nfunctions used:\n'
-            err_msg += '\n'.join([f.__name__ for f in funcs])
-            raise AssertionError(err_msg)
-
-#    def test_calculate_Td(self):
-#        self._generator('Td', 1.)
 
     def test_calculate_plcl(self):
         self._generator('plcl', 10000.)
@@ -804,12 +792,13 @@ class TestSolveValuesNearSkewTAssumingLowMoisture(TestSolveValuesNearSkewT):
 class TestSolveValuesNearSkewTVeryMoist(TestSolveValuesNearSkewT):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e4, 'Tv': 9.+273.15, 'theta': 18.4+273.15,
+        self.quantities = {'p': 8.9e4, 'theta': 18.4+273.15,
                            'rv': 6e-3, 'Tlcl': 3.8+273.15,
                            'thetae': 36.5+273.15,
                            'Tw': 6.5+273.15, 'Td': 4.8+273.15, 'plcl': 83500.,
                            }
         self.quantities['T'] = calculate('T', **self.quantities)
+        self.quantities['Tv'] = calculate('Tv', **self.quantities)
         self.quantities['rho'] = calculate('rho', **self.quantities)
         self.add_assumptions = ('bolton', 'unfrozen bulb')
 
@@ -856,18 +845,46 @@ class EquationTests(unittest.TestCase):
                 '{} from inputs {} is more than {} '
                 'away from {}'.format(out_calc, args, tols[i], out_values[i]))
 
+    def test_e_from_Td_Bolton(self):
+        func = equations.e_from_Td_Bolton
+        in_values = [(273.15,), (273.15+20,), (273.15+40,), (273.15+50,)]
+        out_values = [603, 2310, 7297, 12210]
+        tols = [603*0.02, 2310*0.02, 7297*0.02, 12210*0.02]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_e_from_Td_Goff_Gratch(self):
+        func = equations.e_from_Td_Goff_Gratch
+        in_values = [(273.15,), (273.15+20,), (273.15+40,), (273.15+50,)]
+        out_values = [603, 2310, 7297, 12210]
+        tols = [603*0.02, 2310*0.02, 7297*0.02, 12210*0.02]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_e_from_p_T_Tw_Bolton(self):
+        func = equations.e_from_p_T_Tw_Bolton
+        in_values = [(1e5, 273.15+10, 273.15+5), (8e4, 273.15+15, 273.15+5.4)]
+        out_values = [549.7, 382.8]
+        tols = [549.7*0.1/3.45, 0.05*382.8]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
+    def test_e_from_p_T_Tw_Goff_Gratch(self):
+        func = equations.e_from_p_T_Tw_Goff_Gratch
+        in_values = [(1e5, 273.15+10, 273.15+5), (8e4, 273.15+15, 273.15+5.4)]
+        out_values = [549.7, 382.8]
+        tols = [549.7*0.1/3.45, 0.05*382.8]
+        self._assert_accurate_values(func, in_values, out_values, tols)
+
     def test_es_from_T_Bolton(self):
         func = equations.es_from_T_Bolton
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(273.15,), (273.15+20,), (273.15+40,), (273.15+50,)]
+        out_values = [603, 2310, 7297, 12210]
+        tols = [603*0.02, 2310*0.02, 7297*0.02, 12210*0.02]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_es_from_T_Goff_Gratch(self):
         func = equations.es_from_T_Goff_Gratch
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(273.15,), (273.15+20,), (273.15+40,), (273.15+50,)]
+        out_values = [603, 2310, 7297, 12210]
+        tols = [603*0.02, 2310*0.02, 7297*0.02, 12210*0.02]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_f_from_lat(self):
@@ -1222,9 +1239,9 @@ class EquationTests(unittest.TestCase):
 
     def test_T_from_es_Bolton(self):
         func = equations.T_from_es_Bolton
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(603,), (2310,), (7297,), (12210,)]
+        out_values = [273.15, 273.15+20, 273.15+40, 273.15+50]
+        tols = [1, 1, 1, 1]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_Tlcl_from_T_RH(self):
@@ -1248,20 +1265,6 @@ class EquationTests(unittest.TestCase):
         tols = []
         self._assert_accurate_values(func, in_values, out_values, tols)
 
-    def test_T_from_Tv_qv(self):
-        func = equations.T_from_Tv_qv
-        in_values = []
-        out_values = []
-        tols = []
-        self._assert_accurate_values(func, in_values, out_values, tols)
-
-    def test_Tv_from_T_qv(self):
-        func = equations.Tv_from_T_qv
-        in_values = []
-        out_values = []
-        tols = []
-        self._assert_accurate_values(func, in_values, out_values, tols)
-
     def test_Tv_from_T_assuming_Tv_equals_T(self):
         func = equations.Tv_from_T_assuming_Tv_equals_T
         in_values = [(273.15,), (100.,), (300.,)]
@@ -1278,9 +1281,9 @@ class EquationTests(unittest.TestCase):
 
     def test_Tw_from_T_RH_Stull(self):
         func = equations.Tw_from_T_RH_Stull
-        in_values = []
-        out_values = []
-        tols = []
+        in_values = [(20+273.15, 50)]
+        out_values = [13.7+273.15, ]
+        tols = [0.1]
         self._assert_accurate_values(func, in_values, out_values, tols)
 
     def test_T_from_Tv_assuming_Tv_equals_T(self):

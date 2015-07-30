@@ -334,19 +334,41 @@ def e_from_Td_Bolton(Td):
     return es_from_T_Bolton(Td)
 
 
-@autodoc(equation=r'e = es - (6.60 \times 10^{-4}) '
+@autodoc(equation=r'e = es(T_w) - (6.60 \times 10^{-4}) '
          '(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
          references=ref['Petty 2008'])
-@assumes('unfrozen bulb')
-def e_from_p_es_T_Tw(p, es, T, Tw):
+@assumes('unfrozen bulb', 'goff-gratch')
+def e_from_p_T_Tw_Goff_Gratch(p, T, Tw):
+    es = es_from_T_Goff_Gratch(Tw)
     return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
 
 
-@autodoc(equation=r'e = es - (5.82 \times 10^{-4}) (1 + 0.00115 (T_w-273.15) '
-         ' (T-T_w)) p',
+@autodoc(equation=r'e = es(T_w) - (5.82 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) '
+         r' (T-T_w)) p',
          references=ref['Petty 2008'])
-@assumes('frozen bulb')
-def e_from_p_es_T_Tw_frozen_bulb(p, es, T, Tw):
+@assumes('frozen bulb', 'goff-gratch')
+def e_from_p_T_Tw_frozen_bulb_Goff_Gratch(p, T, Tw):
+    es = es_from_T_Goff_Gratch(Tw)
+    return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
+
+
+@autodoc(equation=r'e = es(T_w) - (6.60 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) (T-T_w)) p',
+         references=ref['Petty 2008'])
+@assumes('unfrozen bulb', 'bolton')
+def e_from_p_T_Tw_Bolton(p, T, Tw):
+    es = es_from_T_Bolton(Tw)
+    return ne.evaluate('es-(0.000452679+7.59e-7*Tw)*(T-Tw)*p')
+
+
+@autodoc(equation=r'e = es(T_w) - (5.82 \times 10^{-4}) '
+         r'(1 + 0.00115 (T_w-273.15) '
+         r' (T-T_w)) p',
+         references=ref['Petty 2008'])
+@assumes('frozen bulb', 'bolton')
+def e_from_p_T_Tw_frozen_bulb_Bolton(p, T, Tw):
+    es = es_from_T_Bolton(Tw)
     return ne.evaluate('es-(0.000399181+6.693e-7*Tw)*(T-Tw)*p')
 
 
@@ -387,9 +409,9 @@ a more approximate formula is appropriate.''')
 @assumes('goff-gratch')
 def es_from_T_Goff_Gratch(T):
     return ne.evaluate(
-        '''101325.*10.**(-1.90298*((373.16/T-1.) + 5.02808*log10(373.16/T)
-        - 1.3816e-7 * (10.**(11.344*(1.-1./373.16/T))-1.)
-        + 8.1328e-3*(10.**(-3.49149*(373.16/T-1.))-1.)))''')
+        '''101325.*10.**(-7.90298*(373.16/T-1.) + 5.02808*log10(373.16/T)
+        - 1.3816e-7 * (10.**(11.344*(1.-T/373.16))-1.)
+        + 8.1328e-3*(10.**(-3.49149*(373.16/T-1.))-1.))''')
 
 
 @autodoc(equation=r'es(T) = 611.2 exp(17.67 '
@@ -401,6 +423,17 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 @assumes('bolton')
 def es_from_T_Bolton(T):
     return ne.evaluate('611.2*exp(17.67*(T-273.15)/(T-29.65))')
+
+
+@autodoc(equation=r'T_d = \frac{17.67*273.15 - 29.65 ln(\frac{e}{611.2})}'
+                  r'{17.67-ln(\frac{e}{611.2})}',
+         references=ref['Bolton 1980'],
+         notes='''
+Obtained by inverting Bolton's formula, es(Td) = T.''')
+@assumes('bolton')
+def Td_from_e_Bolton(e):
+    return ne.evaluate('(17.67*273.15 - 29.65*log(e/611.2))/'
+                       '(17.67-log(e/611.2))')
 
 
 @autodoc(
@@ -467,13 +500,6 @@ def plcl_from_p_T_Tlcl(p, T, Tlcl):
 @assumes('constant g')
 def Phi_from_z(z):
     return ne.evaluate('g0*z')
-
-
-@autodoc(equation=r'qv = \frac{(\frac{Tv}{T} - 1)}{0.608}')
-@assumes('no liquid water', 'no ice')
-@overridden_by_assumptions('Tv equals T')
-def qv_from_Tv_T(Tv, T):
-    return ne.evaluate('(Tv/T - 1.)/0.608')
 
 
 @autodoc(equation=r'q_v = \frac{AH}{\rho}')
@@ -678,6 +704,19 @@ def rv_from_qv_lwv(qv):
     return 1.*qv
 
 
+@autodoc(equation='r_v = \frac{-311 (T-T_v)}{500 T - 311 T_v}')
+@assumes()
+@overridden_by_assumptions('low water vapor')
+def rv_from_Tv_T(Tv, T):
+    return ne.evaluate('-311*(T-Tv)/(500*T-311*Tv)')
+
+
+@autodoc(equation='r_v = (\frac{T_v}{T} - 1)\frac{0.622}{1-0.622}')
+@assumes('low water vapor')
+def rv_from_Tv_T_lwv(Tv, T):
+    return ne.evaluate('(Tv/T - 1)*(0.622/(1-0.622))')
+
+
 @autodoc(equation=r'r_v = \frac{RH}{100} r_{vs}')
 @assumes()
 def rv_from_RH_rvs(RH, rvs):
@@ -823,7 +862,8 @@ Fits Wexler's formula to an accuracy of 0.1% for temperatures between
 -35C and 35C.''')
 @assumes('bolton')
 def T_from_es_Bolton(es):
-    return ne.evaluate('(29.65*log(es)-4880.16)/(log(es)-19.48)')
+    return ne.evaluate('(59300*log(5*es/3056)-9653121)/(2000*log(5*es/3056)-'
+                       '35340)')
 
 
 @autodoc(equation=r'T_{lcl} = ((\frac{1}{T-55}-(\frac{log(\frac{RH}{100})}'
@@ -853,22 +893,68 @@ def Tlcl_from_T_e(T, e):
 
 @autodoc(equation=r'T = \theta (\frac{10^5}{p})^{-\frac{R_d}{C_{pd}}}')
 @assumes('constant Cp')
-def T_from_p_theta(p, T):
+def T_from_p_theta(p, theta):
     return ne.evaluate('theta*(1e5/p)**(-Rd/Cpd)')
 
 
-@autodoc(equation=r'T = \frac{T_v}{1 + 0.608 q_v}')
-@assumes('no liquid water', 'no ice')
+@autodoc(
+    equation=r'T_v = \frac{T}{1-\frac{e}{p}(1-0.622)}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
 @overridden_by_assumptions('Tv equals T')
-def T_from_Tv_qv(Tv, qv):
-    return ne.evaluate('Tv/(1+0.608*qv)')
+def Tv_from_p_e_T(p, e, T):
+    return ne.evaluate('T/(1-e/p*(1-0.622))')
 
 
-@autodoc(equation=r'T_v = T*(1+0.608 q_v)')
-@assumes('no liquid water', 'no ice')
+@autodoc(
+    equation=r'T = T_v (1-\frac{e}{p}(1-0.622))',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
 @overridden_by_assumptions('Tv equals T')
-def Tv_from_T_qv(T, qv):
-    return ne.evaluate('T*(1+0.608*qv)')
+def T_from_p_e_Tv(p, e, Tv):
+    return ne.evaluate('Tv*(1-e/p*(1-0.622))')
+
+
+@autodoc(
+    equation=r'T_v = T \frac{1 + \frac{r_v}{0.622}}{1+r_v}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
+@overridden_by_assumptions('low water vapor', 'Tv equals T')
+def Tv_from_T_rv(T, rv):
+    return ne.evaluate('T*(1+rv/0.622)/(1+rv)')
+
+
+@autodoc(
+    equation=r'T = T_v \frac{1 + r_v}{1+ \frac{r_v}{0.622}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes()
+@overridden_by_assumptions('low water vapor', 'Tv equals T')
+def T_from_Tv_rv(Tv, rv):
+    return ne.evaluate('Tv/(1+rv/0.622)*(1+rv)')
+
+
+@autodoc(
+    equation=r'T_v = T (1 + (\frac{1}{0.622} - 1) r_v)',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes('low water vapor')
+@overridden_by_assumptions('Tv equals T')
+def Tv_from_T_rv_lwv(T, rv):
+    return ne.evaluate('T*(1+(1/0.622-1)*rv)')
+
+
+@autodoc(
+    equation=r'T = \frac{T_v}{1 + (\frac{1}{0.622} - 1) r_v}',
+    notes="""
+Neglects density effects of liquid and solid water""")
+@assumes('low water vapor')
+@overridden_by_assumptions('Tv equals T')
+def T_from_Tv_rv_lwv(Tv, rv):
+    return ne.evaluate('Tv/(1+(1/0.622-1)*rv)')
 
 
 @autodoc(equation=r'T_v = T',
@@ -886,7 +972,9 @@ def Tv_from_p_rho_ideal_gas(p, rho):
 
 
 @autodoc(references=ref['Stull 2011'],
-         notes='Uses the empirical inverse solution from Stull (2011).')
+         notes='''
+Uses the empirical inverse solution from Stull (2011). Only valid at 101.3kPa.
+''')
 @assumes()
 def Tw_from_T_RH_Stull(T, RH):
     return ne.evaluate('''((T-273.15)*arctan(0.151977*(RH + 8.313659)**0.5)
