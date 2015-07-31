@@ -24,15 +24,33 @@ documentation for :func:`atmos.calculate` or :class:`atmos.FluidSolver`.
 Units
 -----
 
-Currently, all quantities are input and output in SI units. Notably, all
-pressures are input and output in Pascals, and temperature-like quantities
-in degrees Kelvin. A full list of units for different variables is available
+By default, all quantities are input and output in SI units. Notably, pressure
+quantities are input and output in Pascals, and temperature quantities are in
+degrees Kelvin. A full list of units for different variables is available
 in the documentation for :func:`atmos.calculate` or
-:class:`atmos.FluidSolver`.
+:class:`atmos.FluidSolver`. These units can be overridden with keyword
+arguments of the form {quantity name}_unit or {quantity name}_units.
+Specifying units makes it so that both inputs and outputs of the quantity
+will be in the specified units.
 
-There are plans to later allow the use of alternate units by keyword arguments
-or by subclassing :class:`atmos.FluidSolver`, but this is not currently
-implemented.
+To get pressure in hPa::
+
+    >>> import atmos
+    >>> atmos.calculate('p', p_units='hPa', Tv=273., rho=1.27)
+    99519.638400000011
+
+To specify mixing ratio in g/kg::
+
+    >>> import atmos
+    >>> atmos.calculate('RH', rv=1, rvs=0.002, rv_unit='g/kg')
+    50.0
+
+Note that either "_unit" or "_units" can be used, and that units must be
+specified for each quantity independently.
+
+Unit names are the same as in the Pint_ package, with the exception that
+relative humidity can have units of "percent" or "fraction". Remember that
+C in Pint is Coulombs, while degC is degrees Celsius. 
 
 Assumptions
 -----------
@@ -52,3 +70,6 @@ Requests and Feedback
 This module is in ongoing development, and feedback is appreciated. In
 particular, if there is functionality you would like to see or equations
 that should be added (or corrected), please e-mail mcgibbon (at) uw {dot} edu.
+
+.. _Pint: http://pint.readthedocs.org/en/latest/
+

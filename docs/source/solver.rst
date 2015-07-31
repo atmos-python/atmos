@@ -48,6 +48,36 @@ saturation water vapor mixing ratio (which needs no assumptions)::
 
 For a full list of default assumptions, see :class:`atmos.FluidSolver`.
 
+
+Specifying Units
+----------------
+
+By default, SI units are assumed. These can be overridden with keyword
+arguments of the form {quantity name}_unit or {quantity name}_units.
+Specifying units makes it so that both inputs and outputs of the quantity
+will be in the specified units.
+
+To get pressure in hPa::
+
+    >>> import atmos
+    >>> solver = atmos.FluidSolver(Tv=273., rho=1.27, p_units='hPa')
+    >>> atmos.calculate('p')
+    995.19638400000008
+
+To specify mixing ratio in g/kg::
+
+    >>> import atmos
+    >>> solver = atmos.FluidSolver(rv=1, rvs=0.002, rv_unit='g/kg')
+    >>> atmos.calculate('RH')
+    50.0
+
+Note that either "_unit" or "_units" can be used, and that units must be
+specified for each quantity independently.
+
+Unit names are the same as in the Pint_ package, with the exception that
+relative humidity can have units of "percent" or "fraction". Remember that
+C in Pint is Coulombs, while degC is degrees Celsius. 
+
 Viewing equation functions used
 -------------------------------
 

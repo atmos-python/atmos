@@ -12,6 +12,10 @@ assumptions are a tuple *default_assumptions* that may be overridden::
         default_assumptions = ('no liquid water', 'no ice', 'low water vapor',
                                'ideal gas', 'bolton', 'constant g',
                                'constant Lv', 'hydrostatic', 'constant Cp')
+        # also set a new solution dictionary so it will not be inherited
+        # from FluidSolver
+    	_solutions = {}
+
 
 The new class can then be instantiated with, for instance::
 
@@ -40,6 +44,9 @@ would create a solver for it::
         # This contains a list of assumptions from your module that you want
         # to enable by default
         default_assumptions = ('constant density', 'constant g')
+        # a solution dictionary is necessary for caching solutions between
+        # calls to calculate()
+        _solutions = {}
 
 Writing an Equation Module
 --------------------------
