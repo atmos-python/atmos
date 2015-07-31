@@ -469,7 +469,8 @@ def f_from_lat(lat):
     references=ref['AMS Glossary Gammam'])
 @assumes('constant g', 'constant Lv')
 def Gammam_from_rvs_T(rvs, T):
-    return ne.evaluate('g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs)/(Rv*T**2))')
+    return ne.evaluate('g0*(1+(Lv0*rvs)/(Rd*T))/(Cpd+(Lv0**2*rvs*0.622)/'
+                       '(Rd*T**2))')
 
 
 @autodoc(equation=r'MSE = DSE + L_{v0} q_v')
