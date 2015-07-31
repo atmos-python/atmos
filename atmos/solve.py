@@ -368,6 +368,7 @@ Notes
     '''
 
     _equation_module = None
+    _solutions = None
 
     def __init__(self, **kwargs):
         if self._equation_module is None:
@@ -425,6 +426,7 @@ Notes
         self._ensure_assumptions(*assumptions)
         # now that we have our assumptions, use them to set the methods
         self.methods = self._get_methods(assumptions)
+        self.assumptions = assumptions
         # take out any unit designations
         self.units = {}
         remove_kwargs = []
@@ -433,6 +435,7 @@ Notes
             if m is not None:
                 # select whichever group is not None
                 var = m.group(1) or m.group(2)
+                self._ensure_quantities(var)
                 unit_str = kwargs[kwarg]
                 remove_kwargs.append(kwarg)
                 if not isinstance(unit_str, string_types):
@@ -529,9 +532,18 @@ correction:
             if arg not in possible_quantities:
                 raise ValueError('cannot calculate {0} from inputs'.format(
                     arg))
-        funcs, func_args, extra_values = \
-            _get_shortest_solution(tuple(args), tuple(self.vars.keys()), (),
-                                   self.methods)
+        # prepare a signature for this solution request
+        sig = (args, tuple(self.vars.keys()), tuple(self.assumptions))
+        # check fi we've already tried to solve this
+        if sig in self.__class__._solutions:
+            # if we have, use the cached solution
+            funcs, func_args, extra_values = self.__class__._solutions[sig]
+        else:
+            # solve and cache the solution
+            funcs, func_args, extra_values = \
+                _get_shortest_solution(args, tuple(self.vars.keys()), (),
+                                       self.methods)
+            self.__class__._solutions[sig] = (funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
         for i, func in enumerate(funcs):
@@ -694,6 +706,7 @@ correction:
     default_assumptions = (
         'ideal gas', 'hydrostatic', 'constant g', 'constant Lv', 'constant Cp',
         'no liquid water', 'no ice', 'bolton', 'cimo')
+    _solutions = {}
 
 
 def calculate(*args, **kwargs):
