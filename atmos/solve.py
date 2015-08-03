@@ -436,6 +436,9 @@ Notes
                 # select whichever group is not None
                 var = m.group(1) or m.group(2)
                 self._ensure_quantities(var)
+                if var in self.units:
+                    raise ValueError(
+                        'units for {} specified multiple times'.format(var))
                 unit_str = kwargs[kwarg]
                 remove_kwargs.append(kwarg)
                 if not isinstance(unit_str, string_types):
@@ -534,16 +537,22 @@ correction:
                     arg))
         # prepare a signature for this solution request
         sig = (args, tuple(self.vars.keys()), tuple(self.assumptions))
-        # check fi we've already tried to solve this
-        if sig in self.__class__._solutions:
-            # if we have, use the cached solution
-            funcs, func_args, extra_values = self.__class__._solutions[sig]
-        else:
-            # solve and cache the solution
+        # check if we've already tried to solve this
+        if self.__class__._solutions is not None:
+            if sig in self.__class__._solutions:
+                # if we have, use the cached solution
+                funcs, func_args, extra_values = self.__class__._solutions[sig]
+            else:
+                # solve and cache the solution
+                funcs, func_args, extra_values = \
+                    _get_shortest_solution(args, tuple(self.vars.keys()), (),
+                                           self.methods)
+                self.__class__._solutions[sig] = (funcs, func_args,
+                                                  extra_values)
+        else:  # no solution caching for this class
             funcs, func_args, extra_values = \
                 _get_shortest_solution(args, tuple(self.vars.keys()), (),
                                        self.methods)
-            self.__class__._solutions[sig] = (funcs, func_args, extra_values)
         # Above method completed successfully if no ValueError has been raised
         # Calculate each quantity we need to calculate in order
         for i, func in enumerate(funcs):
