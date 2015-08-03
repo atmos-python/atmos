@@ -534,17 +534,20 @@ class calculateTests(unittest.TestCase):
         rho = calculate('rho', **self.vars1)
         assert (rho.shape == self.shape)
         assert (rho == 1/Rd).all()
-        self.assertIsInstance(rho, np.ndarray)
+        self.assertTrue(isinstance(rho, np.ndarray),
+                        'returned rho should be ndarray')
 
     def test_returns_float(self):
         rho = calculate('rho', Tv=1., p=1.)
-        self.assertIsInstance(rho, float)
+        self.assertTrue(isinstance(rho, float),
+                        'returned rho should be float')
 
     def test_depth_2_calculation(self):
         rho = calculate('rho', add_assumptions=('Tv equals T',), **self.vars2)
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
-        self.assertIsInstance(rho, np.ndarray)
+        self.assertTrue(isinstance(rho, np.ndarray),
+                        'returned rho should be ndarray')
 
     def test_double_calculation(self):
         Tv, rho = calculate('Tv', 'rho', add_assumptions=('Tv equals T',),
@@ -552,15 +555,19 @@ class calculateTests(unittest.TestCase):
         assert Tv.shape == self.shape
         assert rho.shape == self.shape
         assert (rho == 1/Rd).all()
-        self.assertIsInstance(rho, np.ndarray)
-        self.assertIsInstance(Tv, np.ndarray)
+        self.assertTrue(isinstance(rho, np.ndarray),
+                        'returned rho should be ndarray')
+        self.assertTrue(isinstance(Tv, np.ndarray),
+                        'returned Tv should be ndarray')
 
     def test_double_reverse_calculation(self):
         rho, Tv = calculate('rho', 'Tv', add_assumptions=('Tv equals T',),
                             **self.vars2)
         assert (rho == 1/Rd).all()
-        self.assertIsInstance(rho, np.ndarray)
-        self.assertIsInstance(Tv, np.ndarray)
+        self.assertTrue(isinstance(rho, np.ndarray),
+                        'returned rho should be ndarray')
+        self.assertTrue(isinstance(Tv, np.ndarray),
+                        'returned Tv should be ndarray')
 
     def test_T_from_Tv(self):
         assert calculate('T', Tv=1., add_assumptions=('Tv equals T',)) == 1.
