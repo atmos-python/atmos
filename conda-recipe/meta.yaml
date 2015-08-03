@@ -22,6 +22,7 @@ requirements:
     - nose >=1.3
     - setuptools >=15.0
     - pint >=0.6
+    - unittest2 >=1.0
   # Packages required to run the package. These are the dependencies that
   # will be installed automatically whenever the package is installed.
   # Package names should be any valid conda spec (see "Specifying versions
@@ -34,6 +35,7 @@ requirements:
     - nose >=1.3
     - setuptools >=15.0
     - pint >=0.6
+    - unittest2 >=1.0
 
 test:
   # in addition to the run-time requirements, you can specify requirements
