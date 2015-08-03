@@ -30,7 +30,7 @@ def test_quantities_dict_complete():
             try:
                 util.parse_derivative_string(name)
             except ValueError:
-                raise AssertionError('{} not in quantities dict'.format(name))
+                raise AssertionError('{0} not in quantities dict'.format(name))
 
 
 def test_get_module_methods_nonempty():
@@ -41,7 +41,7 @@ def test_get_module_methods_nonempty():
 def test_default_assumptions_exist():
     for m in FluidSolver.default_assumptions:
         if m not in FluidSolver.all_assumptions:
-            raise AssertionError('{} not a valid assumption'.format(m))
+            raise AssertionError('{0} not a valid assumption'.format(m))
 
 
 class ddxTests(unittest.TestCase):
@@ -629,8 +629,8 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
             debug=True, **self.quantities)
         diff = abs(skew_T_value - calculated_value)
         if diff > tolerance:
-            err_msg = ('Value {:.4f} is too far away from '
-                       '{:.4f} for {}.'.format(
+            err_msg = ('Value {0:.4f} is too far away from '
+                       '{1:.4f} for {2}.'.format(
                            calculated_value, skew_T_value, quantity))
             err_msg += '\nfunctions used:\n'
             err_msg += '\n'.join([f.__name__ for f in funcs])
@@ -750,8 +750,8 @@ class TestSolveValuesNearSkewTAlternateUnits(unittest.TestCase):
             **kwargs)
         diff = abs(skew_T_value - calculated_value)
         if diff > 1.:
-            err_msg = ('Value {:.2f} is too far away from '
-                       '{:.2f} for {}.'.format(
+            err_msg = ('Value {0:.2f} is too far away from '
+                       '{1:.2f} for {2}.'.format(
                            calculated_value, skew_T_value, quantity))
             err_msg += '\nfunctions used:\n'
             err_msg += '\n'.join([f.__name__ for f in funcs])
@@ -843,8 +843,8 @@ class EquationTests(unittest.TestCase):
             out_calc = func(*args)
             self.assertAlmostEqual(
                 out_calc, out_values[i], delta=tols[i], msg='Calculated value '
-                '{} from inputs {} is more than {} '
-                'away from {}'.format(out_calc, args, tols[i], out_values[i]))
+                '{0} from inputs {1} is more than {2} '
+                'away from {3}'.format(out_calc, args, tols[i], out_values[i]))
 
     def test_e_from_Td_Bolton(self):
         func = equations.e_from_Td_Bolton
