@@ -343,8 +343,9 @@ remove_assumptions : tuple, optional
     contain strings that are contained in add_assumptions, if given.
 **kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
-    quantities used for calculations. For a complete list of kwargs that
-    may be used, see the Quantity Parameters section below.
+    quantities used for calculations, or unit specifications for quantities.
+    For a complete list of kwargs that may be used, see the Quantity Parameters
+    section below.
 
 Returns
 -------
@@ -357,6 +358,14 @@ Notes
 **Quantity kwargs**
 
 <quantity parameter list goes here>
+
+In addition to the quantities above, kwargs of the form <quantity>_unit or
+<quantity>_units can be used with a string specifying a unit for the quantity.
+This will cause input data for that quantity to be assumed to be in that
+unit, and output data for that quantity to be given in that unit. Note this
+must be specified separately for *each* quantity. Acceptable units are the
+units available in the Pint package, with the exception that RH can be in
+units of "fraction" or "percent".
 
 **Assumptions**
 
@@ -662,8 +671,9 @@ remove_assumptions : tuple, optional
     contain strings that are contained in add_assumptions, if given.
 **kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
-    quantities used for calculations. For a complete list of kwargs that
-    may be used, see the Quantity Parameters section below.
+    quantities used for calculations, or unit specifications for quantities.
+    For a complete list of kwargs that may be used, see the Quantity Parameters
+    section below.
 
 Returns
 -------
@@ -676,6 +686,14 @@ Notes
 **Quantity kwargs**
 
 <quantity parameter list goes here>
+
+In addition to the quantities above, kwargs of the form <quantity>_unit or
+<quantity>_units can be used with a string specifying a unit for the quantity.
+This will cause input data for that quantity to be assumed to be in that
+unit, and output data for that quantity to be given in that unit. Note this
+must be specified separately for *each* quantity. Acceptable units are the
+units available in the Pint package, with the exception that RH can be in
+units of "fraction" or "percent".
 
 **Assumptions**
 
@@ -740,8 +758,9 @@ remove_assumptions : tuple, optional
     contain strings that are contained in add_assumptions, if given.
 \*\*kwargs : ndarray, optional
     Keyword arguments used to pass in arrays of data that correspond to
-    quantities used for calculations. For a complete list of kwargs that
-    may be used, see the Quantity Parameters section below.
+    quantities used for calculations, or unit specifications for quantities.
+    For a complete list of kwargs that may be used, see the Quantity Parameters
+    section below.
 
 Returns
 -------
@@ -761,6 +780,14 @@ quantities, but requires more memory.
 **Quantity kwargs**
 
 <quantity parameter list goes here>
+
+In addition to the quantities above, kwargs of the form <quantity>_unit or
+<quantity>_units can be used with a string specifying a unit for the quantity.
+This will cause input data for that quantity to be assumed to be in that
+unit, and output data for that quantity to be given in that unit. Note this
+must be specified separately for *each* quantity. Acceptable units are the
+units available in the Pint package, with the exception that RH can be in
+units of "fraction" or "percent".
 
 **Assumptions**
 
