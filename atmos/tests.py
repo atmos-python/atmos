@@ -841,8 +841,8 @@ class EquationTests(unittest.TestCase):
     def _assert_accurate_values(self, func, in_values, out_values, tols):
         for i, args in enumerate(in_values):
             out_calc = func(*args)
-            self.assertAlmostEqual(
-                out_calc, out_values[i], delta=tols[i], msg='Calculated value '
+            if abs(out_calc - out_values[i]) > tols[i]:
+                raise AssertionError('Calculated value '
                 '{0} from inputs {1} is more than {2} '
                 'away from {3}'.format(out_calc, args, tols[i], out_values[i]))
 
