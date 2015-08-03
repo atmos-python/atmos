@@ -684,7 +684,7 @@ class TestSolveValuesNearSkewT(unittest.TestCase):
 class TestSolveValuesNearSkewTAlternateUnits(unittest.TestCase):
 
     def setUp(self):
-        self.quantities = {'p': 8.9e2, 'Tv': 4.5, 'theta': 14.+273.15,
+        self.quantities = {'p': 8.9e2, 'theta': 14.+273.15,
                            'rv': 1., 'Tlcl': -22.5+273.15,
                            'thetae': 17.+273.15, 'Tw': -2.5,
                            'Td': -18.5+273.15, 'plcl': 62500.,
@@ -695,6 +695,7 @@ class TestSolveValuesNearSkewTAlternateUnits(unittest.TestCase):
         kwargs.update(self.quantities)
         kwargs.update(self.units)
         self.quantities['T'] = calculate('T', **kwargs)
+        self.quantities['Tv'] = calculate('Tv', **kwargs)
         self.quantities['rho'] = calculate('rho', **kwargs)
         self.add_assumptions = ('bolton', 'unfrozen bulb')
 
