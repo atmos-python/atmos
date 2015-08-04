@@ -26,6 +26,10 @@ _unit_kwarg_prog = re.compile(r'^(.+)_unit$|^(.+)_units$')
 
 
 class ExcludeError(Exception):
+    """
+    Used in calculating shortest solutions to indicate solutions where all
+    remaining variables to calculated are excluded.
+    """
     pass
 
 
@@ -186,6 +190,7 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
                       if key not in exclude]
     if len(next_variables) == 0:
         raise ExcludeError
+    # We're not in a base case, so recurse this function
     results = []
     intermediates = []
     for i in range(len(next_variables)):
@@ -200,8 +205,10 @@ def _get_shortest_solution(outputs, inputs, exclude, methods):
         # all subresults raised ExcludeError
         raise ExcludeError
 
+    # sort based on shortest solution, with tiebreaker based on total args
+    # passed
     def option_key(a):
-        return len(a[0]) + 0.001*len(a[1])
+        return len(a[0]) + 0.001*sum(len(b) for b in a[1])
     best_result = min(results, key=option_key)
     best_index = results.index(best_result)
     best_intermediate = intermediates[best_index]
