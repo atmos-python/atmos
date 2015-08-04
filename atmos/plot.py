@@ -18,6 +18,7 @@ from atmos import calculate
 from atmos.constants import g0
 from scipy.integrate import odeint
 from atmos.util import closest_val
+from pkg_resources import resource_filename
 
 
 # The sole purpose of this class is to look at the upper, lower, or total
@@ -93,11 +94,13 @@ class SkewSpine(mspines.Spine):
 # This class handles registration of the skew-xaxes as a projection as well
 # as setting up the appropriate transformations. It also overrides standard
 # spines and axes instances as appropriate.
-class SkewXAxes(Axes):
+class SkewTAxes(Axes):
     # The projection must specify a name.  This will be used be the
     # user to select the projection, i.e. ``subplot(111,
     # projection='skewx')``.
     name = 'skewT'
+    default_xlim = (-40, 50)
+    default_ylim = (1050, 100)
 
     def __init__(self, *args, **kwargs):
         # This needs to be popped and set before moving on
@@ -161,19 +164,19 @@ class SkewXAxes(Axes):
         # Try to make sane default temperature plotting
         self.xaxis.set_major_locator(MultipleLocator(5))
         self.xaxis.set_major_formatter(ScalarFormatter())
-        self.set_xlim(-40, 50)
-        self.set_ylim(1050, 100)
+        self.set_xlim(*self.default_xlim)
+        self.set_ylim(*self.default_ylim)
 
     def semilogy(self, p, T, *args, **kwargs):
         """
         """
         # We need to replace the overridden plot with the original Axis plot
         # since it is called within Axes.semilogy
-        no_plot = SkewXAxes.plot
-        SkewXAxes.plot = Axes.plot
+        no_plot = SkewTAxes.plot
+        SkewTAxes.plot = Axes.plot
         Axes.semilogy(self, T, p, *args, **kwargs)
         # Be sure to put back the overridden plot method
-        SkewXAxes.plot = no_plot
+        SkewTAxes.plot = no_plot
         self.yaxis.set_major_formatter(ScalarFormatter())
         self.yaxis.set_major_locator(MultipleLocator(100))
         labels = self.xaxis.get_ticklabels()
@@ -248,8 +251,7 @@ class SkewXAxes(Axes):
         v : array_like
             V (North-South) component of wind
         xloc : float, optional
-            Position for the barbs, in normalized axBakhshaii, A. and R. Stull, 2013: Saturated Pseudoadiabats--A
-           Noniterative Approximation.es coordinates, where 0.0
+            Position for the barbs, in normalized axes coordinates, where 0.0
             denotes far left and 1.0 denotes far right. Defaults to far right.
         x_clip_radius : float, optional
             Space, in normalized axes coordinates, to leave before clipping
@@ -372,20 +374,29 @@ class SkewXAxes(Axes):
                 g0*calculate('rho', T=y, p=p0, p_units='hPa', T_units='degC',
                              RH=100.))*100.
 
-        # Determine set of starting temps if necessary
-        if t0 is None:
-            xmin, xmax = self.get_xlim()
-            t0 = np.concatenate((np.arange(xmin, 0, 5),
-                                 np.arange(0, xmax + 51, 5)))
-#        # Get pressure levels based on ylims if necessary
-        if p is None:
-            p = np.linspace(*self.get_ylim())
-        t0_base = odeint(dT_dp, t0, np.array([1e3, p[0]],
-                                             dtype=np.float64))[-1, :]
-
-        # Assemble into data for plotting
-        result = odeint(dT_dp, t0_base, p)
-        t = result.T
+        if t0 is None and p is None:
+            if (self.get_xlim() == self.default_xlim and
+                    self.get_ylim() == self.default_ylim):
+                data = np.load(resource_filename(
+                    __name__, 'data/default_moist_adiabat_data.npz'))
+                p = data['p']
+                t0 = data['t0']
+                t = data['t']
+        else:
+            # Determine set of starting temps if necessary
+            if t0 is None:
+                xmin, xmax = self.get_xlim()
+                t0 = np.concatenate((np.arange(xmin, 0, 5),
+                                     np.arange(0, xmax + 51, 5)))
+            # Get pressure levels based on ylims if necessary
+            if p is None:
+                p = np.linspace(*self.get_ylim())
+            t0_base = odeint(dT_dp, t0, np.array([1e3, p[0]],
+                                                 dtype=np.float64))[-1, :]
+    
+            # Assemble into data for plotting
+            result = odeint(dT_dp, t0_base, p)
+            t = result.T
         linedata = [np.vstack((ti, p)).T for ti in t]
 
         # Add to plot
@@ -474,7 +485,7 @@ class SkewXAxes(Axes):
 
 # Now register the projection with matplotlib so the user can select
 # it.
-register_projection(SkewXAxes)
+register_projection(SkewTAxes)
 
 
 if __name__ == '__main__':
