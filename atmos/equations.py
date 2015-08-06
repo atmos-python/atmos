@@ -230,11 +230,11 @@ quantities = {
         'units': 'K',
     },
     'thetae': {
-        'name': 'equivalent temperature',
+        'name': 'equivalent potential temperature',
         'units': 'K',
     },
     'thetaes': {
-        'name': 'saturation equivalent temperature',
+        'name': 'saturation equivalent potential temperature',
         'units': 'K',
     },
     'u': {
