@@ -68,6 +68,7 @@ class SkewXAxis(maxis.XAxis):
     def get_view_interval(self):
         return self.upper_interval[0], self.axes.viewLim.intervalx[1]
 
+
 class SkewYAxis(maxis.YAxis):
     pass
 
@@ -105,6 +106,10 @@ class SkewTAxes(Axes):
     def __init__(self, *args, **kwargs):
         # This needs to be popped and set before moving on
         self.rot = kwargs.pop('rotation', 45)
+        # set booleans to keep track of extra axes that are plotted
+        self._mixing_lines = []
+        self._dry_adiabats = []
+        self._moist_adiabats = []
         Axes.__init__(self, *args, **kwargs)
 
     def _init_axis(self):
@@ -166,10 +171,31 @@ class SkewTAxes(Axes):
         self.xaxis.set_major_formatter(ScalarFormatter())
         self.set_xlim(*self.default_xlim)
         self.set_ylim(*self.default_ylim)
+        self._mixing_lines_plotted = []
+        self._dry_adiabats_plotted = []
+        self._moist_adiabats_plotted = []
 
     def semilogy(self, p, T, *args, **kwargs):
-        """
-        """
+        r'''Plot data.
+
+        Simple wrapper around plot so that pressure is the first (independent)
+        input. This is essentially a wrapper around `semilogy`.
+
+        Parameters
+        ----------
+        p : array_like
+            pressure values
+        T : array_like
+            temperature values, can also be used for things like dew point
+        args
+            Other positional arguments to pass to `semilogy`
+        kwargs
+            Other keyword arguments to pass to `semilogy`
+
+        See Also
+        --------
+        `matplotlib.Axes.semilogy`
+        '''
         # We need to replace the overridden plot with the original Axis plot
         # since it is called within Axes.semilogy
         no_plot = SkewTAxes.plot
@@ -194,22 +220,14 @@ class SkewTAxes(Axes):
                   zorder=1.1)
         self.set_xlabel(r'Temperature ($^{\circ} C$)', color='#B31515')
         self.set_ylabel('Pressure ($hPa$)')
-        self.plot_mixing_lines()
-        self.plot_dry_adiabats()
-        self.plot_moist_adiabats()
+        if len(self._mixing_lines) == 0:
+            self.plot_mixing_lines()
+        if len(self._dry_adiabats) == 0:
+            self.plot_dry_adiabats()
+        if len(self._moist_adiabats) == 0:
+            self.plot_moist_adiabats()
 
     def plot(self, *args, **kwargs):
-        """
-        """
-        self.semilogy(*args, **kwargs)
-
-    def semilogx(self, *args, **kwargs):
-        """
-        """
-        raise NotImplementedError(
-            'Skew-T is not logarithmic in T, use semilogy')
-
-    def skew_plot(self, p, T, *args, **kwargs):
         r'''Plot data.
 
         Simple wrapper around plot so that pressure is the first (independent)
@@ -230,9 +248,30 @@ class SkewTAxes(Axes):
         --------
         `matplotlib.Axes.semilogy`
         '''
+        self.semilogy(*args, **kwargs)
 
-        # Skew-T logP plotting
-        self.semilogy(T, p, *args, **kwargs)
+    def semilogx(self, *args, **kwargs):
+        r'''Plot data.
+
+        Simple wrapper around plot so that pressure is the first (independent)
+        input. This is essentially a wrapper around `semilogy`.
+
+        Parameters
+        ----------
+        p : array_like
+            pressure values
+        T : array_like
+            temperature values, can also be used for things like dew point
+        args
+            Other positional arguments to pass to `semilogy`
+        kwargs
+            Other keyword arguments to pass to `semilogy`
+
+        See Also
+        --------
+        `matplotlib.Axes.semilogy`
+        '''
+        self.semilogy(*args, **kwargs)
 
     def plot_barbs(self, p, u, v, xloc=1.0, x_clip_radius=0.08,
                    y_clip_radius=0.08, **kwargs):
@@ -282,7 +321,7 @@ class SkewTAxes(Axes):
                                    [xloc+x_clip_radius, 1.0 + y_clip_radius]])
         b.set_clip_box(transforms.TransformedBbox(ax_bbox, self.transAxes))
 
-    def plot_dry_adiabats(self, t0=None, p=None, **kwargs):
+    def plot_dry_adiabats(self, p=None, theta=None, **kwargs):
         r'''Plot dry adiabats.
 
         Adds dry adiabats (lines of constant potential temperature) to the
@@ -291,16 +330,17 @@ class SkewTAxes(Axes):
 
         Parameters
         ----------
-        t0 : array_like, optional
-            Starting temperature values in Kelvin. If none are given, they will be
-            generated using the current temperature range at the bottom of
-            the plot.
         p : array_like, optional
-            Pressure values to be included in the dry adiabats. If not
-            specified, they will be linearly distributed across the current
-            plotted pressure range.0.5
+            1-dimensional array of pressure values to be included in the dry
+            adiabats. If not specified, they will be linearly distributed
+            across the current plotted pressure range.
+        theta : array_like, optional
+            1-dimensional array of potential temperature values for dry
+            adiabats. By default these will be generated based on the current
+            temperature limits.
         kwargs
-            Other keyword arguments to pass to `matplotlib.collections.LineCollection`
+            Other keyword arguments to pass to
+            `matplotlib.collections.LineCollection`
 
         See Also#B85C00
         --------
@@ -308,18 +348,22 @@ class SkewTAxes(Axes):
         `matplotlib.collections.LineCollection`
         `metpy.calc.dry_lapse`
         '''
+        for artist in self._dry_adiabats:
+            artist.remove()
+        self._dry_adiabats = []
+        theta = theta  # port workaround, can refactor at any time
 
         # Determine set of starting temps if necessary
-        if t0 is None:
+        if theta is None:
             xmin, xmax = self.get_xlim()
-            t0 = np.arange(xmin, xmax + 201, 10)
+            theta = np.arange(xmin, xmax + 201, 10)
 
         # Get pressure levels based on ylims if necessary
         if p is None:
             p = np.linspace(*self.get_ylim())
 
         # Assemble into data for plotting
-        t = calculate('T', theta=t0[:, None], p=p, p_units='hPa',
+        t = calculate('T', theta=theta[:, None], p=p, p_units='hPa',
                       T_units='degC', theta_units='degC')
         linedata = [np.vstack((ti, p)).T for ti in t]
 
@@ -329,19 +373,24 @@ class SkewTAxes(Axes):
         kwargs.setdefault('alpha', 1)
         kwargs.setdefault('linewidth', 0.5)
         kwargs.setdefault('zorder', 1.1)
-        self.add_collection(LineCollection(linedata, **kwargs))
-        t0 = t0.flatten()
-        T_label = calculate('T', p=140, p_units='hPa', theta=t0,
-                             T_units='degC', theta_units='degC')
-        for i in range(len(t0)):
-            format_string = '{:.0f}'
-            self.text(T_label[i], 140, format_string.format(t0[i]),
-                      fontsize=8, ha='left', va='center', rotation=-60,
-                      color='#A65300', bbox={
-                          'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
-                      }, zorder=1.2).set_clip_on(True)
+        collection = LineCollection(linedata, **kwargs)
+        self._dry_adiabats = [collection]
+        self.add_collection(collection)
+        theta = theta.flatten()
+        T_label = calculate('T', p=140, p_units='hPa', theta=theta,
+                            T_units='degC', theta_units='degC')
+        for i in range(len(theta)):
+            t = self.text(T_label[i], 140, '{:.0f}'.format(theta[i]),
+                          fontsize=8, ha='left', va='center', rotation=-60,
+                          color='#A65300', bbox={
+                              'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
+                              }, zorder=1.2)
+            t.set_clip_on(True)
+            self._dry_adiabats.append(t)
+        # keep track of plotting
+        self._dry_adiabats_plotted = True
 
-    def plot_moist_adiabats(self, t0=None, p=None, **kwargs):
+    def plot_moist_adiabats(self, p=None, thetaes=None, **kwargs):
         r'''Plot moist adiabats.
 
         Adds saturated pseudo-adiabats (lines of constant equivalent potential
@@ -351,16 +400,17 @@ class SkewTAxes(Axes):
 
         Parameters
         ----------
-        t0 : array_like, optional
-            Starting temperature values in Kelvin. If none are given, they will be
-            generated using the current temperature range at the bottom of
-            the plot.
         p : array_like, optional
-            Pressure values to be included in the moist adiabats. If not
-            specified, they will be linearly distributed across the current
-            plotted pressure range.
+            1-dimensional array of pressure values to be included in the moist
+            adiabats. If not specified, they will be linearly distributed
+            across the current plotted pressure range.
+        thetaes : array_like, optional
+            1-dimensional array of saturation equivalent potential temperature
+            values for moist adiabats. By default these will be generated based
+            on the current temperature limits.
         kwargs
-            Other keyword arguments to pass to `matplotlib.collections.LineCollection`
+            Other keyword arguments to pass to
+            `matplotlib.collections.LineCollection`
 
         See Also
         --------
@@ -368,34 +418,39 @@ class SkewTAxes(Axes):
         `matplotlib.collections.LineCollection`
         `metpy.calc.moist_lapse`
         '''
+        for artist in self._moist_adiabats:
+            artist.remove()
+        self._moist_adiabats = []
+        thetaes = thetaes  # port workaround, can refactor at any time
+
         def dT_dp(y, p0):
             return calculate('Gammam', T=y, p=p0, RH=100., p_units='hPa',
                              T_units='degC')/(
                 g0*calculate('rho', T=y, p=p0, p_units='hPa', T_units='degC',
                              RH=100.))*100.
 
-        if t0 is None and p is None:
+        if thetaes is None and p is None:
             if (self.get_xlim() == self.default_xlim and
                     self.get_ylim() == self.default_ylim):
                 data = np.load(resource_filename(
                     __name__, 'data/default_moist_adiabat_data.npz'))
                 p = data['p']
-                t0 = data['t0']
+                thetaes = data['t0']
                 t = data['t']
         else:
             # Determine set of starting temps if necessary
-            if t0 is None:
+            if thetaes is None:
                 xmin, xmax = self.get_xlim()
-                t0 = np.concatenate((np.arange(xmin, 0, 5),
+                thetaes = np.concatenate((np.arange(xmin, 0, 5),
                                      np.arange(0, xmax + 51, 5)))
             # Get pressure levels based on ylims if necessary
             if p is None:
                 p = np.linspace(*self.get_ylim())
-            t0_base = odeint(dT_dp, t0, np.array([1e3, p[0]],
+            thetaes_base = odeint(dT_dp, thetaes, np.array([1e3, p[0]],
                                                  dtype=np.float64))[-1, :]
-    
+
             # Assemble into data for plotting
-            result = odeint(dT_dp, t0_base, p)
+            result = odeint(dT_dp, thetaes_base, p)
             t = result.T
         linedata = [np.vstack((ti, p)).T for ti in t]
 
@@ -405,18 +460,22 @@ class SkewTAxes(Axes):
         kwargs.setdefault('alpha', 1)
         kwargs.setdefault('linewidth', 0.5)
         kwargs.setdefault('zorder', 1.1)
-        self.add_collection(LineCollection(linedata, **kwargs))
+        collection = LineCollection(linedata, **kwargs)
+        self._moist_adiabats.append(collection)
+        self.add_collection(collection)
         label_index = closest_val(240., p)
-        T_label = t[:,label_index].flatten()
-        for i in range(len(t0)):
-            format_string = '{:.0f}'
-            self.text(T_label[i], p[label_index], format_string.format(t0[i]),
-                      fontsize=8, ha='left', va='center', rotation=-65,
-                      color='#166916', bbox={
-                          'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
-                      }, zorder=1.2).set_clip_on(True)
+        T_label = t[:, label_index].flatten()
+        for i in range(len(thetaes)):
+            t = self.text(T_label[i], p[label_index],
+                          '{:.0f}'.format(thetaes[i]),
+                          fontsize=8, ha='left', va='center', rotation=-65,
+                          color='#166916', bbox={
+                              'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
+                              }, zorder=1.2)
+            t.set_clip_on(True)
+            self._moist_adiabats.append(t)
 
-    def plot_mixing_lines(self, rv=None, p=None, **kwargs):
+    def plot_mixing_lines(self, p=None, rv=None, **kwargs):
         r'''Plot lines of constant mixing ratio.
 
         Adds lines of constant mixing ratio (isohumes) to the
@@ -426,19 +485,23 @@ class SkewTAxes(Axes):
         Parameters
         ----------
         rv : array_like, optional
-            Unitless mixing ratio values to plot. If none are given, default
-            values are used.
+            1-dimensional array of unitless mixing ratio values to plot. If
+            none are given, default values are used.
         p : array_like, optional
-            Pressure values to be included in the isohumes. If not
-            specified, they will be linearly distributed across the current
-            plotted pressure range up to 600 mb.
+            1-dimensional array of pressure values to be included in the
+            isohumes. If not specified, they will be linearly distributed
+            across the current plotted pressure range.
         kwargs
-            Other keyword arguments to pass to `matplotlib.collections.LineCollection`
+            Other keyword arguments to pass to
+            `matplotlib.collections.LineCollection`
 
         See Also
         --------
         `matplotlib.collections.LineCollection`
         '''
+        for artist in self._mixing_lines:
+            artist.remove()
+        self._mixing_lines = []
 
         # Default mixing level values if necessary
         if rv is None:
@@ -469,19 +532,22 @@ class SkewTAxes(Axes):
         kwargs.setdefault('alpha', 1)
         kwargs.setdefault('linewidth', 0.5)
         kwargs.setdefault('zorder', 1.1)
-        self.add_collection(LineCollection(linedata, **kwargs))
+        collection = LineCollection(linedata, **kwargs)
+        self._mixing_lines.append(collection)
+        self.add_collection(collection)
         rv = rv.flatten() * 1000
         for i in range(len(rv)):
             if rv[i] < 1:
                 format_string = '{:.1f}'
             else:
                 format_string = '{:.0f}'
-            self.text(Td_label[i], 550, format_string.format(rv[i]),
-                      fontsize=8, ha='right', va='center', rotation=60,
-                      color='#166916', bbox={
-                          'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
-                      }, zorder=1.2).set_clip_on(True)
-
+            t = self.text(Td_label[i], 550, format_string.format(rv[i]),
+                          fontsize=8, ha='right', va='center', rotation=60,
+                          color='#166916', bbox={
+                              'facecolor': 'w', 'edgecolor': 'w', 'alpha': 0,
+                              }, zorder=1.2)
+            t.set_clip_on(True)
+            self._mixing_lines.append(t)
 
 # Now register the projection with matplotlib so the user can select
 # it.
@@ -492,10 +558,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 #    fig = plt.figure(figsize=(6, 6))
 #    ax = fig.add_subplot(1, 1, 1, projection='skewT')
-    fig, ax = plt.subplots(1, 1, figsize=(8,8),
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6),
                            subplot_kw={'projection': 'skewT'})
-#    ax.skew_plot(np.linspace(1e3, 100, 100), np.linspace(0,-50, 100))
-    ax.plot(np.linspace(1e3, 100, 100), np.linspace(0,-50, 100))
+    ax.plot(np.linspace(1e3, 100, 100), np.linspace(0, -50, 100))
+    plt.tight_layout()
     plt.show()
 
 # Copyright (c) 2008-2014, MetPy Developers.
