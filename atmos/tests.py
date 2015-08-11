@@ -603,6 +603,7 @@ class CalculateWithUnitsTests(unittest.TestCase):
                 kwargs[quantity + '_unit'] = unit
                 kwargs[quantity] = 1.5
                 result = calculate(quantity, **kwargs)
+                print(result, quantity, unit)
                 self.assertAlmostEqual(
                     result, 1.5, msg='calculate should return the same value '
                     'when given a value as input')

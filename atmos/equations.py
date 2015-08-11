@@ -35,10 +35,8 @@ equations.py: Fluid dynamics equations for atmospheric sciences.
 # can't use numexpr with unicode_literals because of bugs in older versions
 # of numexpr
 from __future__ import division, absolute_import
-import numpy as np
 import numexpr as ne
-from numpy import pi
-from atmos.constants import g0, Omega, Rd, Rv, Cpd, Lv0, Cl
+from atmos.constants import g0, Omega, Rd, Rv, Cpd, Lv0, Cl, pi
 from atmos.decorators import assumes, overridden_by_assumptions
 from atmos.decorators import equation_docstring
 
@@ -110,11 +108,11 @@ quantities = {
     },
     'lat': {
         'name': 'latitude',
-        'units': 'degrees',
+        'units': 'degrees_north',
     },
     'lon': {
         'name': 'longitude',
-        'units': 'degrees',
+        'units': 'degrees_east',
     },
     'MSE': {
         'name': 'moist static energy',
@@ -166,7 +164,7 @@ quantities = {
     },
     'RB': {
         'name': 'bulk Richardson number',
-        'units': 'dimensionless',
+        'units': '1',
     },
     'RH': {
         'name': 'relative humidity with respect to liquid water',

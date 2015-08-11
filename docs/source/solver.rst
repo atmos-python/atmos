@@ -74,9 +74,8 @@ To specify mixing ratio in g/kg::
 Note that either "_unit" or "_units" can be used, and that units must be
 specified for each quantity independently.
 
-Unit names are the same as in the Pint_ package, with the exception that
-relative humidity can have units of "percent" or "fraction". Remember that
-C in Pint is Coulombs, while degC is degrees Celsius. 
+Unit handling is performed by the cfunits_ package, and so any units available
+in that package (notably any units recognized by UDUNITS_) should be recognized.
 
 Viewing equation functions used
 -------------------------------
@@ -120,3 +119,7 @@ Class reference
 ---------------
 
 .. autoclass:: atmos.FluidSolver
+
+.. _cfunits: https://pypi.python.org/pypi/cfunits/1.0.1
+.. _UDUNITS: http://www.unidata.ucar.edu/software/udunits/
+
