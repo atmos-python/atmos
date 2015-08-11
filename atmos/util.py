@@ -8,9 +8,48 @@ from __future__ import division, absolute_import, unicode_literals
 import numpy as np
 import re
 import six
+from scipy.ndimage.filters import convolve1d
 
 derivative_prog = re.compile(r'd(.+)d(p|x|y|theta|z|sigma|t|lat|lon)')
 from textwrap import wrap
+
+
+def sma(array, window_size, axis=-1, mode='reflect', **kwargs):
+    """
+Computes a 1D simple moving average along the given axis.
+
+Parameters
+----------
+array : ndarray
+    Array on which to perform the convolution.
+window_size: int
+    Width of the simple moving average window in indices.
+axis : int, optional
+    Axis along which to perform the moving average
+mode : {‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’}, optional
+    The mode parameter determines how the array borders are handled, where
+    cval is the value when mode is equal to ‘constant’. Default is ‘reflect’.
+kwargs : optional
+    Other arguments to pass to `scipy.ndimage.filters.convolve1d`
+
+Returns
+-------
+sma : ndarray
+    Simple moving average of the given array with the specified window size
+    along the requested axis.
+
+Raises
+------
+TypeError:
+    If window_size or axis are not integers.
+    """
+    if not isinstance(window_size, int):
+        raise TypeError('window_size must be an integer')
+    if not isinstance(kwargs['axis'], int):
+        raise TypeError('axis must be an integer')
+    kwargs['axis'] = axis
+    kwargs['mode'] = mode
+    return convolve1d(array, np.repeat(1.0, window_size)/window_size, **kwargs)
 
 
 def quantity_string(name, quantity_dict):
