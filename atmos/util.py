@@ -43,12 +43,12 @@ Raises
 TypeError:
     If window_size or axis are not integers.
     """
+    kwargs['axis'] = axis
+    kwargs['mode'] = mode
     if not isinstance(window_size, int):
         raise TypeError('window_size must be an integer')
     if not isinstance(kwargs['axis'], int):
         raise TypeError('axis must be an integer')
-    kwargs['axis'] = axis
-    kwargs['mode'] = mode
     return convolve1d(array, np.repeat(1.0, window_size)/window_size, **kwargs)
 
 
