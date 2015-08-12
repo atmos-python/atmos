@@ -308,7 +308,11 @@ lists for subclasses of BaseSolver.
                 dct['__doc__'] = _fill_doc(
                     dct['__doc__'], dct['_equation_module'],
                     dct['default_assumptions'])
-
+            dct['_ref_units'] = {}
+            for quantity in dct['_equation_module'].quantities.keys():
+                dct['_ref_units'][quantity] = \
+                    cfunits.Units(dct['_equation_module'].quantities[
+                        quantity]['units'])
             assumptions = set([])
             for f in inspect.getmembers(equations):
                 try:
@@ -390,13 +394,6 @@ units of "fraction" or "percent".
             self._debug = kwargs.pop('debug')
         else:
             self._debug = False
-        # get reference units from equation module
-        self._ref_units = {}
-        # this could be made a class variable for optimization
-        for quantity in self._equation_module.quantities.keys():
-            self._ref_units[quantity] = \
-                cfunits.Units(self._equation_module.quantities[
-                    quantity]['units'])
         # make sure add and remove assumptions are tuples, not strings
         if ('add_assumptions' in kwargs.keys() and
                 isinstance(kwargs['add_assumptions'], string_types)):
@@ -467,8 +464,7 @@ units of "fraction" or "percent".
                 # special unit defined
                 # convert to reference unit for calculations
                 kwargs[kwarg] = cfunits.Units.conform(
-                    kwargs[kwarg], self.units[kwarg], self._ref_units[kwarg],
-                    inplace=True)
+                    kwargs[kwarg], self.units[kwarg], self._ref_units[kwarg])
         # also store the quantities
         self.vars = kwargs
 
@@ -576,8 +572,7 @@ correction:
             # do corrections for non-standard units
             if arg in self.units and self.units[arg] != self._ref_units[arg]:
                 self.vars[arg] = cfunits.Units.conform(
-                    self.vars[arg], self._ref_units[arg], self.units[arg],
-                    inplace=True)
+                    self.vars[arg], self._ref_units[arg], self.units[arg])
             return_list.append(self.vars[arg])
         if self._debug:
             # We should return a list of funcs as the last item returned
