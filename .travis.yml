@@ -1,6 +1,5 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.2"
   - "3.3"
@@ -27,9 +26,6 @@ install:
 
 # command to run tests
 script:
-  - pwd
-  - ls
-  - ls ./*
   - cd $HOME/build/atmos-python/atmos/atmos/tests
   - python run_tests.py
 after_success:  
