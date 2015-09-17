@@ -36,6 +36,8 @@ Features
 
 * fast calculation of quantities using numexpr
 
+* skew-T plots integrated into matplotlib
+
 Dependencies
 ============
 
