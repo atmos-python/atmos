@@ -9,4 +9,4 @@ import nose
 matplotlib.use('agg')
 
 if __name__ == '__main__':
-    nose.main(argv='--with-coverage')
+    nose.main(argv=['--with-coverage'])
