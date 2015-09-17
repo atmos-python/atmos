@@ -10,6 +10,8 @@ addons:
   apt:
     packages:
       - python-scipy
+      - udunits
+      - netcdf4-python
 
 virtualenv:
   system_site_packages: true
