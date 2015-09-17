@@ -7,8 +7,12 @@ python:
   - "3.4"
 #  - "nightly"
 
-before_install:
-  - "sudo apt-get install -qq python-scipy"
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - python-scipy
 
 virtualenv:
   system_site_packages: true
