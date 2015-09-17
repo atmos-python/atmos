@@ -30,7 +30,7 @@ script:
   - pwd
   - ls
   - ls ./*
-  - cd $HOME/atmos-python/atmos/atmos/tests
+  - cd $HOME/build/atmos-python/atmos/atmos/tests
   - python run_tests.py
 after_success:  
   - coveralls

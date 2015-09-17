@@ -1,1 +1,1 @@
-nosetests atmos.tests
+nosetests atmos
