@@ -10,13 +10,20 @@ addons:
   apt:
     packages:
       - python-scipy
-      - udunits
+      - libudunits2-0
+      - libudunits2-dev
+      - udunits-bin
       - netcdf4-python
 
 virtualenv:
   system_site_packages: true
 
 # command to install dependencies
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python-scipy, libudunits2-0, libudunits2-dev, udunits-bin, netcdf4-python
+
 install:
   - "pip install ."
   - "pip install python-coveralls"
