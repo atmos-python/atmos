@@ -887,7 +887,7 @@ def Tlcl_from_T_Td(T, Td):
          notes='Uses Bolton(1980) equation 21.')
 @assumes('bolton')
 def Tlcl_from_T_e(T, e):
-    return ne.evaluate('2840./(3.5*log(T)-log(e)-4.805) + 55.')
+    return ne.evaluate('2840./(3.5*log(T)-log(e*0.01)-4.805) + 55.')
 
 
 @autodoc(equation=r'T = \theta (\frac{10^5}{p})^{-\frac{R_d}{C_{pd}}}')
