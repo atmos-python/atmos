@@ -107,4 +107,4 @@ This module is available under an MIT license. Please see ``LICENSE.txt``.
 
 .. _`GitHub issue tracker`: https://github.com/mcgibbon/atmos/issues
 .. _`GitHub develop branch`: https://github.com/mcgibbon/atmos/tree/develop
-.. _`HTML documentation`: http://www.pythonhosted.org/atmos
+.. _`HTML documentation`: https://pythonhosted.org/atmos
