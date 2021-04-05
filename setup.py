@@ -1,15 +1,15 @@
 from setuptools import setup
-from pip.req import parse_requirements
-import sys
 
-# parse_requirements() returns generator of pip.req.InstallRequirement objects
-install_reqs = parse_requirements('requirements.txt', session=False)
+def parse_requirements(filename):
+    requirements = []
+    with open(filename) as f:
+        for line in f.readlines():
+            line = line.strip()
+            if line != "":
+                requirements.append(line)
+    return requirements
 
-# reqs is a list of requirement
-# e.g. ['django==1.5.1', 'mezzanine==1.4.6']
-reqs = [str(ir.req) for ir in install_reqs]
-if sys.version_info[:2] == (2, 6):
-    reqs.append('unittest2>=0.5.1')
+install_reqs = parse_requirements('requirements.txt')
 
 setup(
     name='atmos',
@@ -18,7 +18,7 @@ setup(
     description='Atmospheric sciences utility library',
     author='Jeremy McGibbon',
     author_email='mcgibbon@uw.edu',
-    install_requires=reqs,
+    install_requires=install_reqs,
     url='https://github.com/mcgibbon/atmos',
     keywords=['atmos', 'atmospheric', 'equations', 'geoscience', 'science'],
     classifiers=[],
