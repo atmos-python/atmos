@@ -14,7 +14,7 @@ install_reqs = parse_requirements('requirements.txt')
 setup(
     name='atmos',
     packages=['atmos'],
-    version='0.2.5',
+    version='0.2.6',
     description='Atmospheric sciences utility library',
     author='Jeremy McGibbon',
     author_email='mcgibbon@uw.edu',
