@@ -70,7 +70,7 @@ ValueError:
             raise ValueError('equation_docstring decorator must be applied to '
                              'function whose name contains "_from_"')
         out_quantity = func.__name__[:out_name_end_index]
-        in_quantities = inspect.getargspec(func).args
+        in_quantities = inspect.getfullargspec(func).args
         docstring = 'Calculates {0}'.format(
             quantity_string(out_quantity, quantity_dict))
         try:
